@@ -2,41 +2,26 @@
 #include <flutter/method_result_functions.h>
 #include <flutter/standard_method_codec.h>
 #include <gtest/gtest.h>
-#include <windows.h>
 
 #include <memory>
-#include <string>
-#include <variant>
 
 #include "flutter_system_events_plugin.h"
 
 namespace flutter_system_events {
 namespace test {
 
-namespace {
-
-using flutter::EncodableMap;
-using flutter::EncodableValue;
-using flutter::MethodCall;
-using flutter::MethodResultFunctions;
-
-}  // namespace
-
-TEST(FlutterSystemEventsPlugin, GetPlatformVersion) {
+TEST(FlutterSystemEventsPlugin, Initialize) {
   FlutterSystemEventsPlugin plugin;
-  // Save the reply value from the success callback.
-  std::string result_string;
+  bool success = false;
+
   plugin.HandleMethodCall(
-      MethodCall("getPlatformVersion", std::make_unique<EncodableValue>()),
-      std::make_unique<MethodResultFunctions<>>(
-          [&result_string](const EncodableValue* result) {
-            result_string = std::get<std::string>(*result);
-          },
+      flutter::MethodCall<flutter::EncodableValue>(
+          "initialize", std::make_unique<flutter::EncodableValue>()),
+      std::make_unique<flutter::MethodResultFunctions<>>(
+          [&success](const flutter::EncodableValue* result) { success = true; },
           nullptr, nullptr));
 
-  // Since the exact string varies by host, just ensure that it's a string
-  // with the expected format.
-  EXPECT_TRUE(result_string.rfind("Windows ", 0) == 0);
+  EXPECT_TRUE(success);
 }
 
 }  // namespace test

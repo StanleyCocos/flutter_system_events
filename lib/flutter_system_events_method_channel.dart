@@ -9,9 +9,18 @@ class MethodChannelFlutterSystemEvents extends FlutterSystemEventsPlatform {
   @visibleForTesting
   final methodChannel = const MethodChannel('flutter_system_events');
 
+  @visibleForTesting
+  final eventChannel = const EventChannel('flutter_system_events/events');
+
+  late final Stream<SystemEvent> _events = eventChannel
+      .receiveBroadcastStream()
+      .map((event) => SystemEvent.fromMap(event as Map<dynamic, dynamic>));
+
   @override
-  Future<String?> getPlatformVersion() async {
-    final version = await methodChannel.invokeMethod<String>('getPlatformVersion');
-    return version;
+  Future<void> initialize() {
+    return methodChannel.invokeMethod<void>('initialize');
   }
+
+  @override
+  Stream<SystemEvent> get events => _events;
 }

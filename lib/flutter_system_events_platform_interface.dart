@@ -8,7 +8,8 @@ abstract class FlutterSystemEventsPlatform extends PlatformInterface {
 
   static final Object _token = Object();
 
-  static FlutterSystemEventsPlatform _instance = MethodChannelFlutterSystemEvents();
+  static FlutterSystemEventsPlatform _instance =
+      MethodChannelFlutterSystemEvents();
 
   /// The default instance of [FlutterSystemEventsPlatform] to use.
   ///
@@ -23,7 +24,32 @@ abstract class FlutterSystemEventsPlatform extends PlatformInterface {
     _instance = instance;
   }
 
-  Future<String?> getPlatformVersion() {
-    throw UnimplementedError('platformVersion() has not been implemented.');
+  Future<void> initialize() {
+    throw UnimplementedError('initialize() has not been implemented.');
   }
+
+  Stream<SystemEvent> get events {
+    throw UnimplementedError('events has not been implemented.');
+  }
+}
+
+sealed class SystemEvent {
+  const SystemEvent();
+
+  factory SystemEvent.fromMap(Map<dynamic, dynamic> map) {
+    if (map['type'] != 'keyboard') {
+      throw FormatException('Unsupported system event: ${map['type']}');
+    }
+    return KeyboardEvent(
+      visible: map['visible'] as bool,
+      height: (map['height'] as num).toDouble(),
+    );
+  }
+}
+
+final class KeyboardEvent extends SystemEvent {
+  const KeyboardEvent({required this.visible, required this.height});
+
+  final bool visible;
+  final double height;
 }

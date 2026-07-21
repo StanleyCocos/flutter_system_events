@@ -5,23 +5,24 @@ import 'package:flutter_system_events/flutter_system_events_method_channel.dart'
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  MethodChannelFlutterSystemEvents platform = MethodChannelFlutterSystemEvents();
-  const MethodChannel channel = MethodChannel('flutter_system_events');
-
-  setUp(() {
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
-      channel,
-      (MethodCall methodCall) async {
-        return '42';
-      },
-    );
-  });
+  final platform = MethodChannelFlutterSystemEvents();
+  const channel = MethodChannel('flutter_system_events');
 
   tearDown(() {
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(channel, null);
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, null);
   });
 
-  test('getPlatformVersion', () async {
-    expect(await platform.getPlatformVersion(), '42');
+  test('initialize calls native initialize', () async {
+    String? method;
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (methodCall) async {
+          method = methodCall.method;
+          return null;
+        });
+
+    await platform.initialize();
+
+    expect(method, 'initialize');
   });
 }

@@ -10,8 +10,8 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin {
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
     switch call.method {
-    case "getPlatformVersion":
-      result("macOS " + ProcessInfo.processInfo.operatingSystemVersionString)
+    case "initialize":
+      result(nil)
     default:
       result(FlutterMethodNotImplemented)
     }

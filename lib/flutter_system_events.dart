@@ -1,8 +1,15 @@
-
 import 'flutter_system_events_platform_interface.dart';
 
-class FlutterSystemEvents {
-  Future<String?> getPlatformVersion() {
-    return FlutterSystemEventsPlatform.instance.getPlatformVersion();
+export 'flutter_system_events_platform_interface.dart'
+    show KeyboardEvent, SystemEvent;
+
+final class SystemEvents {
+  const SystemEvents._();
+
+  static Future<void> initialize() {
+    return FlutterSystemEventsPlatform.instance.initialize();
   }
+
+  static Stream<SystemEvent> get events =>
+      FlutterSystemEventsPlatform.instance.events;
 }
