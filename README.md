@@ -1,25 +1,105 @@
 # flutter_system_events
 
-A Flutter plugin for listening to system events through a small unified API.
+A small Flutter plugin for listening to system events with one API.
 
-## Supported events
+Version `0.0.1` focuses on Android and iOS:
 
-- Android: keyboard, lifecycle
-- iOS: keyboard, lifecycle
+- Keyboard show / hide / height
+- App lifecycle changes
 
 Other platforms currently expose a no-op implementation.
 
+## Installation
+
+```yaml
+dependencies:
+  flutter_system_events: ^0.0.1
+```
+
 ## Usage
 
-```dart
-await SystemEvents.initialize();
+Initialize once, then listen to the event stream.
 
-final subscription = SystemEvents.events.listen((event) {
-  switch (event) {
-    case KeyboardEvent(:final visible, :final height):
-      print('keyboard visible=$visible height=$height');
-    case LifecycleEvent(:final state):
-      print('lifecycle ${state.name}');
-  }
-});
+```dart
+import 'dart:async';
+
+import 'package:flutter_system_events/flutter_system_events.dart';
+
+StreamSubscription<SystemEvent>? subscription;
+
+Future<void> startSystemEvents() async {
+  subscription = SystemEvents.events.listen((event) {
+    switch (event) {
+      case KeyboardEvent(:final visible, :final height):
+        print('keyboard visible=$visible height=$height');
+      case LifecycleEvent(:final state):
+        print('lifecycle ${state.name}');
+    }
+  });
+
+  await SystemEvents.initialize();
+}
+
+Future<void> stopSystemEvents() async {
+  await subscription?.cancel();
+  await SystemEvents.dispose();
+}
 ```
+
+## Events
+
+### KeyboardEvent
+
+Emitted when the software keyboard visibility changes.
+
+```dart
+KeyboardEvent(
+  visible: true,
+  height: 320,
+)
+```
+
+Fields:
+
+- `visible`: whether the keyboard is visible
+- `height`: keyboard height in logical pixels
+
+### LifecycleEvent
+
+Emitted when the app lifecycle changes.
+
+```dart
+LifecycleEvent(
+  state: LifecycleState.resumed,
+)
+```
+
+States:
+
+- `resumed`
+- `inactive`
+- `paused`
+- `detached`
+
+## Platform support
+
+| Event | Android | iOS | macOS | Windows | Linux | Web |
+| --- | --- | --- | --- | --- | --- | --- |
+| Keyboard | Yes | Yes | No-op | No-op | No-op | No-op |
+| Lifecycle | Yes | Yes | No-op | No-op | No-op | No-op |
+
+## Example
+
+Run the example app and open each event page:
+
+```sh
+cd example
+flutter run
+```
+
+The example includes separate pages for:
+
+- Keyboard
+- Lifecycle
+
+Each page shows the latest event value at the top and provides a simple way to trigger or manually verify the event.
