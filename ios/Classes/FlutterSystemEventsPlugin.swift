@@ -1,9 +1,11 @@
 import Flutter
+import Network
 import UIKit
 
 public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
   private var events: FlutterEventSink?
   private var observers: [NSObjectProtocol] = []
+  private var pathMonitor: NWPathMonitor?
 
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "flutter_system_events", binaryMessenger: registrar.messenger())
@@ -41,6 +43,7 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
     stopAll()
     startKeyboard()
     startLifecycle()
+    startNetwork()
   }
 
   private func startKeyboard() {
@@ -69,5 +72,30 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
   private func stopAll() {
     observers.forEach(NotificationCenter.default.removeObserver)
     observers.removeAll()
+    pathMonitor?.cancel()
+    pathMonitor = nil
+  }
+
+  private func startNetwork() {
+    let monitor = NWPathMonitor()
+    monitor.pathUpdateHandler = { [weak self] path in
+      let networkType: String
+      if path.status != .satisfied {
+        networkType = "none"
+      } else if path.usesInterfaceType(.wifi) {
+        networkType = "wifi"
+      } else if path.usesInterfaceType(.cellular) {
+        networkType = "cellular"
+      } else if path.usesInterfaceType(.wiredEthernet) {
+        networkType = "ethernet"
+      } else {
+        networkType = "other"
+      }
+      DispatchQueue.main.async {
+        self?.events?(["type": "network", "online": path.status == .satisfied, "networkType": networkType])
+      }
+    }
+    pathMonitor = monitor
+    monitor.start(queue: DispatchQueue.global(qos: .utility))
   }
 }

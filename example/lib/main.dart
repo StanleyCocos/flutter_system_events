@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'pages/keyboard_event_page.dart';
 import 'pages/lifecycle_event_page.dart';
+import 'pages/network_event_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -45,6 +46,18 @@ class EventListPage extends StatelessWidget {
               Navigator.of(context).push(
                 MaterialPageRoute<void>(
                   builder: (_) => const LifecycleEventPage(),
+                ),
+              );
+            },
+          ),
+          ListTile(
+            title: const Text('Network'),
+            subtitle: const Text('Online, offline, type'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const NetworkEventPage(),
                 ),
               );
             },

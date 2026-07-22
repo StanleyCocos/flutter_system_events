@@ -2,7 +2,12 @@ package io.github.stanleycocos.flutter_system_events
 
 import android.app.Activity
 import android.app.Application
+import android.content.Context
 import android.graphics.Rect
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import android.os.Bundle
 import android.view.ViewTreeObserver
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
@@ -22,14 +27,17 @@ class FlutterSystemEventsPlugin :
     ActivityAware {
     private lateinit var channel: MethodChannel
     private lateinit var eventChannel: EventChannel
+    private var appContext: Context? = null
     private var events: EventChannel.EventSink? = null
     private var activity: Activity? = null
     private var initialized = false
     private var lifecycleCallbacks: Application.ActivityLifecycleCallbacks? = null
     private var keyboardListener: ViewTreeObserver.OnGlobalLayoutListener? = null
     private var keyboardVisible = false
+    private var networkCallback: ConnectivityManager.NetworkCallback? = null
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+        appContext = flutterPluginBinding.applicationContext
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "flutter_system_events")
         channel.setMethodCallHandler(this)
         eventChannel = EventChannel(flutterPluginBinding.binaryMessenger, "flutter_system_events/events")
@@ -60,6 +68,7 @@ class FlutterSystemEventsPlugin :
         initialized = false
         channel.setMethodCallHandler(null)
         eventChannel.setStreamHandler(null)
+        appContext = null
     }
 
     override fun onListen(arguments: Any?, eventSink: EventChannel.EventSink) {
@@ -96,11 +105,13 @@ class FlutterSystemEventsPlugin :
         stopAll()
         startKeyboard()
         startLifecycle()
+        startNetwork()
     }
 
     private fun stopAll() {
         stopKeyboard()
         stopLifecycle()
+        stopNetwork()
     }
 
     private fun startLifecycle() {
@@ -156,5 +167,36 @@ class FlutterSystemEventsPlugin :
         keyboardListener?.let { root?.viewTreeObserver?.removeOnGlobalLayoutListener(it) }
         keyboardListener = null
         keyboardVisible = false
+    }
+
+    private fun startNetwork() {
+        val manager = appContext?.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager ?: return
+        val callback = object : ConnectivityManager.NetworkCallback() {
+            override fun onAvailable(network: Network) = emitNetwork(manager)
+            override fun onLost(network: Network) = emitNetwork(manager)
+            override fun onCapabilitiesChanged(network: Network, capabilities: NetworkCapabilities) = emitNetwork(manager)
+        }
+        manager.registerNetworkCallback(NetworkRequest.Builder().build(), callback)
+        networkCallback = callback
+        emitNetwork(manager)
+    }
+
+    private fun emitNetwork(manager: ConnectivityManager) {
+        val capabilities = manager.getNetworkCapabilities(manager.activeNetwork)
+        val online = capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
+        val networkType = when {
+            !online -> "none"
+            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> "wifi"
+            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> "cellular"
+            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> "ethernet"
+            else -> "other"
+        }
+        events?.success(mapOf("type" to "network", "online" to online, "networkType" to networkType))
+    }
+
+    private fun stopNetwork() {
+        val manager = appContext?.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
+        networkCallback?.let { manager?.unregisterNetworkCallback(it) }
+        networkCallback = null
     }
 }

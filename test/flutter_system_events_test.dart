@@ -52,4 +52,15 @@ void main() {
     expect(event, isA<LifecycleEvent>());
     expect((event as LifecycleEvent).state, LifecycleState.resumed);
   });
+
+  test('parses network event map', () {
+    final event = SystemEvent.fromMap({
+      'type': 'network',
+      'online': true,
+      'networkType': 'wifi',
+    });
+
+    expect(event, isA<NetworkEvent>());
+    expect((event as NetworkEvent).networkType, NetworkType.wifi);
+  });
 }

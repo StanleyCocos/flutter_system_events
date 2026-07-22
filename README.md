@@ -6,6 +6,7 @@ Version `0.0.1` focuses on Android and iOS:
 
 - Keyboard show / hide / height
 - App lifecycle changes
+- Network status changes
 
 Other platforms currently expose a no-op implementation.
 
@@ -34,6 +35,8 @@ Future<void> startSystemEvents() async {
         print('keyboard visible=$visible height=$height');
       case LifecycleEvent(:final state):
         print('lifecycle ${state.name}');
+      case NetworkEvent(:final online, :final networkType):
+        print('network online=$online type=${networkType.name}');
     }
   });
 
@@ -81,12 +84,32 @@ States:
 - `paused`
 - `detached`
 
+### NetworkEvent
+
+Emitted when the network status changes.
+
+```dart
+NetworkEvent(
+  online: true,
+  networkType: NetworkType.wifi,
+)
+```
+
+Types:
+
+- `wifi`
+- `cellular`
+- `ethernet`
+- `other`
+- `none`
+
 ## Platform support
 
 | Event | Android | iOS | macOS | Windows | Linux | Web |
 | --- | --- | --- | --- | --- | --- | --- |
 | Keyboard | Yes | Yes | No-op | No-op | No-op | No-op |
 | Lifecycle | Yes | Yes | No-op | No-op | No-op | No-op |
+| Network | Yes | Yes | No-op | No-op | No-op | No-op |
 
 ## Example
 
@@ -101,5 +124,6 @@ The example includes separate pages for:
 
 - Keyboard
 - Lifecycle
+- Network
 
 Each page shows the latest event value at the top and provides a simple way to trigger or manually verify the event.

@@ -49,6 +49,10 @@ sealed class SystemEvent {
       'lifecycle' => LifecycleEvent(
         state: LifecycleState.values.byName(map['state'] as String),
       ),
+      'network' => NetworkEvent(
+        online: map['online'] as bool,
+        networkType: NetworkType.values.byName(map['networkType'] as String),
+      ),
       _ => throw FormatException('Unsupported system event: ${map['type']}'),
     };
   }
@@ -67,4 +71,13 @@ final class KeyboardEvent extends SystemEvent {
 
   final bool visible;
   final double height;
+}
+
+enum NetworkType { wifi, cellular, ethernet, other, none }
+
+final class NetworkEvent extends SystemEvent {
+  const NetworkEvent({required this.online, required this.networkType});
+
+  final bool online;
+  final NetworkType networkType;
 }

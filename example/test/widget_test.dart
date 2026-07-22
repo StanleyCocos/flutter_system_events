@@ -8,6 +8,7 @@ void main() {
 
     expect(find.text('Keyboard'), findsOneWidget);
     expect(find.text('Lifecycle'), findsOneWidget);
+    expect(find.text('Network'), findsOneWidget);
 
     await tester.tap(find.text('Keyboard'));
     await tester.pumpAndSettle();
@@ -29,5 +30,18 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Recent events'), findsOneWidget);
+  });
+
+  testWidgets('opens network event page', (tester) async {
+    await tester.pumpWidget(const MyApp());
+
+    await tester.tap(find.text('Network'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Network Event'), findsOneWidget);
+    expect(
+      find.text('Toggle Wi-Fi or cellular data to trigger this event.'),
+      findsOneWidget,
+    );
   });
 }
