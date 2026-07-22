@@ -22,5 +22,10 @@ class MethodChannelFlutterSystemEvents extends FlutterSystemEventsPlatform {
   }
 
   @override
+  Future<void> dispose() {
+    return methodChannel.invokeMethod<void>('dispose');
+  }
+
+  @override
   Stream<SystemEvent> get events => _events;
 }

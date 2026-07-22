@@ -10,7 +10,7 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin {
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
     switch call.method {
-    case "initialize":
+    case "initialize", "dispose":
       result(nil)
     default:
       result(FlutterMethodNotImplemented)

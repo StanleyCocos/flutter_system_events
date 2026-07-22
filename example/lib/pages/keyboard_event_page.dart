@@ -31,6 +31,7 @@ class _KeyboardEventPageState extends State<KeyboardEventPage> {
   @override
   void dispose() {
     _subscription?.cancel();
+    SystemEvents.dispose();
     super.dispose();
   }
 

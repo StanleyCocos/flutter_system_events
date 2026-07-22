@@ -18,6 +18,9 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
     case "initialize":
       startAll()
       result(nil)
+    case "dispose":
+      stopAll()
+      result(nil)
     default:
       result(FlutterMethodNotImplemented)
     }

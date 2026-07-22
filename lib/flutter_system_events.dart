@@ -10,6 +10,10 @@ final class SystemEvents {
     return FlutterSystemEventsPlatform.instance.initialize();
   }
 
+  static Future<void> dispose() {
+    return FlutterSystemEventsPlatform.instance.dispose();
+  }
+
   static Stream<SystemEvent> get events =>
       FlutterSystemEventsPlatform.instance.events;
 }

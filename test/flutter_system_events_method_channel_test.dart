@@ -25,4 +25,17 @@ void main() {
 
     expect(method, 'initialize');
   });
+
+  test('dispose calls native dispose', () async {
+    String? method;
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (methodCall) async {
+          method = methodCall.method;
+          return null;
+        });
+
+    await platform.dispose();
+
+    expect(method, 'dispose');
+  });
 }

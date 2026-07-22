@@ -15,5 +15,8 @@ class FlutterSystemEventsWeb extends FlutterSystemEventsPlatform {
   Future<void> initialize() async {}
 
   @override
+  Future<void> dispose() async {}
+
+  @override
   Stream<SystemEvent> get events => const Stream.empty();
 }

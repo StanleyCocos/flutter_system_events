@@ -27,6 +27,7 @@ class _LifecycleEventPageState extends State<LifecycleEventPage> {
   @override
   void dispose() {
     _subscription?.cancel();
+    SystemEvents.dispose();
     super.dispose();
   }
 

@@ -25,7 +25,7 @@ static void flutter_system_events_plugin_handle_method_call(
 
   const gchar* method = fl_method_call_get_name(method_call);
 
-  if (strcmp(method, "initialize") == 0) {
+  if (strcmp(method, "initialize") == 0 || strcmp(method, "dispose") == 0) {
     response = FL_METHOD_RESPONSE(fl_method_success_response_new(nullptr));
   } else {
     response = FL_METHOD_RESPONSE(fl_method_not_implemented_response_new());

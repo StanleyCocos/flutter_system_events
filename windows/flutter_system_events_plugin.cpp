@@ -36,7 +36,8 @@ FlutterSystemEventsPlugin::~FlutterSystemEventsPlugin() {}
 void FlutterSystemEventsPlugin::HandleMethodCall(
     const flutter::MethodCall<flutter::EncodableValue> &method_call,
     std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
-  if (method_call.method_name().compare("initialize") == 0) {
+  if (method_call.method_name().compare("initialize") == 0 ||
+      method_call.method_name().compare("dispose") == 0) {
     result->Success();
   } else {
     result->NotImplemented();

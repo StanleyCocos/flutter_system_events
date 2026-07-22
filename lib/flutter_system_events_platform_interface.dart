@@ -28,6 +28,10 @@ abstract class FlutterSystemEventsPlatform extends PlatformInterface {
     throw UnimplementedError('initialize() has not been implemented.');
   }
 
+  Future<void> dispose() {
+    throw UnimplementedError('dispose() has not been implemented.');
+  }
+
   Stream<SystemEvent> get events {
     throw UnimplementedError('events has not been implemented.');
   }

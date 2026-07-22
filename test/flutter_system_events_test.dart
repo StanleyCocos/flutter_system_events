@@ -11,6 +11,9 @@ class MockFlutterSystemEventsPlatform
   Future<void> initialize() async {}
 
   @override
+  Future<void> dispose() async {}
+
+  @override
   Stream<SystemEvent> get events => Stream<SystemEvent>.value(
     const KeyboardEvent(visible: true, height: 300),
   );

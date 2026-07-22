@@ -46,6 +46,11 @@ class FlutterSystemEventsPlugin :
                 startAll()
                 result.success(null)
             }
+            "dispose" -> {
+                initialized = false
+                stopAll()
+                result.success(null)
+            }
             else -> result.notImplemented()
         }
     }
