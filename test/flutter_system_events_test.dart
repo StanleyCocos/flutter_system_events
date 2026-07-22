@@ -76,4 +76,17 @@ void main() {
     expect(event, isA<MemoryEvent>());
     expect((event as MemoryEvent).state, MemoryState.warning);
   });
+
+  test('parses battery event map', () {
+    final event = SystemEvent.fromMap({
+      'type': 'battery',
+      'level': 80,
+      'charging': true,
+      'state': 'charging',
+    });
+
+    expect(event, isA<BatteryEvent>());
+    expect((event as BatteryEvent).level, 80);
+    expect(event.state, BatteryState.charging);
+  });
 }

@@ -2,14 +2,18 @@ package io.github.stanleycocos.flutter_system_events
 
 import android.app.Activity
 import android.app.Application
+import android.content.BroadcastReceiver
 import android.content.ComponentCallbacks2
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.res.Configuration
 import android.graphics.Rect
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
+import android.os.BatteryManager
 import android.os.Bundle
 import android.view.ViewTreeObserver
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
@@ -38,6 +42,7 @@ class FlutterSystemEventsPlugin :
     private var keyboardVisible = false
     private var networkCallback: ConnectivityManager.NetworkCallback? = null
     private var memoryCallbacks: ComponentCallbacks2? = null
+    private var batteryReceiver: BroadcastReceiver? = null
     private var config = EventConfig.legacy()
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
@@ -112,6 +117,7 @@ class FlutterSystemEventsPlugin :
         if (config.lifecycle) startLifecycle()
         if (config.network) startNetwork()
         if (config.memory) startMemory()
+        if (config.battery) startBattery()
     }
 
     private fun stopAll() {
@@ -119,6 +125,7 @@ class FlutterSystemEventsPlugin :
         stopLifecycle()
         stopNetwork()
         stopMemory()
+        stopBattery()
     }
 
     private fun startLifecycle() {
@@ -225,6 +232,44 @@ class FlutterSystemEventsPlugin :
     private fun stopMemory() {
         memoryCallbacks?.let { appContext?.unregisterComponentCallbacks(it) }
         memoryCallbacks = null
+    }
+
+    private fun startBattery() {
+        val context = appContext ?: return
+        val filter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) = emitBattery(intent)
+        }
+        batteryReceiver = receiver
+        context.registerReceiver(receiver, filter)
+        context.registerReceiver(null, filter)?.let(::emitBattery)
+    }
+
+    private fun emitBattery(intent: Intent) {
+        val level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
+        val scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
+        val status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, BatteryManager.BATTERY_STATUS_UNKNOWN)
+        val percent = if (level >= 0 && scale > 0) level * 100 / scale else -1
+        val state = when (status) {
+            BatteryManager.BATTERY_STATUS_CHARGING -> "charging"
+            BatteryManager.BATTERY_STATUS_DISCHARGING,
+            BatteryManager.BATTERY_STATUS_NOT_CHARGING -> "discharging"
+            BatteryManager.BATTERY_STATUS_FULL -> "full"
+            else -> "unknown"
+        }
+        events?.success(
+            mapOf(
+                "type" to "battery",
+                "level" to percent,
+                "charging" to (state == "charging" || state == "full"),
+                "state" to state,
+            ),
+        )
+    }
+
+    private fun stopBattery() {
+        batteryReceiver?.let { appContext?.unregisterReceiver(it) }
+        batteryReceiver = null
     }
 
     private data class EventConfig(

@@ -7,6 +7,7 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
   private var observers: [NSObjectProtocol] = []
   private var pathMonitor: NWPathMonitor?
   private var config = EventConfig.legacy
+  private var previousBatteryMonitoring: Bool?
 
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "flutter_system_events", binaryMessenger: registrar.messenger())
@@ -47,6 +48,7 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
     if config.lifecycle { startLifecycle() }
     if config.network { startNetwork() }
     if config.memory { startMemory() }
+    if config.battery { startBattery() }
   }
 
   private func startKeyboard() {
@@ -83,6 +85,7 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
     observers.removeAll()
     pathMonitor?.cancel()
     pathMonitor = nil
+    stopBattery()
   }
 
   private func startNetwork() {
@@ -106,6 +109,44 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
     }
     pathMonitor = monitor
     monitor.start(queue: DispatchQueue.global(qos: .utility))
+  }
+
+  private func startBattery() {
+    previousBatteryMonitoring = UIDevice.current.isBatteryMonitoringEnabled
+    UIDevice.current.isBatteryMonitoringEnabled = true
+    observers.append(NotificationCenter.default.addObserver(forName: UIDevice.batteryLevelDidChangeNotification, object: nil, queue: .main) { [weak self] _ in
+      self?.emitBattery()
+    })
+    observers.append(NotificationCenter.default.addObserver(forName: UIDevice.batteryStateDidChangeNotification, object: nil, queue: .main) { [weak self] _ in
+      self?.emitBattery()
+    })
+    emitBattery()
+  }
+
+  private func emitBattery() {
+    let device = UIDevice.current
+    let state: String
+    switch device.batteryState {
+    case .charging:
+      state = "charging"
+    case .full:
+      state = "full"
+    case .unplugged:
+      state = "discharging"
+    case .unknown:
+      state = "unknown"
+    @unknown default:
+      state = "unknown"
+    }
+    let level = device.batteryLevel >= 0 ? Int(device.batteryLevel * 100) : -1
+    events?(["type": "battery", "level": level, "charging": state == "charging" || state == "full", "state": state])
+  }
+
+  private func stopBattery() {
+    if let previousBatteryMonitoring {
+      UIDevice.current.isBatteryMonitoringEnabled = previousBatteryMonitoring
+      self.previousBatteryMonitoring = nil
+    }
   }
 
   private struct EventConfig {

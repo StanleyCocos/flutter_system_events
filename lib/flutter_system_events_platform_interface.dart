@@ -59,6 +59,11 @@ sealed class SystemEvent {
         state: MemoryState.values.byName(map['state'] as String),
         level: map['level'] as int,
       ),
+      'battery' => BatteryEvent(
+        level: map['level'] as int,
+        charging: map['charging'] as bool,
+        state: BatteryState.values.byName(map['state'] as String),
+      ),
       _ => throw FormatException('Unsupported system event: ${map['type']}'),
     };
   }
@@ -155,4 +160,18 @@ final class MemoryEvent extends SystemEvent {
 
   final MemoryState state;
   final int level;
+}
+
+enum BatteryState { charging, discharging, full, unknown }
+
+final class BatteryEvent extends SystemEvent {
+  const BatteryEvent({
+    required this.level,
+    required this.charging,
+    required this.state,
+  });
+
+  final int level;
+  final bool charging;
+  final BatteryState state;
 }

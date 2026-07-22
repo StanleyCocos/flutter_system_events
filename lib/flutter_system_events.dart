@@ -3,6 +3,8 @@ import 'flutter_system_events_platform_interface.dart';
 export 'flutter_system_events_platform_interface.dart'
     show
         BatteryConfig,
+        BatteryEvent,
+        BatteryState,
         KeyboardEvent,
         KeyboardConfig,
         LifecycleConfig,
