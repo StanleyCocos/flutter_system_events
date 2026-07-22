@@ -14,6 +14,7 @@ class _KeyboardEventPageState extends State<KeyboardEventPage> {
   StreamSubscription<SystemEvent>? _subscription;
   bool _visible = false;
   double _height = 0;
+  final _events = <String>[];
 
   @override
   void initState() {
@@ -23,6 +24,11 @@ class _KeyboardEventPageState extends State<KeyboardEventPage> {
       setState(() {
         _visible = event.visible;
         _height = event.height;
+        _events.insert(
+          0,
+          '${event.visible ? 'show' : 'hide'} height=${event.height.toStringAsFixed(0)}',
+        );
+        if (_events.length > 8) _events.removeLast();
       });
     });
     SystemEvents.initialize();
@@ -52,6 +58,11 @@ class _KeyboardEventPageState extends State<KeyboardEventPage> {
               labelText: 'Tap to show keyboard',
             ),
           ),
+          const SizedBox(height: 24),
+          const Text('Recent events'),
+          const SizedBox(height: 8),
+          if (_events.isEmpty) const Text('-'),
+          for (final event in _events) Text(event),
         ],
       ),
     );

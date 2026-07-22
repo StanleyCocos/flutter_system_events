@@ -13,13 +13,18 @@ class LifecycleEventPage extends StatefulWidget {
 class _LifecycleEventPageState extends State<LifecycleEventPage> {
   StreamSubscription<SystemEvent>? _subscription;
   LifecycleState? _state;
+  final _events = <String>[];
 
   @override
   void initState() {
     super.initState();
     _subscription = SystemEvents.events.listen((event) {
       if (event is! LifecycleEvent || !mounted) return;
-      setState(() => _state = event.state);
+      setState(() {
+        _state = event.state;
+        _events.insert(0, event.state.name);
+        if (_events.length > 8) _events.removeLast();
+      });
     });
     SystemEvents.initialize();
   }
@@ -41,6 +46,11 @@ class _LifecycleEventPageState extends State<LifecycleEventPage> {
           Text('state: ${_state?.name ?? '-'}'),
           const SizedBox(height: 24),
           const Text('Send the app to background, then open it again.'),
+          const SizedBox(height: 24),
+          const Text('Recent events'),
+          const SizedBox(height: 8),
+          if (_events.isEmpty) const Text('-'),
+          for (final event in _events) Text(event),
         ],
       ),
     );

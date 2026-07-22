@@ -14,6 +14,7 @@ void main() {
 
     expect(find.text('Keyboard Event'), findsOneWidget);
     expect(find.text('Tap to show keyboard'), findsOneWidget);
+    expect(find.text('Recent events'), findsOneWidget);
   });
 
   testWidgets('opens lifecycle event page', (tester) async {
@@ -27,5 +28,6 @@ void main() {
       find.text('Send the app to background, then open it again.'),
       findsOneWidget,
     );
+    expect(find.text('Recent events'), findsOneWidget);
   });
 }
