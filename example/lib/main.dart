@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'pages/keyboard_event_page.dart';
 import 'pages/lifecycle_event_page.dart';
+import 'pages/memory_event_page.dart';
 import 'pages/network_event_page.dart';
 
 void main() {
@@ -58,6 +59,18 @@ class EventListPage extends StatelessWidget {
               Navigator.of(context).push(
                 MaterialPageRoute<void>(
                   builder: (_) => const NetworkEventPage(),
+                ),
+              );
+            },
+          ),
+          ListTile(
+            title: const Text('Memory'),
+            subtitle: const Text('Warning, low memory, trim'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const MemoryEventPage(),
                 ),
               );
             },

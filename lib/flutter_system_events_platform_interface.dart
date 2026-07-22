@@ -53,6 +53,10 @@ sealed class SystemEvent {
         online: map['online'] as bool,
         networkType: NetworkType.values.byName(map['networkType'] as String),
       ),
+      'memory' => MemoryEvent(
+        state: MemoryState.values.byName(map['state'] as String),
+        level: map['level'] as int,
+      ),
       _ => throw FormatException('Unsupported system event: ${map['type']}'),
     };
   }
@@ -80,4 +84,13 @@ final class NetworkEvent extends SystemEvent {
 
   final bool online;
   final NetworkType networkType;
+}
+
+enum MemoryState { warning, low, trim }
+
+final class MemoryEvent extends SystemEvent {
+  const MemoryEvent({required this.state, required this.level});
+
+  final MemoryState state;
+  final int level;
 }

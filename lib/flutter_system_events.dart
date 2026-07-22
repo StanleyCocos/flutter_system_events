@@ -5,6 +5,8 @@ export 'flutter_system_events_platform_interface.dart'
         KeyboardEvent,
         LifecycleEvent,
         LifecycleState,
+        MemoryEvent,
+        MemoryState,
         NetworkEvent,
         NetworkType,
         SystemEvent;

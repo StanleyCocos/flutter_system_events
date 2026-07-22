@@ -2,7 +2,9 @@ package io.github.stanleycocos.flutter_system_events
 
 import android.app.Activity
 import android.app.Application
+import android.content.ComponentCallbacks2
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.Rect
 import android.net.ConnectivityManager
 import android.net.Network
@@ -35,6 +37,7 @@ class FlutterSystemEventsPlugin :
     private var keyboardListener: ViewTreeObserver.OnGlobalLayoutListener? = null
     private var keyboardVisible = false
     private var networkCallback: ConnectivityManager.NetworkCallback? = null
+    private var memoryCallbacks: ComponentCallbacks2? = null
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         appContext = flutterPluginBinding.applicationContext
@@ -106,12 +109,14 @@ class FlutterSystemEventsPlugin :
         startKeyboard()
         startLifecycle()
         startNetwork()
+        startMemory()
     }
 
     private fun stopAll() {
         stopKeyboard()
         stopLifecycle()
         stopNetwork()
+        stopMemory()
     }
 
     private fun startLifecycle() {
@@ -198,5 +203,25 @@ class FlutterSystemEventsPlugin :
         val manager = appContext?.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
         networkCallback?.let { manager?.unregisterNetworkCallback(it) }
         networkCallback = null
+    }
+
+    private fun startMemory() {
+        val context = appContext ?: return
+        val callbacks = object : ComponentCallbacks2 {
+            override fun onLowMemory() = emitMemory("low", 0)
+            override fun onTrimMemory(level: Int) = emitMemory("trim", level)
+            override fun onConfigurationChanged(newConfig: Configuration) {}
+        }
+        context.registerComponentCallbacks(callbacks)
+        memoryCallbacks = callbacks
+    }
+
+    private fun emitMemory(state: String, level: Int) {
+        events?.success(mapOf("type" to "memory", "state" to state, "level" to level))
+    }
+
+    private fun stopMemory() {
+        memoryCallbacks?.let { appContext?.unregisterComponentCallbacks(it) }
+        memoryCallbacks = null
     }
 }

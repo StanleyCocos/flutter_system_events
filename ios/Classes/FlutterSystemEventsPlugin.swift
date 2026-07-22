@@ -44,6 +44,7 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
     startKeyboard()
     startLifecycle()
     startNetwork()
+    startMemory()
   }
 
   private func startKeyboard() {
@@ -66,6 +67,12 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
   private func observeLifecycle(_ name: Notification.Name, state: String) {
     observers.append(NotificationCenter.default.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
       self?.events?(["type": "lifecycle", "state": state])
+    })
+  }
+
+  private func startMemory() {
+    observers.append(NotificationCenter.default.addObserver(forName: UIApplication.didReceiveMemoryWarningNotification, object: nil, queue: .main) { [weak self] _ in
+      self?.events?(["type": "memory", "state": "warning", "level": 0])
     })
   }
 

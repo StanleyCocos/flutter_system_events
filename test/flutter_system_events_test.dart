@@ -63,4 +63,15 @@ void main() {
     expect(event, isA<NetworkEvent>());
     expect((event as NetworkEvent).networkType, NetworkType.wifi);
   });
+
+  test('parses memory event map', () {
+    final event = SystemEvent.fromMap({
+      'type': 'memory',
+      'state': 'warning',
+      'level': 0,
+    });
+
+    expect(event, isA<MemoryEvent>());
+    expect((event as MemoryEvent).state, MemoryState.warning);
+  });
 }

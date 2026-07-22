@@ -7,6 +7,7 @@ Version `0.0.1` focuses on Android and iOS:
 - Keyboard show / hide / height
 - App lifecycle changes
 - Network status changes
+- Memory warnings
 
 Other platforms currently expose a no-op implementation.
 
@@ -37,6 +38,8 @@ Future<void> startSystemEvents() async {
         print('lifecycle ${state.name}');
       case NetworkEvent(:final online, :final networkType):
         print('network online=$online type=${networkType.name}');
+      case MemoryEvent(:final state, :final level):
+        print('memory state=${state.name} level=$level');
     }
   });
 
@@ -103,6 +106,23 @@ Types:
 - `other`
 - `none`
 
+### MemoryEvent
+
+Emitted when the operating system reports memory pressure.
+
+```dart
+MemoryEvent(
+  state: MemoryState.warning,
+  level: 0,
+)
+```
+
+States:
+
+- `warning`
+- `low`
+- `trim`
+
 ## Platform support
 
 | Event | Android | iOS | macOS | Windows | Linux | Web |
@@ -110,6 +130,7 @@ Types:
 | Keyboard | Yes | Yes | No-op | No-op | No-op | No-op |
 | Lifecycle | Yes | Yes | No-op | No-op | No-op | No-op |
 | Network | Yes | Yes | No-op | No-op | No-op | No-op |
+| Memory | Yes | Yes | No-op | No-op | No-op | No-op |
 
 ## Example
 
@@ -125,5 +146,6 @@ The example includes separate pages for:
 - Keyboard
 - Lifecycle
 - Network
+- Memory
 
 Each page shows the latest event value at the top and provides a simple way to trigger or manually verify the event.
