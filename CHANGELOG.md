@@ -1,3 +1,7 @@
 ## 0.0.1
 
-* TODO: Describe initial release.
+- Initial release.
+- Added `SystemEvents.initialize()` and `SystemEvents.events`.
+- Added Android and iOS keyboard events.
+- Added Android and iOS lifecycle events.
+- Added example pages for testing keyboard and lifecycle events.
