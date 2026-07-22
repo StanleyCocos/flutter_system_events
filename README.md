@@ -1,5 +1,7 @@
 # flutter_system_events
 
+[![pub package](https://img.shields.io/pub/v/flutter_system_events.svg)](https://pub.dev/packages/flutter_system_events)
+
 A small Flutter plugin for listening to system events with one API.
 
 Version `0.3.0` focuses on Android and iOS:
