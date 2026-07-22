@@ -1,7 +1,7 @@
 import 'flutter_system_events_platform_interface.dart';
 
 export 'flutter_system_events_platform_interface.dart'
-    show KeyboardEvent, SystemEvent;
+    show KeyboardEvent, LifecycleEvent, LifecycleState, SystemEvent;
 
 final class SystemEvents {
   const SystemEvents._();

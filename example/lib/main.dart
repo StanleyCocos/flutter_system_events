@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'pages/keyboard_event_page.dart';
+import 'pages/lifecycle_event_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -32,6 +33,18 @@ class EventListPage extends StatelessWidget {
               Navigator.of(context).push(
                 MaterialPageRoute<void>(
                   builder: (_) => const KeyboardEventPage(),
+                ),
+              );
+            },
+          ),
+          ListTile(
+            title: const Text('Lifecycle'),
+            subtitle: const Text('Resume, inactive, pause, detach'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const LifecycleEventPage(),
                 ),
               );
             },

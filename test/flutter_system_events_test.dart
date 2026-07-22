@@ -39,4 +39,14 @@ void main() {
     expect(event, isA<KeyboardEvent>());
     expect((event as KeyboardEvent).height, 240);
   });
+
+  test('parses lifecycle event map', () {
+    final event = SystemEvent.fromMap({
+      'type': 'lifecycle',
+      'state': 'resumed',
+    });
+
+    expect(event, isA<LifecycleEvent>());
+    expect((event as LifecycleEvent).state, LifecycleState.resumed);
+  });
 }

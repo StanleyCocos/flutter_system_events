@@ -1,7 +1,9 @@
 package com.example.flutter_system_events
 
 import android.app.Activity
+import android.app.Application
 import android.graphics.Rect
+import android.os.Bundle
 import android.view.ViewTreeObserver
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -22,6 +24,8 @@ class FlutterSystemEventsPlugin :
     private lateinit var eventChannel: EventChannel
     private var events: EventChannel.EventSink? = null
     private var activity: Activity? = null
+    private var initialized = false
+    private var lifecycleCallbacks: Application.ActivityLifecycleCallbacks? = null
     private var keyboardListener: ViewTreeObserver.OnGlobalLayoutListener? = null
     private var keyboardVisible = false
 
@@ -38,7 +42,8 @@ class FlutterSystemEventsPlugin :
     ) {
         when (call.method) {
             "initialize" -> {
-                startKeyboard()
+                initialized = true
+                startAll()
                 result.success(null)
             }
             else -> result.notImplemented()
@@ -46,7 +51,8 @@ class FlutterSystemEventsPlugin :
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-        stopKeyboard()
+        stopAll()
+        initialized = false
         channel.setMethodCallHandler(null)
         eventChannel.setStreamHandler(null)
     }
@@ -57,29 +63,67 @@ class FlutterSystemEventsPlugin :
 
     override fun onCancel(arguments: Any?) {
         events = null
-        stopKeyboard()
+        initialized = false
+        stopAll()
     }
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         activity = binding.activity
+        if (initialized) startAll()
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
-        stopKeyboard()
+        stopAll()
         activity = null
     }
 
     override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
         activity = binding.activity
+        if (initialized) startAll()
     }
 
     override fun onDetachedFromActivity() {
-        stopKeyboard()
+        stopAll()
         activity = null
     }
 
-    private fun startKeyboard() {
+    private fun startAll() {
+        stopAll()
+        startKeyboard()
+        startLifecycle()
+    }
+
+    private fun stopAll() {
         stopKeyboard()
+        stopLifecycle()
+    }
+
+    private fun startLifecycle() {
+        val currentActivity = activity ?: return
+        val callbacks = object : Application.ActivityLifecycleCallbacks {
+            override fun onActivityResumed(activity: Activity) = emitLifecycle(activity, "resumed")
+            override fun onActivityPaused(activity: Activity) = emitLifecycle(activity, "inactive")
+            override fun onActivityStopped(activity: Activity) = emitLifecycle(activity, "paused")
+            override fun onActivityDestroyed(activity: Activity) = emitLifecycle(activity, "detached")
+            override fun onActivityStarted(activity: Activity) {}
+            override fun onActivityCreated(activity: Activity, state: Bundle?) {}
+            override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
+        }
+        currentActivity.application.registerActivityLifecycleCallbacks(callbacks)
+        lifecycleCallbacks = callbacks
+    }
+
+    private fun emitLifecycle(source: Activity, state: String) {
+        if (source == activity) events?.success(mapOf("type" to "lifecycle", "state" to state))
+    }
+
+    private fun stopLifecycle() {
+        val currentActivity = activity
+        lifecycleCallbacks?.let { currentActivity?.application?.unregisterActivityLifecycleCallbacks(it) }
+        lifecycleCallbacks = null
+    }
+
+    private fun startKeyboard() {
         val root = activity?.window?.decorView ?: return
         val listener = ViewTreeObserver.OnGlobalLayoutListener {
             val rect = Rect()

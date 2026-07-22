@@ -37,14 +37,25 @@ sealed class SystemEvent {
   const SystemEvent();
 
   factory SystemEvent.fromMap(Map<dynamic, dynamic> map) {
-    if (map['type'] != 'keyboard') {
-      throw FormatException('Unsupported system event: ${map['type']}');
-    }
-    return KeyboardEvent(
-      visible: map['visible'] as bool,
-      height: (map['height'] as num).toDouble(),
-    );
+    return switch (map['type']) {
+      'keyboard' => KeyboardEvent(
+        visible: map['visible'] as bool,
+        height: (map['height'] as num).toDouble(),
+      ),
+      'lifecycle' => LifecycleEvent(
+        state: LifecycleState.values.byName(map['state'] as String),
+      ),
+      _ => throw FormatException('Unsupported system event: ${map['type']}'),
+    };
   }
+}
+
+enum LifecycleState { resumed, inactive, paused, detached }
+
+final class LifecycleEvent extends SystemEvent {
+  const LifecycleEvent({required this.state});
+
+  final LifecycleState state;
 }
 
 final class KeyboardEvent extends SystemEvent {
