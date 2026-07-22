@@ -24,7 +24,9 @@ abstract class FlutterSystemEventsPlatform extends PlatformInterface {
     _instance = instance;
   }
 
-  Future<void> initialize() {
+  Future<void> initialize({
+    SystemEventsConfig config = const SystemEventsConfig.defaults(),
+  }) {
     throw UnimplementedError('initialize() has not been implemented.');
   }
 
@@ -60,6 +62,66 @@ sealed class SystemEvent {
       _ => throw FormatException('Unsupported system event: ${map['type']}'),
     };
   }
+}
+
+final class SystemEventsConfig {
+  const SystemEventsConfig({
+    this.keyboard,
+    this.lifecycle,
+    this.network,
+    this.memory,
+    this.battery,
+  });
+
+  const SystemEventsConfig.defaults()
+    : keyboard = const KeyboardConfig(),
+      lifecycle = const LifecycleConfig(),
+      network = const NetworkConfig(),
+      memory = const MemoryConfig(),
+      battery = null;
+
+  const SystemEventsConfig.all()
+    : keyboard = const KeyboardConfig(),
+      lifecycle = const LifecycleConfig(),
+      network = const NetworkConfig(),
+      memory = const MemoryConfig(),
+      battery = const BatteryConfig();
+
+  final KeyboardConfig? keyboard;
+  final LifecycleConfig? lifecycle;
+  final NetworkConfig? network;
+  final MemoryConfig? memory;
+  final BatteryConfig? battery;
+
+  Map<String, bool> toMap() {
+    return {
+      'keyboard': keyboard != null,
+      'lifecycle': lifecycle != null,
+      'network': network != null,
+      'memory': memory != null,
+      'battery': battery != null,
+    };
+  }
+}
+
+final class KeyboardConfig {
+  const KeyboardConfig();
+}
+
+final class LifecycleConfig {
+  const LifecycleConfig();
+}
+
+final class NetworkConfig {
+  const NetworkConfig();
+}
+
+final class MemoryConfig {
+  const MemoryConfig();
+}
+
+final class BatteryConfig {
+  const BatteryConfig();
 }
 
 enum LifecycleState { resumed, inactive, paused, detached }

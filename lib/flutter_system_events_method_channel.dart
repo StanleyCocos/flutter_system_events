@@ -17,8 +17,10 @@ class MethodChannelFlutterSystemEvents extends FlutterSystemEventsPlatform {
       .map((event) => SystemEvent.fromMap(event as Map<dynamic, dynamic>));
 
   @override
-  Future<void> initialize() {
-    return methodChannel.invokeMethod<void>('initialize');
+  Future<void> initialize({
+    SystemEventsConfig config = const SystemEventsConfig.defaults(),
+  }) {
+    return methodChannel.invokeMethod<void>('initialize', config.toMap());
   }
 
   @override

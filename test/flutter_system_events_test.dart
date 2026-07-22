@@ -8,7 +8,9 @@ class MockFlutterSystemEventsPlatform
     with MockPlatformInterfaceMixin
     implements FlutterSystemEventsPlatform {
   @override
-  Future<void> initialize() async {}
+  Future<void> initialize({
+    SystemEventsConfig config = const SystemEventsConfig.defaults(),
+  }) async {}
 
   @override
   Future<void> dispose() async {}
