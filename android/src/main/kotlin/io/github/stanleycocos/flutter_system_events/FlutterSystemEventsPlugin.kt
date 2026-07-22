@@ -15,6 +15,8 @@ import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.os.BatteryManager
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.ViewTreeObserver
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -44,6 +46,7 @@ class FlutterSystemEventsPlugin :
     private var memoryCallbacks: ComponentCallbacks2? = null
     private var batteryReceiver: BroadcastReceiver? = null
     private var config = EventConfig.legacy()
+    private val mainHandler = Handler(Looper.getMainLooper())
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         appContext = flutterPluginBinding.applicationContext
@@ -128,6 +131,14 @@ class FlutterSystemEventsPlugin :
         stopBattery()
     }
 
+    private fun emitEvent(event: Map<String, Any>) {
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            events?.success(event)
+        } else {
+            mainHandler.post { events?.success(event) }
+        }
+    }
+
     private fun startLifecycle() {
         val currentActivity = activity ?: return
         val callbacks = object : Application.ActivityLifecycleCallbacks {
@@ -144,7 +155,7 @@ class FlutterSystemEventsPlugin :
     }
 
     private fun emitLifecycle(source: Activity, state: String) {
-        if (source == activity) events?.success(mapOf("type" to "lifecycle", "state" to state))
+        if (source == activity) emitEvent(mapOf("type" to "lifecycle", "state" to state))
     }
 
     private fun stopLifecycle() {
@@ -163,7 +174,7 @@ class FlutterSystemEventsPlugin :
             val visible = keyboardHeight > height * 0.15
             if (visible != keyboardVisible) {
                 keyboardVisible = visible
-                events?.success(
+                emitEvent(
                     mapOf(
                         "type" to "keyboard",
                         "visible" to visible,
@@ -205,7 +216,7 @@ class FlutterSystemEventsPlugin :
             capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> "ethernet"
             else -> "other"
         }
-        events?.success(mapOf("type" to "network", "online" to online, "networkType" to networkType))
+        emitEvent(mapOf("type" to "network", "online" to online, "networkType" to networkType))
     }
 
     private fun stopNetwork() {
@@ -226,7 +237,7 @@ class FlutterSystemEventsPlugin :
     }
 
     private fun emitMemory(state: String, level: Int) {
-        events?.success(mapOf("type" to "memory", "state" to state, "level" to level))
+        emitEvent(mapOf("type" to "memory", "state" to state, "level" to level))
     }
 
     private fun stopMemory() {
@@ -257,7 +268,7 @@ class FlutterSystemEventsPlugin :
             BatteryManager.BATTERY_STATUS_FULL -> "full"
             else -> "unknown"
         }
-        events?.success(
+        emitEvent(
             mapOf(
                 "type" to "battery",
                 "level" to percent,
