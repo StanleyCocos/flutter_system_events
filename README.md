@@ -2,7 +2,7 @@
 
 A small Flutter plugin for listening to system events with one API.
 
-Version `0.0.1` focuses on Android and iOS:
+Version `0.2.0` focuses on Android and iOS:
 
 - Keyboard show / hide / height
 - App lifecycle changes
@@ -15,7 +15,7 @@ Other platforms currently expose a no-op implementation.
 
 ```yaml
 dependencies:
-  flutter_system_events: ^0.0.1
+  flutter_system_events: ^0.2.0
 ```
 
 ## Usage
