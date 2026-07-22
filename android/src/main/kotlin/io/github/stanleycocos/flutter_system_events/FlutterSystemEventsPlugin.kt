@@ -1,4 +1,4 @@
-package com.example.flutter_system_events
+package io.github.stanleycocos.flutter_system_events
 
 import android.app.Activity
 import android.app.Application

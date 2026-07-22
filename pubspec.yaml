@@ -37,7 +37,7 @@ flutter:
   plugin:
     platforms:
       android:
-        package: com.example.flutter_system_events
+        package: io.github.stanleycocos.flutter_system_events
         pluginClass: FlutterSystemEventsPlugin
       ios:
         pluginClass: FlutterSystemEventsPlugin

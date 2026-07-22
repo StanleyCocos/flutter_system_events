@@ -1,4 +1,4 @@
-package com.example.flutter_system_events
+package io.github.stanleycocos.flutter_system_events
 
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
