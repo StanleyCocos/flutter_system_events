@@ -10,6 +10,7 @@ void main() {
     expect(find.text('Lifecycle'), findsOneWidget);
     expect(find.text('Network'), findsOneWidget);
     expect(find.text('Memory'), findsOneWidget);
+    expect(find.text('Battery'), findsOneWidget);
 
     await tester.tap(find.text('Keyboard'));
     await tester.pumpAndSettle();
@@ -57,6 +58,19 @@ void main() {
       find.text(
         'Memory warnings are emitted by the operating system under memory pressure.',
       ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('opens battery event page', (tester) async {
+    await tester.pumpWidget(const MyApp());
+
+    await tester.tap(find.text('Battery'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Battery Event'), findsOneWidget);
+    expect(
+      find.text('Plug or unplug power to trigger this event.'),
       findsOneWidget,
     );
   });

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'pages/battery_event_page.dart';
 import 'pages/keyboard_event_page.dart';
 import 'pages/lifecycle_event_page.dart';
 import 'pages/memory_event_page.dart';
@@ -71,6 +72,18 @@ class EventListPage extends StatelessWidget {
               Navigator.of(context).push(
                 MaterialPageRoute<void>(
                   builder: (_) => const MemoryEventPage(),
+                ),
+              );
+            },
+          ),
+          ListTile(
+            title: const Text('Battery'),
+            subtitle: const Text('Level, charging, state'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const BatteryEventPage(),
                 ),
               );
             },

@@ -2,12 +2,13 @@
 
 A small Flutter plugin for listening to system events with one API.
 
-Version `0.2.0` focuses on Android and iOS:
+Version `0.3.0` focuses on Android and iOS:
 
 - Keyboard show / hide / height
 - App lifecycle changes
 - Network status changes
 - Memory warnings
+- Battery level and charging state
 
 Other platforms currently expose a no-op implementation.
 
@@ -15,7 +16,7 @@ Other platforms currently expose a no-op implementation.
 
 ```yaml
 dependencies:
-  flutter_system_events: ^0.2.0
+  flutter_system_events: ^0.3.0
 ```
 
 ## Usage
@@ -40,6 +41,8 @@ Future<void> startSystemEvents() async {
         print('network online=$online type=${networkType.name}');
       case MemoryEvent(:final state, :final level):
         print('memory state=${state.name} level=$level');
+      case BatteryEvent(:final level, :final charging, :final state):
+        print('battery level=$level charging=$charging state=${state.name}');
     }
   });
 
@@ -50,6 +53,18 @@ Future<void> stopSystemEvents() async {
   await subscription?.cancel();
   await SystemEvents.dispose();
 }
+```
+
+By default, `initialize()` starts keyboard, lifecycle, network, and memory
+events. Enable only the events you need with a config:
+
+```dart
+await SystemEvents.initialize(
+  config: const SystemEventsConfig(
+    network: NetworkConfig(),
+    battery: BatteryConfig(),
+  ),
+);
 ```
 
 ## Events
@@ -123,6 +138,25 @@ States:
 - `low`
 - `trim`
 
+### BatteryEvent
+
+Emitted when battery level or charging state changes.
+
+```dart
+BatteryEvent(
+  level: 80,
+  charging: true,
+  state: BatteryState.charging,
+)
+```
+
+States:
+
+- `charging`
+- `discharging`
+- `full`
+- `unknown`
+
 ## Platform support
 
 | Event | Android | iOS | macOS | Windows | Linux | Web |
@@ -131,6 +165,7 @@ States:
 | Lifecycle | Yes | Yes | No-op | No-op | No-op | No-op |
 | Network | Yes | Yes | No-op | No-op | No-op | No-op |
 | Memory | Yes | Yes | No-op | No-op | No-op | No-op |
+| Battery | Yes | Yes | No-op | No-op | No-op | No-op |
 
 ## Example
 
@@ -147,5 +182,6 @@ The example includes separate pages for:
 - Lifecycle
 - Network
 - Memory
+- Battery
 
 Each page shows the latest event value at the top and provides a simple way to trigger or manually verify the event.

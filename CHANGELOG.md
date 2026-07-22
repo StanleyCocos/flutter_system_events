@@ -1,3 +1,9 @@
+## 0.3.0
+
+- Added configurable event initialization.
+- Added Android and iOS battery events.
+- Updated the example app with a battery event page.
+
 ## 0.2.0
 
 - Fixed Android package namespace.
