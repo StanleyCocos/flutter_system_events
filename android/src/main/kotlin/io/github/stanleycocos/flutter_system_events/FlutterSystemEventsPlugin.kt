@@ -38,6 +38,7 @@ class FlutterSystemEventsPlugin :
     private var keyboardVisible = false
     private var networkCallback: ConnectivityManager.NetworkCallback? = null
     private var memoryCallbacks: ComponentCallbacks2? = null
+    private var config = EventConfig.legacy()
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         appContext = flutterPluginBinding.applicationContext
@@ -53,6 +54,7 @@ class FlutterSystemEventsPlugin :
     ) {
         when (call.method) {
             "initialize" -> {
+                config = EventConfig.from(call.arguments)
                 initialized = true
                 startAll()
                 result.success(null)
@@ -106,10 +108,10 @@ class FlutterSystemEventsPlugin :
 
     private fun startAll() {
         stopAll()
-        startKeyboard()
-        startLifecycle()
-        startNetwork()
-        startMemory()
+        if (config.keyboard) startKeyboard()
+        if (config.lifecycle) startLifecycle()
+        if (config.network) startNetwork()
+        if (config.memory) startMemory()
     }
 
     private fun stopAll() {
@@ -223,5 +225,34 @@ class FlutterSystemEventsPlugin :
     private fun stopMemory() {
         memoryCallbacks?.let { appContext?.unregisterComponentCallbacks(it) }
         memoryCallbacks = null
+    }
+
+    private data class EventConfig(
+        val keyboard: Boolean,
+        val lifecycle: Boolean,
+        val network: Boolean,
+        val memory: Boolean,
+        val battery: Boolean,
+    ) {
+        companion object {
+            fun legacy() = EventConfig(
+                keyboard = true,
+                lifecycle = true,
+                network = true,
+                memory = true,
+                battery = false,
+            )
+
+            fun from(arguments: Any?): EventConfig {
+                val map = arguments as? Map<*, *> ?: return legacy()
+                return EventConfig(
+                    keyboard = map["keyboard"] == true,
+                    lifecycle = map["lifecycle"] == true,
+                    network = map["network"] == true,
+                    memory = map["memory"] == true,
+                    battery = map["battery"] == true,
+                )
+            }
+        }
     }
 }

@@ -6,6 +6,7 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
   private var events: FlutterEventSink?
   private var observers: [NSObjectProtocol] = []
   private var pathMonitor: NWPathMonitor?
+  private var config = EventConfig.legacy
 
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "flutter_system_events", binaryMessenger: registrar.messenger())
@@ -18,6 +19,7 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
     switch call.method {
     case "initialize":
+      config = EventConfig.from(call.arguments)
       startAll()
       result(nil)
     case "dispose":
@@ -41,10 +43,10 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
 
   private func startAll() {
     stopAll()
-    startKeyboard()
-    startLifecycle()
-    startNetwork()
-    startMemory()
+    if config.keyboard { startKeyboard() }
+    if config.lifecycle { startLifecycle() }
+    if config.network { startNetwork() }
+    if config.memory { startMemory() }
   }
 
   private func startKeyboard() {
@@ -104,5 +106,26 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
     }
     pathMonitor = monitor
     monitor.start(queue: DispatchQueue.global(qos: .utility))
+  }
+
+  private struct EventConfig {
+    let keyboard: Bool
+    let lifecycle: Bool
+    let network: Bool
+    let memory: Bool
+    let battery: Bool
+
+    static let legacy = EventConfig(keyboard: true, lifecycle: true, network: true, memory: true, battery: false)
+
+    static func from(_ arguments: Any?) -> EventConfig {
+      guard let map = arguments as? [String: Any] else { return legacy }
+      return EventConfig(
+        keyboard: map["keyboard"] as? Bool == true,
+        lifecycle: map["lifecycle"] as? Bool == true,
+        network: map["network"] as? Bool == true,
+        memory: map["memory"] as? Bool == true,
+        battery: map["battery"] as? Bool == true
+      )
+    }
   }
 }
