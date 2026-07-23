@@ -120,14 +120,16 @@ void main() {
     expect(hiddenEvent.height, 0);
   });
 
-  test('parses lifecycle event map', () {
-    final event = SystemEvent.fromMap({
-      'type': 'lifecycle',
-      'state': 'resumed',
-    });
+  test('parses lifecycle event maps', () {
+    for (final state in LifecycleState.values) {
+      final event = SystemEvent.fromMap({
+        'type': 'lifecycle',
+        'state': state.name,
+      });
 
-    expect(event, isA<LifecycleEvent>());
-    expect((event as LifecycleEvent).state, LifecycleState.resumed);
+      expect(event, isA<LifecycleEvent>());
+      expect((event as LifecycleEvent).state, state);
+    }
   });
 
   test('parses network event map', () {
