@@ -191,4 +191,22 @@ void main() {
       expect(event.state, entry.key);
     }
   });
+
+  test('throws format exception for unsupported event type', () {
+    expect(
+      () => SystemEvent.fromMap({'type': 'unknown'}),
+      throwsFormatException,
+    );
+  });
+
+  test('throws argument error for invalid enum values', () {
+    expect(
+      () => SystemEvent.fromMap({
+        'type': 'memory',
+        'state': 'invalid',
+        'level': 0,
+      }),
+      throwsArgumentError,
+    );
+  });
 }
