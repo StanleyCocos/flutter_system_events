@@ -76,6 +76,7 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
 
   private func startMemory() {
     observers.append(NotificationCenter.default.addObserver(forName: UIApplication.didReceiveMemoryWarningNotification, object: nil, queue: .main) { [weak self] _ in
+      print("[FlutterSystemEvents] memory callback: state=warning level=0")
       self?.events?(["type": "memory", "state": "warning", "level": 0])
     })
   }

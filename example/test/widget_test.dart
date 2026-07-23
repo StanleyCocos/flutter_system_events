@@ -60,6 +60,8 @@ void main() {
       ),
       findsOneWidget,
     );
+    expect(find.text('Start pressure'), findsOneWidget);
+    expect(find.text('Allocated: 0 MB / 20480 MB'), findsOneWidget);
   });
 
   testWidgets('opens battery event page', (tester) async {

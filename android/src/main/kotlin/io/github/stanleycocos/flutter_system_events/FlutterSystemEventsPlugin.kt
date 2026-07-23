@@ -17,6 +17,7 @@ import android.os.BatteryManager
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.ViewTreeObserver
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -237,6 +238,7 @@ class FlutterSystemEventsPlugin :
     }
 
     private fun emitMemory(state: String, level: Int) {
+        Log.d("FlutterSystemEvents", "memory callback: state=$state level=$level")
         emitEvent(mapOf("type" to "memory", "state" to state, "level" to level))
     }
 
