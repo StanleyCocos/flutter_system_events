@@ -17,7 +17,8 @@ export 'flutter_system_events_platform_interface.dart'
         NetworkEvent,
         NetworkType,
         SystemEvent,
-        SystemEventsConfig;
+        SystemEventsConfig,
+        UnknownSystemEvent;
 
 final class SystemEvents {
   const SystemEvents._();

@@ -42,30 +42,50 @@ abstract class FlutterSystemEventsPlatform extends PlatformInterface {
 sealed class SystemEvent {
   const SystemEvent();
 
+  factory SystemEvent.fromPayload(Object? payload) {
+    if (payload is Map<dynamic, dynamic>) return SystemEvent.fromMap(payload);
+    return UnknownSystemEvent(
+      rawPayload: payload,
+      reason: 'Expected an event map.',
+    );
+  }
+
   factory SystemEvent.fromMap(Map<dynamic, dynamic> map) {
-    return switch (map['type']) {
-      'keyboard' => KeyboardEvent(
-        visible: map['visible'] as bool,
-        height: (map['height'] as num).toDouble(),
-      ),
-      'lifecycle' => LifecycleEvent(
-        state: LifecycleState.values.byName(map['state'] as String),
-      ),
-      'network' => NetworkEvent(
-        online: map['online'] as bool,
-        networkType: NetworkType.values.byName(map['networkType'] as String),
-      ),
-      'memory' => MemoryEvent(
-        state: MemoryState.values.byName(map['state'] as String),
-        level: map['level'] as int,
-      ),
-      'battery' => BatteryEvent(
-        level: map['level'] as int,
-        charging: map['charging'] as bool,
-        state: BatteryState.values.byName(map['state'] as String),
-      ),
-      _ => throw FormatException('Unsupported system event: ${map['type']}'),
-    };
+    try {
+      return switch (map['type']) {
+        'keyboard' => KeyboardEvent(
+          visible: map['visible'] as bool,
+          height: (map['height'] as num).toDouble(),
+        ),
+        'lifecycle' => LifecycleEvent(
+          state: LifecycleState.values.byName(map['state'] as String),
+        ),
+        'network' => NetworkEvent(
+          online: map['online'] as bool,
+          networkType: NetworkType.values.byName(map['networkType'] as String),
+        ),
+        'memory' => MemoryEvent(
+          state: MemoryState.values.byName(map['state'] as String),
+          level: map['level'] as int,
+        ),
+        'battery' => BatteryEvent(
+          level: map['level'] as int,
+          charging: map['charging'] as bool,
+          state: BatteryState.values.byName(map['state'] as String),
+        ),
+        _ => UnknownSystemEvent(
+          rawPayload: map,
+          rawType: map['type'],
+          reason: 'Unsupported system event type.',
+        ),
+      };
+    } on Object catch (error) {
+      return UnknownSystemEvent(
+        rawPayload: map,
+        rawType: map['type'],
+        reason: 'Invalid system event payload: $error',
+      );
+    }
   }
 }
 
@@ -174,4 +194,16 @@ final class BatteryEvent extends SystemEvent {
   final int level;
   final bool charging;
   final BatteryState state;
+}
+
+final class UnknownSystemEvent extends SystemEvent {
+  const UnknownSystemEvent({
+    required this.rawPayload,
+    required this.reason,
+    this.rawType,
+  });
+
+  final Object? rawPayload;
+  final Object? rawType;
+  final String reason;
 }

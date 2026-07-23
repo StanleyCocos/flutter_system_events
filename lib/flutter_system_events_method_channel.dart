@@ -14,7 +14,7 @@ class MethodChannelFlutterSystemEvents extends FlutterSystemEventsPlatform {
 
   late final Stream<SystemEvent> _events = eventChannel
       .receiveBroadcastStream()
-      .map((event) => SystemEvent.fromMap(event as Map<dynamic, dynamic>));
+      .map(SystemEvent.fromPayload);
 
   @override
   Future<void> initialize({
