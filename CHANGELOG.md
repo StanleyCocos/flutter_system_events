@@ -1,3 +1,9 @@
+## 0.4.0
+
+- Added `UnknownSystemEvent` for unsupported or malformed event payloads.
+- Kept the event stream alive when native events cannot be parsed.
+- Documented robust event parsing behavior.
+
 ## 0.3.0
 
 - Added configurable event initialization.

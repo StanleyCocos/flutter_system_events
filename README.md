@@ -4,7 +4,8 @@
 
 A small Flutter plugin for listening to system events with one API.
 
-Version `0.3.0` focuses on Android, iOS, and browser-supported web events:
+Version `0.4.0` keeps the event stream alive when native payloads are unknown
+or malformed.
 
 - Keyboard show / hide / height
 - App lifecycle changes
@@ -18,7 +19,7 @@ Memory and battery events are not available on web.
 
 ```yaml
 dependencies:
-  flutter_system_events: ^0.3.0
+  flutter_system_events: ^0.4.0
 ```
 
 ## Usage
@@ -45,6 +46,8 @@ Future<void> startSystemEvents() async {
         print('memory state=${state.name} level=$level');
       case BatteryEvent(:final level, :final charging, :final state):
         print('battery level=$level charging=$charging state=${state.name}');
+      case UnknownSystemEvent(:final rawType, :final reason):
+        print('unknown event type=$rawType reason=$reason');
     }
   });
 
@@ -158,6 +161,17 @@ States:
 - `discharging`
 - `full`
 - `unknown`
+
+### UnknownSystemEvent
+
+Emitted when a native or web payload is unsupported or malformed. This keeps the
+stream alive when platforms add events before the Dart API understands them.
+
+Fields:
+
+- `rawPayload`: original payload received from the platform
+- `rawType`: original event type, when present
+- `reason`: why the payload could not be parsed as a known event
 
 ## Platform support
 

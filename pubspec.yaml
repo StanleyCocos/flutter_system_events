@@ -1,6 +1,6 @@
 name: flutter_system_events
 description: "A Flutter plugin for listening to keyboard, lifecycle, network, memory, and battery events on Android and iOS."
-version: 0.3.0
+version: 0.4.0
 repository: https://github.com/StanleyCocos/flutter_system_events
 
 environment:
