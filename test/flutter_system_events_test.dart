@@ -146,15 +146,24 @@ void main() {
     }
   });
 
-  test('parses memory event map', () {
-    final event = SystemEvent.fromMap({
-      'type': 'memory',
-      'state': 'warning',
-      'level': 0,
-    });
+  test('parses memory event maps', () {
+    final cases = {
+      MemoryState.warning: 0,
+      MemoryState.low: 0,
+      MemoryState.trim: 10,
+    };
 
-    expect(event, isA<MemoryEvent>());
-    expect((event as MemoryEvent).state, MemoryState.warning);
+    for (final entry in cases.entries) {
+      final event = SystemEvent.fromMap({
+        'type': 'memory',
+        'state': entry.key.name,
+        'level': entry.value,
+      });
+
+      expect(event, isA<MemoryEvent>());
+      expect((event as MemoryEvent).state, entry.key);
+      expect(event.level, entry.value);
+    }
   });
 
   test('parses battery event map', () {

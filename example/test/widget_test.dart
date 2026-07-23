@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:flutter_system_events_example/main.dart';
@@ -66,6 +66,31 @@ void main() {
     );
     expect(find.text('Start pressure'), findsOneWidget);
     expect(find.text('Allocated: 0 MB / 20480 MB'), findsOneWidget);
+
+    final release = find.widgetWithText(OutlinedButton, 'Release');
+    expect(tester.widget<OutlinedButton>(release).onPressed, isNull);
+
+    await tester.tap(find.text('Start pressure'));
+    await tester.pump();
+
+    expect(find.text('Pause'), findsOneWidget);
+
+    await tester.pump(const Duration(milliseconds: 250));
+
+    expect(find.text('Allocated: 32 MB / 20480 MB'), findsOneWidget);
+    expect(find.text('Block 1: 32 MB'), findsOneWidget);
+
+    await tester.tap(find.text('Pause'));
+    await tester.pump();
+
+    expect(find.text('Start pressure'), findsOneWidget);
+    expect(find.text('Allocated: 32 MB / 20480 MB'), findsOneWidget);
+
+    await tester.tap(release);
+    await tester.pump();
+
+    expect(find.text('Allocated: 0 MB / 20480 MB'), findsOneWidget);
+    expect(find.text('Block 1: 32 MB'), findsNothing);
   });
 
   testWidgets('opens battery event page', (tester) async {
