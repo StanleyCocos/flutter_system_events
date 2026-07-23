@@ -192,21 +192,47 @@ void main() {
     }
   });
 
-  test('throws format exception for unsupported event type', () {
-    expect(
-      () => SystemEvent.fromMap({'type': 'unknown'}),
-      throwsFormatException,
-    );
+  test('returns unknown event for unsupported event type', () {
+    final event = SystemEvent.fromMap({'type': 'unknown'});
+
+    expect(event, isA<UnknownSystemEvent>());
+    expect((event as UnknownSystemEvent).rawType, 'unknown');
   });
 
-  test('throws argument error for invalid enum values', () {
-    expect(
-      () => SystemEvent.fromMap({
-        'type': 'memory',
-        'state': 'invalid',
-        'level': 0,
-      }),
-      throwsArgumentError,
-    );
+  test('returns unknown event for invalid enum values', () {
+    final event = SystemEvent.fromMap({
+      'type': 'memory',
+      'state': 'invalid',
+      'level': 0,
+    });
+
+    expect(event, isA<UnknownSystemEvent>());
+    expect((event as UnknownSystemEvent).rawType, 'memory');
+  });
+
+  test('returns unknown event for missing fields', () {
+    final event = SystemEvent.fromMap({'type': 'keyboard'});
+
+    expect(event, isA<UnknownSystemEvent>());
+    expect((event as UnknownSystemEvent).rawType, 'keyboard');
+  });
+
+  test('returns unknown event for wrong field types', () {
+    final event = SystemEvent.fromMap({
+      'type': 'battery',
+      'level': '80',
+      'charging': true,
+      'state': 'charging',
+    });
+
+    expect(event, isA<UnknownSystemEvent>());
+    expect((event as UnknownSystemEvent).rawType, 'battery');
+  });
+
+  test('returns unknown event for non-map payloads', () {
+    final event = SystemEvent.fromPayload('invalid');
+
+    expect(event, isA<UnknownSystemEvent>());
+    expect((event as UnknownSystemEvent).rawPayload, 'invalid');
   });
 }

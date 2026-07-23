@@ -71,6 +71,7 @@ void main() {
   });
 
   test('events converts native maps to system events', () async {
+    final platform = MethodChannelFlutterSystemEvents();
     const eventChannel = EventChannel('flutter_system_events/events');
     await TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .handlePlatformMessage(
@@ -94,5 +95,28 @@ void main() {
         );
 
     expect(await event, isA<MemoryEvent>());
+  });
+
+  test('events converts non-map payloads to unknown events', () async {
+    final platform = MethodChannelFlutterSystemEvents();
+    const eventChannel = EventChannel('flutter_system_events/events');
+    await TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .handlePlatformMessage(
+          eventChannel.name,
+          const StandardMethodCodec().encodeMethodCall(
+            const MethodCall('listen', null),
+          ),
+          (_) {},
+        );
+
+    final event = platform.events.first;
+    await TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .handlePlatformMessage(
+          eventChannel.name,
+          const StandardMethodCodec().encodeSuccessEnvelope('invalid'),
+          (_) {},
+        );
+
+    expect(await event, isA<UnknownSystemEvent>());
   });
 }
