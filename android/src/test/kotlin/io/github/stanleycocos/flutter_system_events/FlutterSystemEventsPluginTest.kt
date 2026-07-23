@@ -16,4 +16,26 @@ internal class FlutterSystemEventsPluginTest {
 
         Mockito.verify(result).success(null)
     }
+
+    @Test
+    fun onMethodCall_dispose_returnsSuccess() {
+        val plugin = FlutterSystemEventsPlugin()
+        val call = MethodCall("dispose", null)
+        val result: MethodChannel.Result = Mockito.mock(MethodChannel.Result::class.java)
+
+        plugin.onMethodCall(call, result)
+
+        Mockito.verify(result).success(null)
+    }
+
+    @Test
+    fun onMethodCall_unknown_returnsNotImplemented() {
+        val plugin = FlutterSystemEventsPlugin()
+        val call = MethodCall("unknown", null)
+        val result: MethodChannel.Result = Mockito.mock(MethodChannel.Result::class.java)
+
+        plugin.onMethodCall(call, result)
+
+        Mockito.verify(result).notImplemented()
+    }
 }

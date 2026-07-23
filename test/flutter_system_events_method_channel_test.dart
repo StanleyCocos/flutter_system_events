@@ -69,4 +69,30 @@ void main() {
 
     expect(method, 'dispose');
   });
+
+  test('events converts native maps to system events', () async {
+    const eventChannel = EventChannel('flutter_system_events/events');
+    await TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .handlePlatformMessage(
+          eventChannel.name,
+          const StandardMethodCodec().encodeMethodCall(
+            const MethodCall('listen', null),
+          ),
+          (_) {},
+        );
+
+    final event = platform.events.first;
+    await TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .handlePlatformMessage(
+          eventChannel.name,
+          const StandardMethodCodec().encodeSuccessEnvelope({
+            'type': 'memory',
+            'state': 'trim',
+            'level': 10,
+          }),
+          (_) {},
+        );
+
+    expect(await event, isA<MemoryEvent>());
+  });
 }

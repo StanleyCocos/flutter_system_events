@@ -47,7 +47,7 @@ class FlutterSystemEventsPlugin :
     private var memoryCallbacks: ComponentCallbacks2? = null
     private var batteryReceiver: BroadcastReceiver? = null
     private var config = EventConfig.legacy()
-    private val mainHandler = Handler(Looper.getMainLooper())
+    private val mainHandler by lazy { Handler(Looper.getMainLooper()) }
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         appContext = flutterPluginBinding.applicationContext

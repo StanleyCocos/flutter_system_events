@@ -7,13 +7,20 @@ import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 class MockFlutterSystemEventsPlatform
     with MockPlatformInterfaceMixin
     implements FlutterSystemEventsPlatform {
+  SystemEventsConfig? initializedConfig;
+  var disposed = false;
+
   @override
   Future<void> initialize({
     SystemEventsConfig config = const SystemEventsConfig.defaults(),
-  }) async {}
+  }) async {
+    initializedConfig = config;
+  }
 
   @override
-  Future<void> dispose() async {}
+  Future<void> dispose() async {
+    disposed = true;
+  }
 
   @override
   Stream<SystemEvent> get events => Stream<SystemEvent>.value(
@@ -24,14 +31,73 @@ class MockFlutterSystemEventsPlatform
 void main() {
   final initialPlatform = FlutterSystemEventsPlatform.instance;
 
+  tearDown(() {
+    FlutterSystemEventsPlatform.instance = initialPlatform;
+  });
+
   test('$MethodChannelFlutterSystemEvents is the default instance', () {
     expect(initialPlatform, isInstanceOf<MethodChannelFlutterSystemEvents>());
+  });
+
+  test('initialize delegates to platform instance', () async {
+    final platform = MockFlutterSystemEventsPlatform();
+    FlutterSystemEventsPlatform.instance = platform;
+    const config = SystemEventsConfig(memory: MemoryConfig());
+
+    await SystemEvents.initialize(config: config);
+
+    expect(platform.initializedConfig, same(config));
+  });
+
+  test('dispose delegates to platform instance', () async {
+    final platform = MockFlutterSystemEventsPlatform();
+    FlutterSystemEventsPlatform.instance = platform;
+
+    await SystemEvents.dispose();
+
+    expect(platform.disposed, isTrue);
   });
 
   test('events exposes keyboard events', () async {
     FlutterSystemEventsPlatform.instance = MockFlutterSystemEventsPlatform();
 
     expect(await SystemEvents.events.single, isA<KeyboardEvent>());
+  });
+
+  test('default config enables legacy events', () {
+    expect(const SystemEventsConfig.defaults().toMap(), {
+      'keyboard': true,
+      'lifecycle': true,
+      'network': true,
+      'memory': true,
+      'battery': false,
+    });
+  });
+
+  test('all config enables every event', () {
+    expect(const SystemEventsConfig.all().toMap(), {
+      'keyboard': true,
+      'lifecycle': true,
+      'network': true,
+      'memory': true,
+      'battery': true,
+    });
+  });
+
+  test('custom config only enables configured events', () {
+    expect(
+      const SystemEventsConfig(
+        keyboard: KeyboardConfig(),
+        battery: BatteryConfig(),
+      ).toMap(),
+      {
+        'keyboard': true,
+        'lifecycle': false,
+        'network': false,
+        'memory': false,
+        'battery': true,
+      },
+    );
   });
 
   test('parses keyboard event map', () {
