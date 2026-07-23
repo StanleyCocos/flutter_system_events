@@ -2,6 +2,7 @@
 
 - Added configurable event initialization.
 - Added Android and iOS battery events.
+- Added web keyboard, lifecycle, and network events.
 - Updated the example app with a battery event page.
 
 ## 0.2.0

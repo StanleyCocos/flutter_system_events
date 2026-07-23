@@ -4,7 +4,7 @@
 
 A small Flutter plugin for listening to system events with one API.
 
-Version `0.3.0` focuses on Android and iOS:
+Version `0.3.0` focuses on Android, iOS, and browser-supported web events:
 
 - Keyboard show / hide / height
 - App lifecycle changes
@@ -12,7 +12,7 @@ Version `0.3.0` focuses on Android and iOS:
 - Memory warnings
 - Battery level and charging state
 
-Other platforms currently expose a no-op implementation.
+Memory and battery events are not available on web.
 
 ## Installation
 
@@ -163,9 +163,9 @@ States:
 
 | Event | Android | iOS | macOS | Windows | Linux | Web |
 | --- | --- | --- | --- | --- | --- | --- |
-| Keyboard | Yes | Yes | No-op | No-op | No-op | No-op |
-| Lifecycle | Yes | Yes | No-op | No-op | No-op | No-op |
-| Network | Yes | Yes | No-op | No-op | No-op | No-op |
+| Keyboard | Yes | Yes | No-op | No-op | No-op | Yes |
+| Lifecycle | Yes | Yes | No-op | No-op | No-op | Yes |
+| Network | Yes | Yes | No-op | No-op | No-op | Yes |
 | Memory | Yes | Yes | No-op | No-op | No-op | No-op |
 | Battery | Yes | Yes | No-op | No-op | No-op | No-op |
 
