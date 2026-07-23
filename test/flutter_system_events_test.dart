@@ -166,16 +166,29 @@ void main() {
     }
   });
 
-  test('parses battery event map', () {
-    final event = SystemEvent.fromMap({
-      'type': 'battery',
-      'level': 80,
-      'charging': true,
-      'state': 'charging',
-    });
+  test('parses battery event maps', () {
+    final cases = {
+      BatteryState.charging: true,
+      BatteryState.discharging: false,
+      BatteryState.full: true,
+      BatteryState.unknown: false,
+    };
 
-    expect(event, isA<BatteryEvent>());
-    expect((event as BatteryEvent).level, 80);
-    expect(event.state, BatteryState.charging);
+    for (final entry in cases.entries) {
+      final event = SystemEvent.fromMap({
+        'type': 'battery',
+        'level': entry.key == BatteryState.unknown ? -1 : 80,
+        'charging': entry.value,
+        'state': entry.key.name,
+      });
+
+      expect(event, isA<BatteryEvent>());
+      expect(
+        (event as BatteryEvent).level,
+        entry.key == BatteryState.unknown ? -1 : 80,
+      );
+      expect(event.charging, entry.value);
+      expect(event.state, entry.key);
+    }
   });
 }

@@ -104,5 +104,8 @@ void main() {
       find.text('Plug or unplug power to trigger this event.'),
       findsOneWidget,
     );
+    expect(find.text('level: -'), findsOneWidget);
+    expect(find.text('charging: -'), findsOneWidget);
+    expect(find.text('state: -'), findsOneWidget);
   });
 }
