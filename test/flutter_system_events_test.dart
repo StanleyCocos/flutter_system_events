@@ -132,15 +132,18 @@ void main() {
     }
   });
 
-  test('parses network event map', () {
-    final event = SystemEvent.fromMap({
-      'type': 'network',
-      'online': true,
-      'networkType': 'wifi',
-    });
+  test('parses network event maps', () {
+    for (final type in NetworkType.values) {
+      final event = SystemEvent.fromMap({
+        'type': 'network',
+        'online': type != NetworkType.none,
+        'networkType': type.name,
+      });
 
-    expect(event, isA<NetworkEvent>());
-    expect((event as NetworkEvent).networkType, NetworkType.wifi);
+      expect(event, isA<NetworkEvent>());
+      expect((event as NetworkEvent).online, type != NetworkType.none);
+      expect(event.networkType, type);
+    }
   });
 
   test('parses memory event map', () {

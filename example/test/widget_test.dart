@@ -47,6 +47,8 @@ void main() {
       find.text('Toggle Wi-Fi or cellular data to trigger this event.'),
       findsOneWidget,
     );
+    expect(find.text('online: -'), findsOneWidget);
+    expect(find.text('type: -'), findsOneWidget);
   });
 
   testWidgets('opens memory event page', (tester) async {
