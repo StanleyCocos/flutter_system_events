@@ -2,18 +2,22 @@
 
 [![pub package](https://img.shields.io/pub/v/flutter_system_events.svg)](https://pub.dev/packages/flutter_system_events)
 
-A small Flutter plugin for listening to system events with one API.
+A tiny Flutter plugin that turns common system signals into one typed stream.
 
 Version `0.4.0` keeps the event stream alive when native payloads are unknown
 or malformed.
 
-- Keyboard show / hide / height
-- App lifecycle changes
-- Network status changes
-- Memory warnings
-- Battery level and charging state
+- Show an offline banner from `NetworkEvent`
+- Refresh data when the app resumes from `LifecycleEvent`
+- Move input UI with keyboard height from `KeyboardEvent`
+- Clear app-owned caches from `MemoryEvent`
+- Reduce background work from `BatteryEvent`
 
-Memory and battery events are not available on web.
+Use this when you want one small API instead of wiring several platform-specific
+listeners or packages.
+
+Memory and battery events are not available on web. Desktop platforms currently
+register the plugin but do not emit events.
 
 ## Installation
 
@@ -24,11 +28,12 @@ dependencies:
 
 ## Usage
 
-Initialize once, then listen to the event stream.
+Initialize once, then listen to `SystemEvents.events`.
 
 ```dart
 import 'dart:async';
 
+import 'package:flutter/painting.dart';
 import 'package:flutter_system_events/flutter_system_events.dart';
 
 StreamSubscription<SystemEvent>? subscription;
@@ -39,11 +44,12 @@ Future<void> startSystemEvents() async {
       case KeyboardEvent(:final visible, :final height):
         print('keyboard visible=$visible height=$height');
       case LifecycleEvent(:final state):
-        print('lifecycle ${state.name}');
+        if (state == LifecycleState.resumed) print('refresh data');
       case NetworkEvent(:final online, :final networkType):
         print('network online=$online type=${networkType.name}');
-      case MemoryEvent(:final state, :final level):
-        print('memory state=${state.name} level=$level');
+      case MemoryEvent():
+        PaintingBinding.instance.imageCache.clear();
+        PaintingBinding.instance.imageCache.clearLiveImages();
       case BatteryEvent(:final level, :final charging, :final state):
         print('battery level=$level charging=$charging state=${state.name}');
       case UnknownSystemEvent(:final rawType, :final reason):
@@ -61,7 +67,13 @@ Future<void> stopSystemEvents() async {
 ```
 
 By default, `initialize()` starts keyboard, lifecycle, network, and memory
-events. Enable only the events you need with a config:
+events. Battery is opt-in:
+
+```dart
+await SystemEvents.initialize(config: const SystemEventsConfig.all());
+```
+
+Pass a custom config to enable only the events you need:
 
 ```dart
 await SystemEvents.initialize(
@@ -71,6 +83,9 @@ await SystemEvents.initialize(
   ),
 );
 ```
+
+Memory events are hints. The plugin reports pressure; your app decides what can
+be released safely.
 
 ## Events
 
