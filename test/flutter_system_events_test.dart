@@ -100,15 +100,24 @@ void main() {
     );
   });
 
-  test('parses keyboard event map', () {
-    final event = SystemEvent.fromMap({
+  test('parses keyboard event maps', () {
+    final visibleEvent = SystemEvent.fromMap({
       'type': 'keyboard',
       'visible': true,
       'height': 240,
     });
+    final hiddenEvent = SystemEvent.fromMap({
+      'type': 'keyboard',
+      'visible': false,
+      'height': 0,
+    });
 
-    expect(event, isA<KeyboardEvent>());
-    expect((event as KeyboardEvent).height, 240);
+    expect(visibleEvent, isA<KeyboardEvent>());
+    expect((visibleEvent as KeyboardEvent).visible, isTrue);
+    expect(visibleEvent.height, 240);
+    expect(hiddenEvent, isA<KeyboardEvent>());
+    expect((hiddenEvent as KeyboardEvent).visible, isFalse);
+    expect(hiddenEvent.height, 0);
   });
 
   test('parses lifecycle event map', () {

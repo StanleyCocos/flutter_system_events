@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:flutter_system_events_example/main.dart';
@@ -18,6 +19,7 @@ void main() {
     expect(find.text('Keyboard Event'), findsOneWidget);
     expect(find.text('Tap to show keyboard'), findsOneWidget);
     expect(find.text('Recent events'), findsOneWidget);
+    expect(find.byType(EditableText), findsOneWidget);
   });
 
   testWidgets('opens lifecycle event page', (tester) async {
