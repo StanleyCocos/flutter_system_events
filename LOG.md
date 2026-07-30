@@ -87,3 +87,19 @@
 - 结果：`./gradlew :flutter_system_events:testDebugUnitTest` passed. `flutter test` passed. Automated coverage includes normalization boundaries and Dart payload parsing; actual device brightness callback delivery remains manual/device verification.
 - 问题：无
 - 下一步：Commit Android brightness, then add supported iOS screen events.
+
+## 2026-07-30 15:18:54 +0800 - Start iOS Screen Events
+- 当前任务：7. Add supported iOS screen events, tests or recorded limits, run tests, commit.
+- 操作：Checked iOS package/test structure. The plugin package has no XCTest target; only the example app has a placeholder Runner test.
+- 原因：Need to decide the smallest useful verification for iOS without creating a heavy test harness.
+- 结果：Will implement iOS brightness and protected-data available events, then run Dart tests and an iOS build for compile coverage.
+- 问题：No reliable public iOS screen off/on event; no existing plugin XCTest target.
+- 下一步：Implement supported iOS screen events.
+
+## 2026-07-30 15:20:47 +0800 - Complete iOS Screen Events
+- 当前任务：7. Add supported iOS screen events, tests or recorded limits, run tests, commit.
+- 操作：Added iOS `screen` config handling, `UIScreen.brightnessDidChangeNotification` for brightness, and `UIApplication.protectedDataDidBecomeAvailableNotification` for unlocked.
+- 原因：These are the supported public iOS equivalents for requested screen-related signals.
+- 结果：`flutter test` passed. `flutter build ios --no-codesign` in the example app passed and built `Runner.app`; generated Pods/Xcode project changes from the build were removed from the working tree before commit.
+- 问题：No iOS XCTest target exists for the plugin; iOS off/on are intentionally unsupported because there is no reliable public event.
+- 下一步：Commit iOS support, then add the example Screen page with widget and integration tests.

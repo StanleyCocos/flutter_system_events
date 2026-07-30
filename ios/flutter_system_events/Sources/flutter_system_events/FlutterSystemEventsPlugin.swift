@@ -53,6 +53,7 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
     if config.battery { startBattery() }
     if config.orientation { startOrientation() }
     if config.time { startTime() }
+    if config.screen { startScreen() }
   }
 
   private func startKeyboard() {
@@ -191,6 +192,15 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
     })
   }
 
+  private func startScreen() {
+    observers.append(NotificationCenter.default.addObserver(forName: UIScreen.brightnessDidChangeNotification, object: nil, queue: .main) { [weak self] _ in
+      self?.events?(["type": "screen", "change": "brightness", "brightness": UIScreen.main.brightness])
+    })
+    observers.append(NotificationCenter.default.addObserver(forName: UIApplication.protectedDataDidBecomeAvailableNotification, object: nil, queue: .main) { [weak self] _ in
+      self?.events?(["type": "screen", "change": "unlocked"])
+    })
+  }
+
   private struct EventConfig {
     let keyboard: Bool
     let lifecycle: Bool
@@ -199,8 +209,9 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
     let battery: Bool
     let orientation: Bool
     let time: Bool
+    let screen: Bool
 
-    static let legacy = EventConfig(keyboard: true, lifecycle: true, network: true, memory: true, battery: false, orientation: true, time: true)
+    static let legacy = EventConfig(keyboard: true, lifecycle: true, network: true, memory: true, battery: false, orientation: true, time: true, screen: true)
 
     static func from(_ arguments: Any?) -> EventConfig {
       guard let map = arguments as? [String: Any] else { return legacy }
@@ -211,7 +222,8 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
         memory: map["memory"] as? Bool == true,
         battery: map["battery"] as? Bool == true,
         orientation: map["orientation"] as? Bool == true,
-        time: map["time"] as? Bool == true
+        time: map["time"] as? Bool == true,
+        screen: map["screen"] as? Bool == true
       )
     }
   }
