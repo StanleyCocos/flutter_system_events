@@ -319,7 +319,9 @@ class FlutterSystemEventsPlugin :
 
     private fun startScreen() {
         val context = appContext ?: return
-        val filter = IntentFilter(Intent.ACTION_SCREEN_OFF)
+        val filter = IntentFilter(Intent.ACTION_SCREEN_OFF).apply {
+            addAction(Intent.ACTION_SCREEN_ON)
+        }
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
                 emitEvent(mapOf("type" to "screen", "change" to screenChangeFromAction(intent.action)))
@@ -416,5 +418,6 @@ internal fun timeReasonFromAction(action: String?): String = when (action) {
 
 internal fun screenChangeFromAction(action: String?): String = when (action) {
     Intent.ACTION_SCREEN_OFF -> "off"
+    Intent.ACTION_SCREEN_ON -> "on"
     else -> "unknown"
 }

@@ -62,4 +62,9 @@ internal class FlutterSystemEventsPluginTest {
     fun screenChangeFromAction_mapsScreenOff() {
         assertEquals("off", screenChangeFromAction(Intent.ACTION_SCREEN_OFF))
     }
+
+    @Test
+    fun screenChangeFromAction_mapsScreenOn() {
+        assertEquals("on", screenChangeFromAction(Intent.ACTION_SCREEN_ON))
+    }
 }

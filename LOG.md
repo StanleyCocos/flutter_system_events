@@ -39,3 +39,19 @@
 - 结果：`./gradlew :flutter_system_events:testDebugUnitTest` passed. `flutter test` passed. Integration coverage for this step is Dart payload parsing plus MethodChannel config; native broadcast delivery still needs device/manual verification.
 - 问题：Directly running Gradle from `android/` cannot resolve Android plugin versions; the working command is the example project Gradle task.
 - 下一步：Commit Android screen off, then add Android screen on with tests first.
+
+## 2026-07-30 14:47:41 +0800 - Start Android Screen On
+- 当前任务：4. Add Android screen on event, tests, run tests, commit.
+- 操作：Starting with a Kotlin unit test for mapping `ACTION_SCREEN_ON` to the Dart `on` change.
+- 原因：Screen on is a separate event dimension and should remain an independent commit.
+- 结果：准备添加失败测试。
+- 问题：无
+- 下一步：Run Android unit test to confirm current implementation returns `unknown`.
+
+## 2026-07-30 15:15:12 +0800 - Complete Android Screen On
+- 当前任务：4. Add Android screen on event, tests, run tests, commit.
+- 操作：Confirmed the new Android unit test failed because `ACTION_SCREEN_ON` mapped to `unknown`. Added the action to the screen receiver filter and mapped it to `on`.
+- 原因：Screen on is a separate Android screen dimension.
+- 结果：`./gradlew :flutter_system_events:testDebugUnitTest` passed. `flutter test` passed. Broadcast delivery still needs device/manual verification.
+- 问题：无
+- 下一步：Commit Android screen on, then add Android unlock with tests first.
