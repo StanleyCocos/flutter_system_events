@@ -5,6 +5,7 @@ import 'pages/keyboard_event_page.dart';
 import 'pages/lifecycle_event_page.dart';
 import 'pages/memory_event_page.dart';
 import 'pages/network_event_page.dart';
+import 'pages/orientation_event_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -84,6 +85,18 @@ class EventListPage extends StatelessWidget {
               Navigator.of(context).push(
                 MaterialPageRoute<void>(
                   builder: (_) => const BatteryEventPage(),
+                ),
+              );
+            },
+          ),
+          ListTile(
+            title: const Text('Orientation'),
+            subtitle: const Text('Portrait, landscape, direction'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const OrientationEventPage(),
                 ),
               );
             },

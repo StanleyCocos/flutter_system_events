@@ -12,6 +12,7 @@ void main() {
     expect(find.text('Network'), findsOneWidget);
     expect(find.text('Memory'), findsOneWidget);
     expect(find.text('Battery'), findsOneWidget);
+    expect(find.text('Orientation'), findsOneWidget);
 
     await tester.tap(find.text('Keyboard'));
     await tester.pumpAndSettle();
@@ -107,5 +108,19 @@ void main() {
     expect(find.text('level: -'), findsOneWidget);
     expect(find.text('charging: -'), findsOneWidget);
     expect(find.text('state: -'), findsOneWidget);
+  });
+
+  testWidgets('opens orientation event page', (tester) async {
+    await tester.pumpWidget(const MyApp());
+
+    await tester.tap(find.text('Orientation'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Orientation Event'), findsOneWidget);
+    expect(
+      find.text('Rotate the device to trigger this event.'),
+      findsOneWidget,
+    );
+    expect(find.text('orientation: -'), findsOneWidget);
   });
 }

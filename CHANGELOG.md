@@ -1,3 +1,8 @@
+## Unreleased
+
+- Added Android and iOS orientation events.
+- Added an orientation event page to the example app.
+
 ## 0.4.0
 
 - Added `UnknownSystemEvent` for unsupported or malformed event payloads.

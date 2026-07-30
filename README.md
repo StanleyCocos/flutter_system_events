@@ -10,7 +10,8 @@ Version `0.4.0` keeps the event stream alive when native payloads are unknown
 or malformed.
 
 In real apps, I often need to listen to small pieces of system state: network
-changes, app lifecycle, keyboard height, memory pressure, battery state, and so
+changes, app lifecycle, keyboard height, memory pressure, battery state,
+orientation changes, and so
 on. Each one can be solved with a separate package, but pulling in several
 plugins just to watch a few events can feel heavier than the problem needs.
 
@@ -23,6 +24,7 @@ types you need, so unused listeners do not waste resources.
 - Move input UI with keyboard height from `KeyboardEvent`
 - Clear app-owned caches from `MemoryEvent`
 - Reduce background work from `BatteryEvent`
+- Adapt layouts from `OrientationEvent`
 
 Use this when you want one small API instead of wiring several
 platform-specific listeners or packages.
@@ -36,6 +38,7 @@ platform-specific listeners or packages.
 | Network | Yes | Yes | In progress | In progress | In progress | Yes |
 | Memory | Yes | Yes | In progress | In progress | In progress | In progress |
 | Battery | Yes | Yes | In progress | In progress | In progress | In progress |
+| Orientation | Yes | Yes | In progress | In progress | In progress | In progress |
 
 ## Installation
 
@@ -70,6 +73,8 @@ Future<void> startSystemEvents() async {
         PaintingBinding.instance.imageCache.clearLiveImages();
       case BatteryEvent(:final level, :final charging, :final state):
         print('battery level=$level charging=$charging state=${state.name}');
+      case OrientationEvent(:final orientation):
+        print('orientation=${orientation.name}');
       case UnknownSystemEvent(:final rawType, :final reason):
         print('unknown event type=$rawType reason=$reason');
     }
@@ -84,8 +89,8 @@ Future<void> stopSystemEvents() async {
 }
 ```
 
-By default, `initialize()` starts keyboard, lifecycle, network, and memory
-events. Battery is opt-in:
+By default, `initialize()` starts keyboard, lifecycle, network, memory, and
+orientation events. Battery is opt-in:
 
 ```dart
 await SystemEvents.initialize(config: const SystemEventsConfig.all());
@@ -121,5 +126,6 @@ The example includes separate pages for:
 - Network
 - Memory
 - Battery
+- Orientation
 
 Each page shows the latest event value at the top and provides a simple way to trigger or manually verify the event.
