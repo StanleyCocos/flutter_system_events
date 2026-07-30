@@ -135,3 +135,19 @@
 - 结果：`flutter test` passed.
 - 问题：无
 - 下一步：Commit docs, then run final review and verification.
+
+## 2026-07-30 15:25:39 +0800 - Start Final Review
+- 当前任务：10. Final review of TODO/LOG, run final verification, commit if task files changed.
+- 操作：Starting final verification across root tests, Android unit tests, example widget tests, and example integration tests.
+- 原因：Final delivery needs fresh evidence after all commits.
+- 结果：准备运行验证命令。
+- 问题：无
+- 下一步：Run final verification commands.
+
+## 2026-07-30 15:26:35 +0800 - Complete Final Review
+- 当前任务：10. Final review of TODO/LOG, run final verification, commit if task files changed.
+- 操作：Ran final verification commands and reviewed commit split.
+- 原因：Final delivery requires fresh evidence and a clean handoff.
+- 结果：`flutter test` passed. `./gradlew :flutter_system_events:testDebugUnitTest` passed. `flutter test test/widget_test.dart` in `example/` passed. `flutter test integration_test/plugin_integration_test.dart -d macos` passed. Previous iOS compile verification also passed with `flutter build ios --no-codesign`.
+- 问题：macOS integration test build emits existing deployment-target/privacy warnings, but exits successfully. Device-level Android broadcast and iOS notification delivery still require manual validation on real devices.
+- 下一步：Commit final task-file updates and deliver summary.
