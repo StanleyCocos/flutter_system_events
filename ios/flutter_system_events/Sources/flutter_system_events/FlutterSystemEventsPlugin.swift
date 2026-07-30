@@ -8,6 +8,8 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
   private var pathMonitor: NWPathMonitor?
   private var config = EventConfig.legacy
   private var previousBatteryMonitoring: Bool?
+  private var previousOrientationNotifications: Bool?
+  private var lastOrientation: String?
 
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "flutter_system_events", binaryMessenger: registrar.messenger())
@@ -49,6 +51,7 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
     if config.network { startNetwork() }
     if config.memory { startMemory() }
     if config.battery { startBattery() }
+    if config.orientation { startOrientation() }
   }
 
   private func startKeyboard() {
@@ -87,6 +90,7 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
     pathMonitor?.cancel()
     pathMonitor = nil
     stopBattery()
+    stopOrientation()
   }
 
   private func startNetwork() {
@@ -150,14 +154,39 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
     }
   }
 
+  private func startOrientation() {
+    previousOrientationNotifications = UIDevice.current.isGeneratingDeviceOrientationNotifications
+    UIDevice.current.beginGeneratingDeviceOrientationNotifications()
+    observers.append(NotificationCenter.default.addObserver(forName: UIDevice.orientationDidChangeNotification, object: nil, queue: .main) { [weak self] _ in
+      self?.emitOrientation()
+    })
+    emitOrientation()
+  }
+
+  private func emitOrientation() {
+    let orientation = orientationName(from: UIDevice.current.orientation)
+    if orientation == lastOrientation { return }
+    lastOrientation = orientation
+    events?(["type": "orientation", "orientation": orientation])
+  }
+
+  private func stopOrientation() {
+    if previousOrientationNotifications == false {
+      UIDevice.current.endGeneratingDeviceOrientationNotifications()
+    }
+    previousOrientationNotifications = nil
+    lastOrientation = nil
+  }
+
   private struct EventConfig {
     let keyboard: Bool
     let lifecycle: Bool
     let network: Bool
     let memory: Bool
     let battery: Bool
+    let orientation: Bool
 
-    static let legacy = EventConfig(keyboard: true, lifecycle: true, network: true, memory: true, battery: false)
+    static let legacy = EventConfig(keyboard: true, lifecycle: true, network: true, memory: true, battery: false, orientation: true)
 
     static func from(_ arguments: Any?) -> EventConfig {
       guard let map = arguments as? [String: Any] else { return legacy }
@@ -166,8 +195,24 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
         lifecycle: map["lifecycle"] as? Bool == true,
         network: map["network"] as? Bool == true,
         memory: map["memory"] as? Bool == true,
-        battery: map["battery"] as? Bool == true
+        battery: map["battery"] as? Bool == true,
+        orientation: map["orientation"] as? Bool == true
       )
     }
+  }
+}
+
+func orientationName(from orientation: UIDeviceOrientation) -> String {
+  switch orientation {
+  case .portrait:
+    return "portraitUp"
+  case .portraitUpsideDown:
+    return "portraitDown"
+  case .landscapeLeft:
+    return "landscapeLeft"
+  case .landscapeRight:
+    return "landscapeRight"
+  default:
+    return "unknown"
   }
 }
