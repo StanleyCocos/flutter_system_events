@@ -5,44 +5,27 @@
 
 [中文文档](README.zh-CN.md)
 
-A lightweight, all-around system monitoring plugin for Flutter.
-
-Version `0.7.0` adds screen events.
-
-In real apps, I often need to listen to small pieces of system state: network
-changes, app lifecycle, keyboard height, memory pressure, battery state,
-orientation changes, time changes, screen state, and so
-on. Each one can be solved with a separate package, but pulling in several
-plugins just to watch a few events can feel heavier than the problem needs.
-
-`flutter_system_events` exists for that case. It only listens for system events
-and exposes them through one small, typed API. You can also enable only the event
-types you need, so unused listeners do not waste resources.
-
-- Show an offline banner from `NetworkEvent`
-- Refresh data when the app resumes from `LifecycleEvent`
-- Move input UI with keyboard height from `KeyboardEvent`
-- Clear app-owned caches from `MemoryEvent`
-- Reduce background work from `BatteryEvent`
-- Adapt layouts from `OrientationEvent`
-- Refresh date-sensitive UI from `TimeEvent`
-- React to screen state or brightness from `ScreenEvent`
-
-Use this when you want one small API instead of wiring several
-platform-specific listeners or packages.
+A Flutter plugin for listening to system events through one small typed API.
 
 ## Platform support
 
-| Event | Android | iOS | macOS | Windows | Linux | Web |
-| --- | --- | --- | --- | --- | --- | --- |
-| Keyboard | Yes | Yes | Yes | In progress | In progress | Yes |
-| Lifecycle | Yes | Yes | In progress | In progress | In progress | Yes |
-| Network | Yes | Yes | In progress | In progress | In progress | Yes |
-| Memory | Yes | Yes | In progress | In progress | In progress | In progress |
-| Battery | Yes | Yes | In progress | In progress | In progress | In progress |
-| Orientation | Yes | Yes | In progress | In progress | In progress | In progress |
-| Time | Yes | Yes | In progress | In progress | In progress | In progress |
-| Screen | Yes | Partial: unlock, brightness | In progress | In progress | In progress | In progress |
+| Event | Properties | Android | iOS | macOS | Windows | Linux | Web |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `KeyboardEvent` | `visible`, `height` | Yes | Yes | Yes | In progress | In progress | Yes |
+| `LifecycleEvent` | `state` | Yes | Yes | In progress | In progress | In progress | Yes |
+| `NetworkEvent` | `online`, `networkType` | Yes | Yes | In progress | In progress | In progress | Yes |
+| `MemoryEvent` | `state`, `level` | Yes | Yes | In progress | In progress | In progress | In progress |
+| `BatteryEvent` | `level`, `charging`, `state` | Yes | Yes | In progress | In progress | In progress | In progress |
+| `OrientationEvent` | `orientation` | Yes | Yes | In progress | In progress | In progress | In progress |
+| `TimeEvent` | `reason` | Yes | Yes | In progress | In progress | In progress | In progress |
+| `ScreenEvent` | `change`, `brightness` | Yes | Partial: unlocked, brightness | In progress | In progress | In progress | In progress |
+
+Memory events are hints. The plugin reports pressure; your app decides what can
+be released safely.
+
+Android screen events include off, on, unlocked, and brightness changes. iOS
+supports unlocked and brightness changes; iOS does not expose reliable public
+screen off/on notifications for apps.
 
 ## Installation
 
@@ -114,32 +97,3 @@ await SystemEvents.initialize(
   ),
 );
 ```
-
-Memory events are hints. The plugin reports pressure; your app decides what can
-be released safely.
-
-Android screen events include off, on, unlocked, and brightness changes. iOS
-supports unlocked and brightness changes; iOS does not expose reliable public
-screen off/on notifications for apps.
-
-## Example
-
-Run the example app and open each event page:
-
-```sh
-cd example
-flutter run
-```
-
-The example includes separate pages for:
-
-- Keyboard
-- Lifecycle
-- Network
-- Memory
-- Battery
-- Orientation
-- Time
-- Screen
-
-Each page shows the latest event value at the top and provides a simple way to trigger or manually verify the event.
