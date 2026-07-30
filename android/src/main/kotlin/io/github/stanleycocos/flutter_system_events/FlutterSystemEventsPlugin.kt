@@ -47,6 +47,7 @@ class FlutterSystemEventsPlugin :
     private var networkCallback: ConnectivityManager.NetworkCallback? = null
     private var memoryCallbacks: ComponentCallbacks2? = null
     private var batteryReceiver: BroadcastReceiver? = null
+    private var timeReceiver: BroadcastReceiver? = null
     private var orientationCallbacks: ComponentCallbacks2? = null
     private var lastOrientation: String? = null
     private var config = EventConfig.legacy()
@@ -126,6 +127,7 @@ class FlutterSystemEventsPlugin :
         if (config.memory) startMemory()
         if (config.battery) startBattery()
         if (config.orientation) startOrientation()
+        if (config.time) startTime()
     }
 
     private fun stopAll() {
@@ -135,6 +137,7 @@ class FlutterSystemEventsPlugin :
         stopMemory()
         stopBattery()
         stopOrientation()
+        stopTime()
     }
 
     private fun emitEvent(event: Map<String, Any>) {
@@ -290,6 +293,27 @@ class FlutterSystemEventsPlugin :
         batteryReceiver = null
     }
 
+    private fun startTime() {
+        val context = appContext ?: return
+        val filter = IntentFilter().apply {
+            addAction(Intent.ACTION_TIME_CHANGED)
+            addAction(Intent.ACTION_TIMEZONE_CHANGED)
+            addAction(Intent.ACTION_DATE_CHANGED)
+        }
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                emitEvent(mapOf("type" to "time", "reason" to timeReasonFromAction(intent.action)))
+            }
+        }
+        timeReceiver = receiver
+        context.registerReceiver(receiver, filter)
+    }
+
+    private fun stopTime() {
+        timeReceiver?.let { appContext?.unregisterReceiver(it) }
+        timeReceiver = null
+    }
+
     private fun startOrientation() {
         val context = appContext ?: return
         val callbacks = object : ComponentCallbacks2 {
@@ -323,6 +347,7 @@ class FlutterSystemEventsPlugin :
         val memory: Boolean,
         val battery: Boolean,
         val orientation: Boolean,
+        val time: Boolean,
     ) {
         companion object {
             fun legacy() = EventConfig(
@@ -332,6 +357,7 @@ class FlutterSystemEventsPlugin :
                 memory = true,
                 battery = false,
                 orientation = true,
+                time = true,
             )
 
             fun from(arguments: Any?): EventConfig {
@@ -343,6 +369,7 @@ class FlutterSystemEventsPlugin :
                     memory = map["memory"] == true,
                     battery = map["battery"] == true,
                     orientation = map["orientation"] == true,
+                    time = map["time"] == true,
                 )
             }
         }
@@ -354,5 +381,12 @@ internal fun orientationNameFromRotation(rotation: Int?): String = when (rotatio
     Surface.ROTATION_90 -> "landscapeLeft"
     Surface.ROTATION_180 -> "portraitDown"
     Surface.ROTATION_270 -> "landscapeRight"
+    else -> "unknown"
+}
+
+internal fun timeReasonFromAction(action: String?): String = when (action) {
+    Intent.ACTION_TIME_CHANGED -> "timeChanged"
+    Intent.ACTION_TIMEZONE_CHANGED -> "timezoneChanged"
+    Intent.ACTION_DATE_CHANGED -> "dateChanged"
     else -> "unknown"
 }

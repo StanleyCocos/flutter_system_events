@@ -48,4 +48,12 @@ internal class FlutterSystemEventsPluginTest {
         assertEquals("landscapeRight", orientationNameFromRotation(3))
         assertEquals("unknown", orientationNameFromRotation(-1))
     }
+
+    @Test
+    fun timeReasonFromAction_mapsAndroidActions() {
+        assertEquals("timeChanged", timeReasonFromAction("android.intent.action.TIME_SET"))
+        assertEquals("timezoneChanged", timeReasonFromAction("android.intent.action.TIMEZONE_CHANGED"))
+        assertEquals("dateChanged", timeReasonFromAction("android.intent.action.DATE_CHANGED"))
+        assertEquals("unknown", timeReasonFromAction(null))
+    }
 }
