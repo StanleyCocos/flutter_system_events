@@ -15,7 +15,7 @@
 ## Tasks
 - [x] 1. Initialize auto-iterator task files and commit the iteration plan.
 - [x] 2. Add Dart screen event API, tests, run tests, commit.
-- [ ] 3. Add Android screen off event, tests, run tests, commit.
+- [x] 3. Add Android screen off event, tests, run tests, commit.
 - [ ] 4. Add Android screen on event, tests, run tests, commit.
 - [ ] 5. Add Android unlock event, tests, run tests, commit.
 - [ ] 6. Add Android brightness event, tests, run tests, commit.
@@ -25,7 +25,7 @@
 - [ ] 10. Final review of TODO/LOG, run final verification, commit if task files changed.
 
 ## Current Step
-- 当前执行：3. Add Android screen off event, tests, run tests, commit.
+- 当前执行：4. Add Android screen on event, tests, run tests, commit.
 
 ## Blockers
 - 无

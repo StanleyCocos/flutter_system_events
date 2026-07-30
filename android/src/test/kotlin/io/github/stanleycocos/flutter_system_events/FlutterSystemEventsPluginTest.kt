@@ -3,6 +3,7 @@ package io.github.stanleycocos.flutter_system_events
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import org.mockito.Mockito
+import android.content.Intent
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -55,5 +56,10 @@ internal class FlutterSystemEventsPluginTest {
         assertEquals("timezoneChanged", timeReasonFromAction("android.intent.action.TIMEZONE_CHANGED"))
         assertEquals("dateChanged", timeReasonFromAction("android.intent.action.DATE_CHANGED"))
         assertEquals("unknown", timeReasonFromAction(null))
+    }
+
+    @Test
+    fun screenChangeFromAction_mapsScreenOff() {
+        assertEquals("off", screenChangeFromAction(Intent.ACTION_SCREEN_OFF))
     }
 }

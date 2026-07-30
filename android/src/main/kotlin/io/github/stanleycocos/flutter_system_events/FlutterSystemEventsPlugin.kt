@@ -48,6 +48,7 @@ class FlutterSystemEventsPlugin :
     private var memoryCallbacks: ComponentCallbacks2? = null
     private var batteryReceiver: BroadcastReceiver? = null
     private var timeReceiver: BroadcastReceiver? = null
+    private var screenReceiver: BroadcastReceiver? = null
     private var orientationCallbacks: ComponentCallbacks2? = null
     private var lastOrientation: String? = null
     private var config = EventConfig.legacy()
@@ -128,6 +129,7 @@ class FlutterSystemEventsPlugin :
         if (config.battery) startBattery()
         if (config.orientation) startOrientation()
         if (config.time) startTime()
+        if (config.screen) startScreen()
     }
 
     private fun stopAll() {
@@ -138,6 +140,7 @@ class FlutterSystemEventsPlugin :
         stopBattery()
         stopOrientation()
         stopTime()
+        stopScreen()
     }
 
     private fun emitEvent(event: Map<String, Any>) {
@@ -314,6 +317,23 @@ class FlutterSystemEventsPlugin :
         timeReceiver = null
     }
 
+    private fun startScreen() {
+        val context = appContext ?: return
+        val filter = IntentFilter(Intent.ACTION_SCREEN_OFF)
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                emitEvent(mapOf("type" to "screen", "change" to screenChangeFromAction(intent.action)))
+            }
+        }
+        screenReceiver = receiver
+        context.registerReceiver(receiver, filter)
+    }
+
+    private fun stopScreen() {
+        screenReceiver?.let { appContext?.unregisterReceiver(it) }
+        screenReceiver = null
+    }
+
     private fun startOrientation() {
         val context = appContext ?: return
         val callbacks = object : ComponentCallbacks2 {
@@ -348,6 +368,7 @@ class FlutterSystemEventsPlugin :
         val battery: Boolean,
         val orientation: Boolean,
         val time: Boolean,
+        val screen: Boolean,
     ) {
         companion object {
             fun legacy() = EventConfig(
@@ -358,6 +379,7 @@ class FlutterSystemEventsPlugin :
                 battery = false,
                 orientation = true,
                 time = true,
+                screen = true,
             )
 
             fun from(arguments: Any?): EventConfig {
@@ -370,6 +392,7 @@ class FlutterSystemEventsPlugin :
                     battery = map["battery"] == true,
                     orientation = map["orientation"] == true,
                     time = map["time"] == true,
+                    screen = map["screen"] == true,
                 )
             }
         }
@@ -388,5 +411,10 @@ internal fun timeReasonFromAction(action: String?): String = when (action) {
     Intent.ACTION_TIME_CHANGED -> "timeChanged"
     Intent.ACTION_TIMEZONE_CHANGED -> "timezoneChanged"
     Intent.ACTION_DATE_CHANGED -> "dateChanged"
+    else -> "unknown"
+}
+
+internal fun screenChangeFromAction(action: String?): String = when (action) {
+    Intent.ACTION_SCREEN_OFF -> "off"
     else -> "unknown"
 }
