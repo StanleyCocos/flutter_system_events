@@ -9,6 +9,7 @@ class MethodChannelFlutterSystemEvents extends FlutterSystemEventsPlatform {
   @visibleForTesting
   final methodChannel = const MethodChannel('flutter_system_events');
 
+  /// The event channel used to receive native system events.
   @visibleForTesting
   final eventChannel = const EventChannel('flutter_system_events/events');
 
