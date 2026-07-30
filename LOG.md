@@ -119,3 +119,19 @@
 - 结果：`flutter test test/widget_test.dart` passed in `example/`. `flutter test integration_test/plugin_integration_test.dart -d macos` passed. Root `flutter test` passed. No screenshot/golden artifact was produced because the example has no visual design baseline and tests assert structure/navigation.
 - 问题：Running integration tests without `-d` fails when multiple devices are connected; use `-d macos` for this repo's stable local check.
 - 下一步：Commit example page, then update docs.
+
+## 2026-07-30 15:24:38 +0800 - Start Docs
+- 当前任务：9. Update README docs, run tests, commit.
+- 操作：Updated CHANGELOG, English README, and Chinese README for screen events.
+- 原因：Docs are a separate commit after implementation and example changes.
+- 结果：准备运行 root `flutter test` as the docs commit gate.
+- 问题：无
+- 下一步：Run tests, then commit docs if they pass.
+
+## 2026-07-30 15:25:05 +0800 - Complete Docs
+- 当前任务：9. Update README docs, run tests, commit.
+- 操作：Updated documentation for screen events, platform support, usage switch cases, default config behavior, and the example page list.
+- 原因：Docs should reflect the new public API and iOS support limits.
+- 结果：`flutter test` passed.
+- 问题：无
+- 下一步：Commit docs, then run final review and verification.

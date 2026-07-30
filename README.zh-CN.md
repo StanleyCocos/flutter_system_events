@@ -6,9 +6,9 @@
 
 一个轻量、全方位的 Flutter 系统事件监听插件。
 
-版本 `0.6.0` 新增 Android 和 iOS 系统时间变化事件。
+版本 `0.7.0` 新增屏幕事件。
 
-在真实 App 里，我经常只需要监听一些很小的系统状态变化：网络变化、应用生命周期、键盘高度、内存压力、电池状态、屏幕方向、系统时间等等。每一类事件都可以用单独的库或插件解决，但如果只是为了监听几个事件就引入一堆依赖，会有点大材小用。
+在真实 App 里，我经常只需要监听一些很小的系统状态变化：网络变化、应用生命周期、键盘高度、内存压力、电池状态、屏幕方向、系统时间、屏幕状态等等。每一类事件都可以用单独的库或插件解决，但如果只是为了监听几个事件就引入一堆依赖，会有点大材小用。
 
 `flutter_system_events` 就是为这种场景准备的。它只做系统事件监听，并通过一个小而明确的类型化 API 暴露出来。你也可以只启用自己需要的事件类型，不用担心未使用的监听器浪费资源。
 
@@ -19,6 +19,7 @@
 - 通过 `BatteryEvent` 减少后台任务
 - 通过 `OrientationEvent` 调整横竖屏布局
 - 通过 `TimeEvent` 刷新和日期、时区相关的界面
+- 通过 `ScreenEvent` 响应屏幕状态或亮度变化
 
 当你只想要一个小 API，而不是手动接入多个平台监听器或插件时，可以使用它。
 
@@ -33,6 +34,7 @@
 | Battery | 支持 | 支持 | 努力实现中 | 努力实现中 | 努力实现中 | 努力实现中 |
 | Orientation | 支持 | 支持 | 努力实现中 | 努力实现中 | 努力实现中 | 努力实现中 |
 | Time | 支持 | 支持 | 努力实现中 | 努力实现中 | 努力实现中 | 努力实现中 |
+| Screen | 支持 | 部分支持：解锁、亮度 | 努力实现中 | 努力实现中 | 努力实现中 | 努力实现中 |
 
 ## 安装
 
@@ -71,6 +73,8 @@ Future<void> startSystemEvents() async {
         print('orientation=${orientation.name}');
       case TimeEvent(:final reason):
         print('time reason=${reason.name}');
+      case ScreenEvent(:final change, :final brightness):
+        print('screen change=${change.name} brightness=$brightness');
       case UnknownSystemEvent(:final rawType, :final reason):
         print('unknown event type=$rawType reason=$reason');
     }
@@ -85,7 +89,7 @@ Future<void> stopSystemEvents() async {
 }
 ```
 
-默认情况下，`initialize()` 会启动键盘、生命周期、网络、内存、屏幕方向和系统时间事件。电池事件需要主动启用：
+默认情况下，`initialize()` 会启动键盘、生命周期、网络、内存、屏幕方向、系统时间和屏幕事件。电池事件需要主动启用：
 
 ```dart
 await SystemEvents.initialize(config: const SystemEventsConfig.all());
@@ -103,6 +107,8 @@ await SystemEvents.initialize(
 ```
 
 内存事件只是系统提示。插件只报告压力状态，具体可以安全释放什么资源由你的 App 决定。
+
+Android 屏幕事件包含熄屏、亮屏、解锁和亮度变化。iOS 支持解锁和亮度变化；iOS 没有可靠的公开 API 可以让 App 直接监听熄屏/亮屏。
 
 ## 示例
 
@@ -122,5 +128,6 @@ flutter run
 - Battery
 - Orientation
 - Time
+- Screen
 
 每个页面都会在顶部显示最新事件值，并提供简单方式用于触发或手动验证事件。

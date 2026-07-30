@@ -1,3 +1,10 @@
+## 0.7.0
+
+- Added screen events.
+- Added Android screen off, screen on, unlock, and brightness events.
+- Added iOS unlock and brightness events.
+- Added a screen event page to the example app.
+
 ## 0.6.0
 
 - Added Android and iOS time change events.
