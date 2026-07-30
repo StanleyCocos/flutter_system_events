@@ -67,4 +67,9 @@ internal class FlutterSystemEventsPluginTest {
     fun screenChangeFromAction_mapsScreenOn() {
         assertEquals("on", screenChangeFromAction(Intent.ACTION_SCREEN_ON))
     }
+
+    @Test
+    fun screenChangeFromAction_mapsUserPresent() {
+        assertEquals("unlocked", screenChangeFromAction(Intent.ACTION_USER_PRESENT))
+    }
 }

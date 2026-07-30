@@ -55,3 +55,19 @@
 - 结果：`./gradlew :flutter_system_events:testDebugUnitTest` passed. `flutter test` passed. Broadcast delivery still needs device/manual verification.
 - 问题：无
 - 下一步：Commit Android screen on, then add Android unlock with tests first.
+
+## 2026-07-30 15:15:54 +0800 - Start Android Unlock
+- 当前任务：5. Add Android unlock event, tests, run tests, commit.
+- 操作：Starting with a Kotlin unit test for mapping `ACTION_USER_PRESENT` to the Dart `unlocked` change.
+- 原因：Unlock is independent from screen on/off and should remain its own commit.
+- 结果：准备添加失败测试。
+- 问题：无
+- 下一步：Run Android unit test to confirm current implementation returns `unknown`.
+
+## 2026-07-30 15:16:40 +0800 - Complete Android Unlock
+- 当前任务：5. Add Android unlock event, tests, run tests, commit.
+- 操作：Confirmed the new Android unit test failed because `ACTION_USER_PRESENT` mapped to `unknown`. Added the action to the screen receiver filter and mapped it to `unlocked`.
+- 原因：Unlock is a separate Android screen dimension.
+- 结果：`./gradlew :flutter_system_events:testDebugUnitTest` passed. `flutter test` passed. Broadcast delivery still needs device/manual verification.
+- 问题：无
+- 下一步：Commit Android unlock, then add Android brightness with tests first.
