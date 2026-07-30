@@ -2,6 +2,8 @@
 
 [![pub package](https://img.shields.io/pub/v/flutter_system_events.svg)](https://pub.dev/packages/flutter_system_events)
 
+[中文文档](README.zh-CN.md)
+
 A lightweight, all-around system monitoring plugin for Flutter.
 
 Version `0.4.0` keeps the event stream alive when native payloads are unknown
