@@ -20,12 +20,12 @@
 - [x] 5. Add Android unlock event, tests, run tests, commit.
 - [x] 6. Add Android brightness event, tests, run tests, commit.
 - [x] 7. Add supported iOS screen events, tests or recorded limits, run tests, commit.
-- [ ] 8. Add example Screen page, widget/integration tests, run tests, commit.
+- [x] 8. Add example Screen page, widget/integration tests, run tests, commit.
 - [ ] 9. Update README docs, run tests, commit.
 - [ ] 10. Final review of TODO/LOG, run final verification, commit if task files changed.
 
 ## Current Step
-- 当前执行：8. Add example Screen page, widget/integration tests, run tests, commit.
+- 当前执行：9. Update README docs, run tests, commit.
 
 ## Blockers
 - 无

@@ -32,4 +32,15 @@ void main() {
     expect(find.text('height: 0'), findsOneWidget);
     expect(find.text('hide height=0'), findsOneWidget);
   });
+
+  testWidgets('opens screen event page', (tester) async {
+    await tester.pumpWidget(const MyApp());
+
+    await tester.tap(find.text('Screen'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Screen Event'), findsOneWidget);
+    expect(find.text('change: -'), findsOneWidget);
+    expect(find.text('brightness: -'), findsOneWidget);
+  });
 }

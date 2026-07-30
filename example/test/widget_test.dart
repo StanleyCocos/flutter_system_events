@@ -14,6 +14,7 @@ void main() {
     expect(find.text('Battery'), findsOneWidget);
     expect(find.text('Orientation'), findsOneWidget);
     expect(find.text('Time'), findsOneWidget);
+    expect(find.text('Screen'), findsOneWidget);
 
     await tester.tap(find.text('Keyboard'));
     await tester.pumpAndSettle();
@@ -137,5 +138,20 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('reason: -'), findsOneWidget);
+  });
+
+  testWidgets('opens screen event page', (tester) async {
+    await tester.pumpWidget(const MyApp());
+
+    await tester.tap(find.text('Screen'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Screen Event'), findsOneWidget);
+    expect(
+      find.text('Lock, unlock, or change brightness to trigger this event.'),
+      findsOneWidget,
+    );
+    expect(find.text('change: -'), findsOneWidget);
+    expect(find.text('brightness: -'), findsOneWidget);
   });
 }

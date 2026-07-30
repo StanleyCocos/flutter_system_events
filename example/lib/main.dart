@@ -6,6 +6,7 @@ import 'pages/lifecycle_event_page.dart';
 import 'pages/memory_event_page.dart';
 import 'pages/network_event_page.dart';
 import 'pages/orientation_event_page.dart';
+import 'pages/screen_event_page.dart';
 import 'pages/time_event_page.dart';
 
 void main() {
@@ -109,6 +110,18 @@ class EventListPage extends StatelessWidget {
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute<void>(builder: (_) => const TimeEventPage()),
+              );
+            },
+          ),
+          ListTile(
+            title: const Text('Screen'),
+            subtitle: const Text('Off, on, unlock, brightness'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const ScreenEventPage(),
+                ),
               );
             },
           ),

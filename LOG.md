@@ -103,3 +103,19 @@
 - 结果：`flutter test` passed. `flutter build ios --no-codesign` in the example app passed and built `Runner.app`; generated Pods/Xcode project changes from the build were removed from the working tree before commit.
 - 问题：No iOS XCTest target exists for the plugin; iOS off/on are intentionally unsupported because there is no reliable public event.
 - 下一步：Commit iOS support, then add the example Screen page with widget and integration tests.
+
+## 2026-07-30 15:21:58 +0800 - Start Example Screen Page
+- 当前任务：8. Add example Screen page, widget/integration tests, run tests, commit.
+- 操作：Starting with example widget and integration tests that expect a Screen entry and Screen Event page.
+- 原因：Example UI should be verified before implementation and committed separately.
+- 结果：准备添加失败测试。
+- 问题：无
+- 下一步：Run example tests to confirm the Screen page is missing.
+
+## 2026-07-30 15:23:37 +0800 - Complete Example Screen Page
+- 当前任务：8. Add example Screen page, widget/integration tests, run tests, commit.
+- 操作：Confirmed widget tests failed because the Screen entry/page was missing. Added the Screen list entry, Screen Event page, widget test, and integration navigation test.
+- 原因：Example UI should demonstrate the new event group separately from core feature commits.
+- 结果：`flutter test test/widget_test.dart` passed in `example/`. `flutter test integration_test/plugin_integration_test.dart -d macos` passed. Root `flutter test` passed. No screenshot/golden artifact was produced because the example has no visual design baseline and tests assert structure/navigation.
+- 问题：Running integration tests without `-d` fails when multiple devices are connected; use `-d macos` for this repo's stable local check.
+- 下一步：Commit example page, then update docs.
