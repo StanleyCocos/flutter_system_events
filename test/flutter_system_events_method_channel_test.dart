@@ -34,6 +34,7 @@ void main() {
       'memory': true,
       'battery': false,
       'orientation': true,
+      'time': true,
     });
   });
 
@@ -56,6 +57,7 @@ void main() {
       'memory': false,
       'battery': true,
       'orientation': false,
+      'time': false,
     });
   });
 

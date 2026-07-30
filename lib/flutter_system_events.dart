@@ -24,6 +24,9 @@ export 'flutter_system_events_platform_interface.dart'
         ScreenOrientation,
         SystemEvent,
         SystemEventsConfig,
+        TimeChangeReason,
+        TimeConfig,
+        TimeEvent,
         UnknownSystemEvent;
 
 /// Entry point for configuring and receiving system events.

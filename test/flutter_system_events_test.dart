@@ -72,6 +72,7 @@ void main() {
       'memory': true,
       'battery': false,
       'orientation': true,
+      'time': true,
     });
   });
 
@@ -83,6 +84,7 @@ void main() {
       'memory': true,
       'battery': true,
       'orientation': true,
+      'time': true,
     });
   });
 
@@ -99,8 +101,21 @@ void main() {
         'memory': false,
         'battery': true,
         'orientation': false,
+        'time': false,
       },
     );
+  });
+
+  test('parses time event maps', () {
+    for (final reason in TimeChangeReason.values) {
+      final event = SystemEvent.fromMap({
+        'type': 'time',
+        'reason': reason.name,
+      });
+
+      expect(event, isA<TimeEvent>());
+      expect((event as TimeEvent).reason, reason);
+    }
   });
 
   test('parses orientation event maps', () {

@@ -86,6 +86,9 @@ sealed class SystemEvent {
             map['orientation'] as String,
           ),
         ),
+        'time' => TimeEvent(
+          reason: TimeChangeReason.values.byName(map['reason'] as String),
+        ),
         _ => UnknownSystemEvent(
           rawPayload: map,
           rawType: map['type'],
@@ -112,16 +115,18 @@ final class SystemEventsConfig {
     this.memory,
     this.battery,
     this.orientation,
+    this.time,
   });
 
-  /// Enables keyboard, lifecycle, network, memory, and orientation events.
+  /// Enables keyboard, lifecycle, network, memory, orientation, and time events.
   const SystemEventsConfig.defaults()
     : keyboard = const KeyboardConfig(),
       lifecycle = const LifecycleConfig(),
       network = const NetworkConfig(),
       memory = const MemoryConfig(),
       battery = null,
-      orientation = const OrientationConfig();
+      orientation = const OrientationConfig(),
+      time = const TimeConfig();
 
   /// Enables every supported event group, including battery events.
   const SystemEventsConfig.all()
@@ -130,7 +135,8 @@ final class SystemEventsConfig {
       network = const NetworkConfig(),
       memory = const MemoryConfig(),
       battery = const BatteryConfig(),
-      orientation = const OrientationConfig();
+      orientation = const OrientationConfig(),
+      time = const TimeConfig();
 
   /// Enables keyboard visibility events when non-null.
   final KeyboardConfig? keyboard;
@@ -150,6 +156,9 @@ final class SystemEventsConfig {
   /// Enables screen orientation events when non-null.
   final OrientationConfig? orientation;
 
+  /// Enables system time change events when non-null.
+  final TimeConfig? time;
+
   /// Converts this configuration to the platform channel payload.
   Map<String, bool> toMap() {
     return {
@@ -159,6 +168,7 @@ final class SystemEventsConfig {
       'memory': memory != null,
       'battery': battery != null,
       'orientation': orientation != null,
+      'time': time != null,
     };
   }
 }
@@ -197,6 +207,12 @@ final class BatteryConfig {
 final class OrientationConfig {
   /// Creates screen orientation event configuration.
   const OrientationConfig();
+}
+
+/// Configuration for system time change events.
+final class TimeConfig {
+  /// Creates system time change event configuration.
+  const TimeConfig();
 }
 
 /// App lifecycle states reported by the platform.
@@ -291,6 +307,18 @@ final class OrientationEvent extends SystemEvent {
 
   /// Current screen orientation.
   final ScreenOrientation orientation;
+}
+
+/// Reasons why a system time event was emitted.
+enum TimeChangeReason { timeChanged, timezoneChanged, dateChanged, unknown }
+
+/// Event emitted when system time, date, or timezone changes.
+final class TimeEvent extends SystemEvent {
+  /// Creates a system time event.
+  const TimeEvent({required this.reason});
+
+  /// Reason reported by the platform.
+  final TimeChangeReason reason;
 }
 
 /// Event emitted when a platform payload cannot be decoded.
