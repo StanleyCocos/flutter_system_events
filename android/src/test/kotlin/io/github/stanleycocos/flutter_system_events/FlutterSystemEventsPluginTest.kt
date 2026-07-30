@@ -62,16 +62,19 @@ internal class FlutterSystemEventsPluginTest {
     @Test
     fun screenChangeFromAction_mapsScreenOff() {
         assertEquals("off", screenChangeFromAction(Intent.ACTION_SCREEN_OFF))
+        assertEquals(mapOf("type" to "screen", "change" to "off"), screenEventFromAction(Intent.ACTION_SCREEN_OFF))
     }
 
     @Test
     fun screenChangeFromAction_mapsScreenOn() {
         assertEquals("on", screenChangeFromAction(Intent.ACTION_SCREEN_ON))
+        assertEquals(mapOf("type" to "screen", "change" to "on"), screenEventFromAction(Intent.ACTION_SCREEN_ON))
     }
 
     @Test
     fun screenChangeFromAction_mapsUserPresent() {
         assertEquals("unlocked", screenChangeFromAction(Intent.ACTION_USER_PRESENT))
+        assertEquals(mapOf("type" to "screen", "change" to "unlocked"), screenEventFromAction(Intent.ACTION_USER_PRESENT))
     }
 
     @Test
@@ -81,5 +84,14 @@ internal class FlutterSystemEventsPluginTest {
         assertEquals(1.0, normalizedBrightness(255))
         assertEquals(1.0, normalizedBrightness(300))
         assertNull(normalizedBrightness(-1))
+    }
+
+    @Test
+    fun screenBrightnessEvent_buildsBrightnessPayloads() {
+        assertEquals(
+            mapOf("type" to "screen", "change" to "brightness", "brightness" to 128.0 / 255.0),
+            screenBrightnessEvent(128),
+        )
+        assertNull(screenBrightnessEvent(-1))
     }
 }

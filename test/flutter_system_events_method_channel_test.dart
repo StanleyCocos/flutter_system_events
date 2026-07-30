@@ -103,6 +103,65 @@ void main() {
     expect(await event, isA<MemoryEvent>());
   });
 
+  test('events converts screen off payloads to screen events', () async {
+    final platform = MethodChannelFlutterSystemEvents();
+    const eventChannel = EventChannel('flutter_system_events/events');
+    await TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .handlePlatformMessage(
+          eventChannel.name,
+          const StandardMethodCodec().encodeMethodCall(
+            const MethodCall('listen', null),
+          ),
+          (_) {},
+        );
+
+    final event = platform.events.first;
+    await TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .handlePlatformMessage(
+          eventChannel.name,
+          const StandardMethodCodec().encodeSuccessEnvelope({
+            'type': 'screen',
+            'change': 'off',
+          }),
+          (_) {},
+        );
+
+    final screenEvent = await event;
+    expect(screenEvent, isA<ScreenEvent>());
+    expect((screenEvent as ScreenEvent).change, ScreenChange.off);
+    expect(screenEvent.brightness, isNull);
+  });
+
+  test('events converts screen brightness payloads to screen events', () async {
+    final platform = MethodChannelFlutterSystemEvents();
+    const eventChannel = EventChannel('flutter_system_events/events');
+    await TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .handlePlatformMessage(
+          eventChannel.name,
+          const StandardMethodCodec().encodeMethodCall(
+            const MethodCall('listen', null),
+          ),
+          (_) {},
+        );
+
+    final event = platform.events.first;
+    await TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .handlePlatformMessage(
+          eventChannel.name,
+          const StandardMethodCodec().encodeSuccessEnvelope({
+            'type': 'screen',
+            'change': 'brightness',
+            'brightness': 0.42,
+          }),
+          (_) {},
+        );
+
+    final screenEvent = await event;
+    expect(screenEvent, isA<ScreenEvent>());
+    expect((screenEvent as ScreenEvent).change, ScreenChange.brightness);
+    expect(screenEvent.brightness, 0.42);
+  });
+
   test('events converts non-map payloads to unknown events', () async {
     final platform = MethodChannelFlutterSystemEvents();
     const eventChannel = EventChannel('flutter_system_events/events');

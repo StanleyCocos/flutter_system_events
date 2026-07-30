@@ -1,6 +1,7 @@
 # flutter_system_events
 
 [![pub package](https://img.shields.io/pub/v/flutter_system_events.svg)](https://pub.dev/packages/flutter_system_events)
+[![coverage](https://codecov.io/gh/StanleyCocos/flutter_system_events/branch/master/graph/badge.svg)](https://codecov.io/gh/StanleyCocos/flutter_system_events)
 
 [中文文档](README.zh-CN.md)
 

@@ -1,9 +1,39 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_system_events/flutter_system_events_platform_interface.dart';
 
 import 'package:flutter_system_events_example/main.dart';
 
+class FakeSystemEventsPlatform extends FlutterSystemEventsPlatform {
+  final controller = StreamController<SystemEvent>.broadcast(sync: true);
+  SystemEventsConfig? initializedConfig;
+  var disposed = false;
+
+  @override
+  Future<void> initialize({
+    SystemEventsConfig config = const SystemEventsConfig.defaults(),
+  }) async {
+    initializedConfig = config;
+  }
+
+  @override
+  Future<void> dispose() async {
+    disposed = true;
+  }
+
+  @override
+  Stream<SystemEvent> get events => controller.stream;
+}
+
 void main() {
+  final initialPlatform = FlutterSystemEventsPlatform.instance;
+
+  tearDown(() {
+    FlutterSystemEventsPlatform.instance = initialPlatform;
+  });
+
   testWidgets('opens keyboard event page', (tester) async {
     await tester.pumpWidget(const MyApp());
 
@@ -153,5 +183,47 @@ void main() {
     );
     expect(find.text('change: -'), findsOneWidget);
     expect(find.text('brightness: -'), findsOneWidget);
+  });
+
+  testWidgets('screen event page renders incoming screen events', (
+    tester,
+  ) async {
+    final platform = FakeSystemEventsPlatform();
+    FlutterSystemEventsPlatform.instance = platform;
+
+    await tester.pumpWidget(const MyApp());
+
+    await tester.tap(find.text('Screen'));
+    await tester.pumpAndSettle();
+
+    expect(platform.initializedConfig?.screen, isNotNull);
+    expect(platform.initializedConfig?.keyboard, isNull);
+
+    for (final change in [
+      ScreenChange.off,
+      ScreenChange.on,
+      ScreenChange.unlocked,
+    ]) {
+      platform.controller.add(ScreenEvent(change: change));
+      await tester.pump();
+
+      expect(find.text('change: ${change.name}'), findsOneWidget);
+      expect(find.text(change.name), findsWidgets);
+    }
+
+    platform.controller.add(
+      const ScreenEvent(change: ScreenChange.brightness, brightness: 0.42),
+    );
+    await tester.pump();
+
+    expect(find.text('change: brightness'), findsOneWidget);
+    expect(find.text('brightness: 0.42'), findsOneWidget);
+    expect(find.text('brightness brightness=0.42'), findsOneWidget);
+
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
+
+    expect(platform.disposed, isTrue);
+    await platform.controller.close();
   });
 }

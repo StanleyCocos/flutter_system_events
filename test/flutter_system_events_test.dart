@@ -28,6 +28,9 @@ class MockFlutterSystemEventsPlatform
   );
 }
 
+class IncompleteFlutterSystemEventsPlatform
+    extends FlutterSystemEventsPlatform {}
+
 void main() {
   final initialPlatform = FlutterSystemEventsPlatform.instance;
 
@@ -62,6 +65,14 @@ void main() {
     FlutterSystemEventsPlatform.instance = MockFlutterSystemEventsPlatform();
 
     expect(await SystemEvents.events.single, isA<KeyboardEvent>());
+  });
+
+  test('base platform methods throw when not implemented', () {
+    final platform = IncompleteFlutterSystemEventsPlatform();
+
+    expect(platform.initialize, throwsUnimplementedError);
+    expect(platform.dispose, throwsUnimplementedError);
+    expect(() => platform.events, throwsUnimplementedError);
   });
 
   test('default config enables legacy events', () {
@@ -122,6 +133,18 @@ void main() {
       expect((event as ScreenEvent).change, change);
       expect(event.brightness, change == ScreenChange.brightness ? 0.5 : null);
     }
+  });
+
+  test('ignores brightness field for non-brightness screen events', () {
+    final event = SystemEvent.fromMap({
+      'type': 'screen',
+      'change': 'off',
+      'brightness': 0.5,
+    });
+
+    expect(event, isA<ScreenEvent>());
+    expect((event as ScreenEvent).change, ScreenChange.off);
+    expect(event.brightness, isNull);
   });
 
   test('parses time event maps', () {

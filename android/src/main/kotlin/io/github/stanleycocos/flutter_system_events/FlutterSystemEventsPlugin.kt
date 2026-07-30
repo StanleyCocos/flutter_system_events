@@ -329,7 +329,7 @@ class FlutterSystemEventsPlugin :
         }
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
-                emitEvent(mapOf("type" to "screen", "change" to screenChangeFromAction(intent.action)))
+                emitEvent(screenEventFromAction(intent.action))
             }
         }
         screenReceiver = receiver
@@ -357,8 +357,7 @@ class FlutterSystemEventsPlugin :
 
     private fun emitBrightness(context: Context) {
         val raw = Settings.System.getInt(context.contentResolver, Settings.System.SCREEN_BRIGHTNESS, -1)
-        val brightness = normalizedBrightness(raw) ?: return
-        emitEvent(mapOf("type" to "screen", "change" to "brightness", "brightness" to brightness))
+        emitEvent(screenBrightnessEvent(raw) ?: return)
     }
 
     private fun startOrientation() {
@@ -446,6 +445,14 @@ internal fun screenChangeFromAction(action: String?): String = when (action) {
     Intent.ACTION_SCREEN_ON -> "on"
     Intent.ACTION_USER_PRESENT -> "unlocked"
     else -> "unknown"
+}
+
+internal fun screenEventFromAction(action: String?): Map<String, Any> =
+    mapOf("type" to "screen", "change" to screenChangeFromAction(action))
+
+internal fun screenBrightnessEvent(value: Int): Map<String, Any>? {
+    val brightness = normalizedBrightness(value) ?: return null
+    return mapOf("type" to "screen", "change" to "brightness", "brightness" to brightness)
 }
 
 internal fun normalizedBrightness(value: Int): Double? {
