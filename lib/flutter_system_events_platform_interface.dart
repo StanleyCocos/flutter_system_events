@@ -89,6 +89,12 @@ sealed class SystemEvent {
         'time' => TimeEvent(
           reason: TimeChangeReason.values.byName(map['reason'] as String),
         ),
+        'screen' => ScreenEvent(
+          change: ScreenChange.values.byName(map['change'] as String),
+          brightness: map['change'] == 'brightness'
+              ? (map['brightness'] as num).toDouble()
+              : null,
+        ),
         _ => UnknownSystemEvent(
           rawPayload: map,
           rawType: map['type'],
@@ -116,6 +122,7 @@ final class SystemEventsConfig {
     this.battery,
     this.orientation,
     this.time,
+    this.screen,
   });
 
   /// Enables keyboard, lifecycle, network, memory, orientation, and time events.
@@ -126,7 +133,8 @@ final class SystemEventsConfig {
       memory = const MemoryConfig(),
       battery = null,
       orientation = const OrientationConfig(),
-      time = const TimeConfig();
+      time = const TimeConfig(),
+      screen = const ScreenConfig();
 
   /// Enables every supported event group, including battery events.
   const SystemEventsConfig.all()
@@ -136,7 +144,8 @@ final class SystemEventsConfig {
       memory = const MemoryConfig(),
       battery = const BatteryConfig(),
       orientation = const OrientationConfig(),
-      time = const TimeConfig();
+      time = const TimeConfig(),
+      screen = const ScreenConfig();
 
   /// Enables keyboard visibility events when non-null.
   final KeyboardConfig? keyboard;
@@ -159,6 +168,9 @@ final class SystemEventsConfig {
   /// Enables system time change events when non-null.
   final TimeConfig? time;
 
+  /// Enables screen state and brightness events when non-null.
+  final ScreenConfig? screen;
+
   /// Converts this configuration to the platform channel payload.
   Map<String, bool> toMap() {
     return {
@@ -169,6 +181,7 @@ final class SystemEventsConfig {
       'battery': battery != null,
       'orientation': orientation != null,
       'time': time != null,
+      'screen': screen != null,
     };
   }
 }
@@ -213,6 +226,12 @@ final class OrientationConfig {
 final class TimeConfig {
   /// Creates system time change event configuration.
   const TimeConfig();
+}
+
+/// Configuration for screen state and brightness events.
+final class ScreenConfig {
+  /// Creates screen event configuration.
+  const ScreenConfig();
 }
 
 /// App lifecycle states reported by the platform.
@@ -319,6 +338,21 @@ final class TimeEvent extends SystemEvent {
 
   /// Reason reported by the platform.
   final TimeChangeReason reason;
+}
+
+/// Screen state changes reported by the platform.
+enum ScreenChange { off, on, unlocked, brightness }
+
+/// Event emitted when the screen state or brightness changes.
+final class ScreenEvent extends SystemEvent {
+  /// Creates a screen event.
+  const ScreenEvent({required this.change, this.brightness});
+
+  /// Current screen event kind.
+  final ScreenChange change;
+
+  /// Screen brightness from 0.0 to 1.0 when [change] is brightness.
+  final double? brightness;
 }
 
 /// Event emitted when a platform payload cannot be decoded.

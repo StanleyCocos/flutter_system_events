@@ -35,6 +35,7 @@ void main() {
       'battery': false,
       'orientation': true,
       'time': true,
+      'screen': true,
     });
   });
 
@@ -58,6 +59,7 @@ void main() {
       'battery': true,
       'orientation': false,
       'time': false,
+      'screen': false,
     });
   });
 

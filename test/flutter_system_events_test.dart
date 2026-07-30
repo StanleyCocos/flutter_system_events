@@ -73,6 +73,7 @@ void main() {
       'battery': false,
       'orientation': true,
       'time': true,
+      'screen': true,
     });
   });
 
@@ -85,6 +86,7 @@ void main() {
       'battery': true,
       'orientation': true,
       'time': true,
+      'screen': true,
     });
   });
 
@@ -93,6 +95,7 @@ void main() {
       const SystemEventsConfig(
         keyboard: KeyboardConfig(),
         battery: BatteryConfig(),
+        screen: ScreenConfig(),
       ).toMap(),
       {
         'keyboard': true,
@@ -102,8 +105,23 @@ void main() {
         'battery': true,
         'orientation': false,
         'time': false,
+        'screen': true,
       },
     );
+  });
+
+  test('parses screen event maps', () {
+    for (final change in ScreenChange.values) {
+      final event = SystemEvent.fromMap({
+        'type': 'screen',
+        'change': change.name,
+        if (change == ScreenChange.brightness) 'brightness': 0.5,
+      });
+
+      expect(event, isA<ScreenEvent>());
+      expect((event as ScreenEvent).change, change);
+      expect(event.brightness, change == ScreenChange.brightness ? 0.5 : null);
+    }
   });
 
   test('parses time event maps', () {
@@ -257,6 +275,22 @@ void main() {
 
     expect(event, isA<UnknownSystemEvent>());
     expect((event as UnknownSystemEvent).rawType, 'battery');
+  });
+
+  test('returns unknown event for invalid screen event payloads', () {
+    final missingBrightness = SystemEvent.fromMap({
+      'type': 'screen',
+      'change': 'brightness',
+    });
+    final invalidChange = SystemEvent.fromMap({
+      'type': 'screen',
+      'change': 'invalid',
+    });
+
+    expect(missingBrightness, isA<UnknownSystemEvent>());
+    expect((missingBrightness as UnknownSystemEvent).rawType, 'screen');
+    expect(invalidChange, isA<UnknownSystemEvent>());
+    expect((invalidChange as UnknownSystemEvent).rawType, 'screen');
   });
 
   test('returns unknown event for non-map payloads', () {
