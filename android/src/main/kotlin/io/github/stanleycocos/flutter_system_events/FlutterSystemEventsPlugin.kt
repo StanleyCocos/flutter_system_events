@@ -18,6 +18,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.view.Surface
 import android.view.ViewTreeObserver
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -46,6 +47,8 @@ class FlutterSystemEventsPlugin :
     private var networkCallback: ConnectivityManager.NetworkCallback? = null
     private var memoryCallbacks: ComponentCallbacks2? = null
     private var batteryReceiver: BroadcastReceiver? = null
+    private var orientationCallbacks: ComponentCallbacks2? = null
+    private var lastOrientation: String? = null
     private var config = EventConfig.legacy()
     private val mainHandler by lazy { Handler(Looper.getMainLooper()) }
 
@@ -122,6 +125,7 @@ class FlutterSystemEventsPlugin :
         if (config.network) startNetwork()
         if (config.memory) startMemory()
         if (config.battery) startBattery()
+        if (config.orientation) startOrientation()
     }
 
     private fun stopAll() {
@@ -130,6 +134,7 @@ class FlutterSystemEventsPlugin :
         stopNetwork()
         stopMemory()
         stopBattery()
+        stopOrientation()
     }
 
     private fun emitEvent(event: Map<String, Any>) {
@@ -285,12 +290,39 @@ class FlutterSystemEventsPlugin :
         batteryReceiver = null
     }
 
+    private fun startOrientation() {
+        val context = appContext ?: return
+        val callbacks = object : ComponentCallbacks2 {
+            override fun onConfigurationChanged(newConfig: Configuration) = emitOrientation()
+            override fun onLowMemory() {}
+            override fun onTrimMemory(level: Int) {}
+        }
+        context.registerComponentCallbacks(callbacks)
+        orientationCallbacks = callbacks
+        emitOrientation()
+    }
+
+    private fun emitOrientation() {
+        val rotation = activity?.windowManager?.defaultDisplay?.rotation
+        val orientation = orientationNameFromRotation(rotation)
+        if (orientation == lastOrientation) return
+        lastOrientation = orientation
+        emitEvent(mapOf("type" to "orientation", "orientation" to orientation))
+    }
+
+    private fun stopOrientation() {
+        orientationCallbacks?.let { appContext?.unregisterComponentCallbacks(it) }
+        orientationCallbacks = null
+        lastOrientation = null
+    }
+
     private data class EventConfig(
         val keyboard: Boolean,
         val lifecycle: Boolean,
         val network: Boolean,
         val memory: Boolean,
         val battery: Boolean,
+        val orientation: Boolean,
     ) {
         companion object {
             fun legacy() = EventConfig(
@@ -299,6 +331,7 @@ class FlutterSystemEventsPlugin :
                 network = true,
                 memory = true,
                 battery = false,
+                orientation = true,
             )
 
             fun from(arguments: Any?): EventConfig {
@@ -309,8 +342,17 @@ class FlutterSystemEventsPlugin :
                     network = map["network"] == true,
                     memory = map["memory"] == true,
                     battery = map["battery"] == true,
+                    orientation = map["orientation"] == true,
                 )
             }
         }
     }
+}
+
+internal fun orientationNameFromRotation(rotation: Int?): String = when (rotation) {
+    Surface.ROTATION_0 -> "portraitUp"
+    Surface.ROTATION_90 -> "landscapeLeft"
+    Surface.ROTATION_180 -> "portraitDown"
+    Surface.ROTATION_270 -> "landscapeRight"
+    else -> "unknown"
 }

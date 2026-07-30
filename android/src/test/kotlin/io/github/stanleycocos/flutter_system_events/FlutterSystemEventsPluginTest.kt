@@ -4,6 +4,7 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import org.mockito.Mockito
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
 internal class FlutterSystemEventsPluginTest {
     @Test
@@ -37,5 +38,14 @@ internal class FlutterSystemEventsPluginTest {
         plugin.onMethodCall(call, result)
 
         Mockito.verify(result).notImplemented()
+    }
+
+    @Test
+    fun orientationNameFromRotation_mapsAndroidRotations() {
+        assertEquals("portraitUp", orientationNameFromRotation(0))
+        assertEquals("landscapeLeft", orientationNameFromRotation(1))
+        assertEquals("portraitDown", orientationNameFromRotation(2))
+        assertEquals("landscapeRight", orientationNameFromRotation(3))
+        assertEquals("unknown", orientationNameFromRotation(-1))
     }
 }
