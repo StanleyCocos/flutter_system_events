@@ -1,4 +1,4 @@
-## Unreleased
+## 0.6.0
 
 - Added Android and iOS time change events.
 - Added a time event page to the example app.
