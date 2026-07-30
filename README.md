@@ -27,8 +27,15 @@ types you need, so unused listeners do not waste resources.
 Use this when you want one small API instead of wiring several
 platform-specific listeners or packages.
 
-Memory and battery events are not available on web. Desktop platforms currently
-register the plugin but do not emit events.
+## Platform support
+
+| Event | Android | iOS | macOS | Windows | Linux | Web |
+| --- | --- | --- | --- | --- | --- | --- |
+| Keyboard | Yes | Yes | In progress | In progress | In progress | Yes |
+| Lifecycle | Yes | Yes | In progress | In progress | In progress | Yes |
+| Network | Yes | Yes | In progress | In progress | In progress | Yes |
+| Memory | Yes | Yes | In progress | In progress | In progress | In progress |
+| Battery | Yes | Yes | In progress | In progress | In progress | In progress |
 
 ## Installation
 
@@ -97,117 +104,6 @@ await SystemEvents.initialize(
 
 Memory events are hints. The plugin reports pressure; your app decides what can
 be released safely.
-
-## Events
-
-### KeyboardEvent
-
-Emitted when the software keyboard visibility changes.
-
-```dart
-KeyboardEvent(
-  visible: true,
-  height: 320,
-)
-```
-
-Fields:
-
-- `visible`: whether the keyboard is visible
-- `height`: keyboard height in logical pixels
-
-### LifecycleEvent
-
-Emitted when the app lifecycle changes.
-
-```dart
-LifecycleEvent(
-  state: LifecycleState.resumed,
-)
-```
-
-States:
-
-- `resumed`
-- `inactive`
-- `paused`
-- `detached`
-
-### NetworkEvent
-
-Emitted when the network status changes.
-
-```dart
-NetworkEvent(
-  online: true,
-  networkType: NetworkType.wifi,
-)
-```
-
-Types:
-
-- `wifi`
-- `cellular`
-- `ethernet`
-- `other`
-- `none`
-
-### MemoryEvent
-
-Emitted when the operating system reports memory pressure.
-
-```dart
-MemoryEvent(
-  state: MemoryState.warning,
-  level: 0,
-)
-```
-
-States:
-
-- `warning`
-- `low`
-- `trim`
-
-### BatteryEvent
-
-Emitted when battery level or charging state changes.
-
-```dart
-BatteryEvent(
-  level: 80,
-  charging: true,
-  state: BatteryState.charging,
-)
-```
-
-States:
-
-- `charging`
-- `discharging`
-- `full`
-- `unknown`
-
-### UnknownSystemEvent
-
-Emitted when a native or web payload is unsupported or malformed. This keeps the
-stream alive when platforms add events before the Dart API understands them.
-
-Fields:
-
-- `rawPayload`: original payload received from the platform
-- `rawType`: original event type, when present
-- `reason`: why the payload could not be parsed as a known event
-
-## Platform support
-
-| Event | Android | iOS | macOS | Windows | Linux | Web |
-| --- | --- | --- | --- | --- | --- | --- |
-| Keyboard | Yes | Yes | No-op | No-op | No-op | Yes |
-| Lifecycle | Yes | Yes | No-op | No-op | No-op | Yes |
-| Network | Yes | Yes | No-op | No-op | No-op | Yes |
-| Memory | Yes | Yes | No-op | No-op | No-op | No-op |
-| Battery | Yes | Yes | No-op | No-op | No-op | No-op |
 
 ## Example
 

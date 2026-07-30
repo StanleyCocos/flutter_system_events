@@ -20,7 +20,15 @@
 
 当你只想要一个小 API，而不是手动接入多个平台监听器或插件时，可以使用它。
 
-Web 不支持内存和电池事件。桌面平台目前会注册插件，但不会发出事件。
+## 平台支持
+
+| 事件 | Android | iOS | macOS | Windows | Linux | Web |
+| --- | --- | --- | --- | --- | --- | --- |
+| Keyboard | 支持 | 支持 | 努力实现中 | 努力实现中 | 努力实现中 | 支持 |
+| Lifecycle | 支持 | 支持 | 努力实现中 | 努力实现中 | 努力实现中 | 支持 |
+| Network | 支持 | 支持 | 努力实现中 | 努力实现中 | 努力实现中 | 支持 |
+| Memory | 支持 | 支持 | 努力实现中 | 努力实现中 | 努力实现中 | 努力实现中 |
+| Battery | 支持 | 支持 | 努力实现中 | 努力实现中 | 努力实现中 | 努力实现中 |
 
 ## 安装
 
@@ -87,116 +95,6 @@ await SystemEvents.initialize(
 ```
 
 内存事件只是系统提示。插件只报告压力状态，具体可以安全释放什么资源由你的 App 决定。
-
-## 事件
-
-### KeyboardEvent
-
-软键盘显示状态变化时发出。
-
-```dart
-KeyboardEvent(
-  visible: true,
-  height: 320,
-)
-```
-
-字段：
-
-- `visible`：键盘是否可见
-- `height`：键盘高度，单位为逻辑像素
-
-### LifecycleEvent
-
-应用生命周期变化时发出。
-
-```dart
-LifecycleEvent(
-  state: LifecycleState.resumed,
-)
-```
-
-状态：
-
-- `resumed`
-- `inactive`
-- `paused`
-- `detached`
-
-### NetworkEvent
-
-网络状态变化时发出。
-
-```dart
-NetworkEvent(
-  online: true,
-  networkType: NetworkType.wifi,
-)
-```
-
-类型：
-
-- `wifi`
-- `cellular`
-- `ethernet`
-- `other`
-- `none`
-
-### MemoryEvent
-
-操作系统报告内存压力时发出。
-
-```dart
-MemoryEvent(
-  state: MemoryState.warning,
-  level: 0,
-)
-```
-
-状态：
-
-- `warning`
-- `low`
-- `trim`
-
-### BatteryEvent
-
-电量或充电状态变化时发出。
-
-```dart
-BatteryEvent(
-  level: 80,
-  charging: true,
-  state: BatteryState.charging,
-)
-```
-
-状态：
-
-- `charging`
-- `discharging`
-- `full`
-- `unknown`
-
-### UnknownSystemEvent
-
-当原生或 Web 事件数据不支持、或者格式异常时发出。这样即使平台先于 Dart API 增加了新事件，事件流也不会中断。
-
-字段：
-
-- `rawPayload`：从平台收到的原始数据
-- `rawType`：原始事件类型，如果存在
-- `reason`：该数据无法解析为已知事件的原因
-
-## 平台支持
-
-| 事件 | Android | iOS | macOS | Windows | Linux | Web |
-| --- | --- | --- | --- | --- | --- | --- |
-| Keyboard | 支持 | 支持 | 无事件 | 无事件 | 无事件 | 支持 |
-| Lifecycle | 支持 | 支持 | 无事件 | 无事件 | 无事件 | 支持 |
-| Network | 支持 | 支持 | 无事件 | 无事件 | 无事件 | 支持 |
-| Memory | 支持 | 支持 | 无事件 | 无事件 | 无事件 | 无事件 |
-| Battery | 支持 | 支持 | 无事件 | 无事件 | 无事件 | 无事件 |
 
 ## 示例
 
