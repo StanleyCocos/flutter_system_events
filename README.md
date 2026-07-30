@@ -2,10 +2,19 @@
 
 [![pub package](https://img.shields.io/pub/v/flutter_system_events.svg)](https://pub.dev/packages/flutter_system_events)
 
-A tiny Flutter plugin that turns common system signals into one typed stream.
+A lightweight, all-around system monitoring plugin for Flutter.
 
 Version `0.4.0` keeps the event stream alive when native payloads are unknown
 or malformed.
+
+In real apps, I often need to listen to small pieces of system state: network
+changes, app lifecycle, keyboard height, memory pressure, battery state, and so
+on. Each one can be solved with a separate package, but pulling in several
+plugins just to watch a few events can feel heavier than the problem needs.
+
+`flutter_system_events` exists for that case. It only listens for system events
+and exposes them through one small, typed API. You can also enable only the event
+types you need, so unused listeners do not waste resources.
 
 - Show an offline banner from `NetworkEvent`
 - Refresh data when the app resumes from `LifecycleEvent`
@@ -13,8 +22,8 @@ or malformed.
 - Clear app-owned caches from `MemoryEvent`
 - Reduce background work from `BatteryEvent`
 
-Use this when you want one small API instead of wiring several platform-specific
-listeners or packages.
+Use this when you want one small API instead of wiring several
+platform-specific listeners or packages.
 
 Memory and battery events are not available on web. Desktop platforms currently
 register the plugin but do not emit events.
