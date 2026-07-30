@@ -52,6 +52,7 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
     if config.memory { startMemory() }
     if config.battery { startBattery() }
     if config.orientation { startOrientation() }
+    if config.time { startTime() }
   }
 
   private func startKeyboard() {
@@ -178,6 +179,18 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
     lastOrientation = nil
   }
 
+  private func startTime() {
+    observeTime(UIApplication.significantTimeChangeNotification, reason: "timeChanged")
+    observeTime(NSNotification.Name.NSSystemTimeZoneDidChange, reason: "timezoneChanged")
+    observeTime(NSNotification.Name.NSCalendarDayChanged, reason: "dateChanged")
+  }
+
+  private func observeTime(_ name: Notification.Name, reason: String) {
+    observers.append(NotificationCenter.default.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
+      self?.events?(["type": "time", "reason": reason])
+    })
+  }
+
   private struct EventConfig {
     let keyboard: Bool
     let lifecycle: Bool
@@ -185,8 +198,9 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
     let memory: Bool
     let battery: Bool
     let orientation: Bool
+    let time: Bool
 
-    static let legacy = EventConfig(keyboard: true, lifecycle: true, network: true, memory: true, battery: false, orientation: true)
+    static let legacy = EventConfig(keyboard: true, lifecycle: true, network: true, memory: true, battery: false, orientation: true, time: true)
 
     static func from(_ arguments: Any?) -> EventConfig {
       guard let map = arguments as? [String: Any] else { return legacy }
@@ -196,7 +210,8 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
         network: map["network"] as? Bool == true,
         memory: map["memory"] as? Bool == true,
         battery: map["battery"] as? Bool == true,
-        orientation: map["orientation"] as? Bool == true
+        orientation: map["orientation"] as? Bool == true,
+        time: map["time"] as? Bool == true
       )
     }
   }
