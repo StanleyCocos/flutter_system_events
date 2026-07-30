@@ -16,4 +16,38 @@ class RunnerTests: XCTestCase {
 
     waitForExpectations(timeout: 1)
   }
+
+  func testKeyboardInitializeEmitsHiddenEvent() {
+    let plugin = FlutterSystemEventsPlugin()
+    var event: [String: Any]?
+
+    _ = plugin.onListen(withArguments: nil) { value in
+      event = value as? [String: Any]
+    }
+
+    let call = FlutterMethodCall(methodName: "initialize", arguments: ["keyboard": true])
+    plugin.handle(call) { result in
+      XCTAssertNil(result)
+    }
+
+    XCTAssertEqual(event?["type"] as? String, "keyboard")
+    XCTAssertEqual(event?["visible"] as? Bool, false)
+    XCTAssertEqual(event?["height"] as? Int, 0)
+  }
+
+  func testKeyboardDisabledDoesNotEmitEvent() {
+    let plugin = FlutterSystemEventsPlugin()
+    var event: Any?
+
+    _ = plugin.onListen(withArguments: nil) { value in
+      event = value
+    }
+
+    let call = FlutterMethodCall(methodName: "initialize", arguments: ["keyboard": false])
+    plugin.handle(call) { result in
+      XCTAssertNil(result)
+    }
+
+    XCTAssertNil(event)
+  }
 }

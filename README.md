@@ -33,7 +33,7 @@ platform-specific listeners or packages.
 
 | Event | Android | iOS | macOS | Windows | Linux | Web |
 | --- | --- | --- | --- | --- | --- | --- |
-| Keyboard | Yes | Yes | In progress | In progress | In progress | Yes |
+| Keyboard | Yes | Yes | Yes | In progress | In progress | Yes |
 | Lifecycle | Yes | Yes | In progress | In progress | In progress | Yes |
 | Network | Yes | Yes | In progress | In progress | In progress | Yes |
 | Memory | Yes | Yes | In progress | In progress | In progress | In progress |
