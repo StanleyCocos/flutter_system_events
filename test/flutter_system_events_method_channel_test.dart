@@ -33,6 +33,7 @@ void main() {
       'network': true,
       'memory': true,
       'battery': false,
+      'orientation': true,
     });
   });
 
@@ -54,6 +55,7 @@ void main() {
       'network': false,
       'memory': false,
       'battery': true,
+      'orientation': false,
     });
   });
 

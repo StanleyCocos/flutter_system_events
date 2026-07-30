@@ -71,6 +71,7 @@ void main() {
       'network': true,
       'memory': true,
       'battery': false,
+      'orientation': true,
     });
   });
 
@@ -81,6 +82,7 @@ void main() {
       'network': true,
       'memory': true,
       'battery': true,
+      'orientation': true,
     });
   });
 
@@ -96,8 +98,21 @@ void main() {
         'network': false,
         'memory': false,
         'battery': true,
+        'orientation': false,
       },
     );
+  });
+
+  test('parses orientation event maps', () {
+    for (final orientation in ScreenOrientation.values) {
+      final event = SystemEvent.fromMap({
+        'type': 'orientation',
+        'orientation': orientation.name,
+      });
+
+      expect(event, isA<OrientationEvent>());
+      expect((event as OrientationEvent).orientation, orientation);
+    }
   });
 
   test('parses keyboard event maps', () {

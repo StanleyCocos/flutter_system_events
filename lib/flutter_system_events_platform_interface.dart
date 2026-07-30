@@ -81,6 +81,11 @@ sealed class SystemEvent {
           charging: map['charging'] as bool,
           state: BatteryState.values.byName(map['state'] as String),
         ),
+        'orientation' => OrientationEvent(
+          orientation: ScreenOrientation.values.byName(
+            map['orientation'] as String,
+          ),
+        ),
         _ => UnknownSystemEvent(
           rawPayload: map,
           rawType: map['type'],
@@ -106,15 +111,17 @@ final class SystemEventsConfig {
     this.network,
     this.memory,
     this.battery,
+    this.orientation,
   });
 
-  /// Enables keyboard, lifecycle, network, and memory events.
+  /// Enables keyboard, lifecycle, network, memory, and orientation events.
   const SystemEventsConfig.defaults()
     : keyboard = const KeyboardConfig(),
       lifecycle = const LifecycleConfig(),
       network = const NetworkConfig(),
       memory = const MemoryConfig(),
-      battery = null;
+      battery = null,
+      orientation = const OrientationConfig();
 
   /// Enables every supported event group, including battery events.
   const SystemEventsConfig.all()
@@ -122,7 +129,8 @@ final class SystemEventsConfig {
       lifecycle = const LifecycleConfig(),
       network = const NetworkConfig(),
       memory = const MemoryConfig(),
-      battery = const BatteryConfig();
+      battery = const BatteryConfig(),
+      orientation = const OrientationConfig();
 
   /// Enables keyboard visibility events when non-null.
   final KeyboardConfig? keyboard;
@@ -139,6 +147,9 @@ final class SystemEventsConfig {
   /// Enables battery state events when non-null.
   final BatteryConfig? battery;
 
+  /// Enables screen orientation events when non-null.
+  final OrientationConfig? orientation;
+
   /// Converts this configuration to the platform channel payload.
   Map<String, bool> toMap() {
     return {
@@ -147,6 +158,7 @@ final class SystemEventsConfig {
       'network': network != null,
       'memory': memory != null,
       'battery': battery != null,
+      'orientation': orientation != null,
     };
   }
 }
@@ -179,6 +191,12 @@ final class MemoryConfig {
 final class BatteryConfig {
   /// Creates battery event configuration.
   const BatteryConfig();
+}
+
+/// Configuration for screen orientation events.
+final class OrientationConfig {
+  /// Creates screen orientation event configuration.
+  const OrientationConfig();
 }
 
 /// App lifecycle states reported by the platform.
@@ -255,6 +273,24 @@ final class BatteryEvent extends SystemEvent {
 
   /// Current battery state.
   final BatteryState state;
+}
+
+/// Screen orientations reported by the platform.
+enum ScreenOrientation {
+  portraitUp,
+  portraitDown,
+  landscapeLeft,
+  landscapeRight,
+  unknown,
+}
+
+/// Event emitted when the screen orientation changes.
+final class OrientationEvent extends SystemEvent {
+  /// Creates a screen orientation event.
+  const OrientationEvent({required this.orientation});
+
+  /// Current screen orientation.
+  final ScreenOrientation orientation;
 }
 
 /// Event emitted when a platform payload cannot be decoded.

@@ -19,6 +19,9 @@ export 'flutter_system_events_platform_interface.dart'
         NetworkConfig,
         NetworkEvent,
         NetworkType,
+        OrientationConfig,
+        OrientationEvent,
+        ScreenOrientation,
         SystemEvent,
         SystemEventsConfig,
         UnknownSystemEvent;
