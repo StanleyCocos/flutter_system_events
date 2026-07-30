@@ -1,4 +1,4 @@
-## Unreleased
+## 0.5.0
 
 - Added Android and iOS orientation events.
 - Added an orientation event page to the example app.

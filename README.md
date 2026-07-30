@@ -6,8 +6,7 @@
 
 A lightweight, all-around system monitoring plugin for Flutter.
 
-Version `0.4.0` keeps the event stream alive when native payloads are unknown
-or malformed.
+Version `0.5.0` adds Android and iOS orientation events.
 
 In real apps, I often need to listen to small pieces of system state: network
 changes, app lifecycle, keyboard height, memory pressure, battery state,
@@ -44,7 +43,7 @@ platform-specific listeners or packages.
 
 ```yaml
 dependencies:
-  flutter_system_events: ^0.4.0
+  flutter_system_events: ^0.5.0
 ```
 
 ## Usage
