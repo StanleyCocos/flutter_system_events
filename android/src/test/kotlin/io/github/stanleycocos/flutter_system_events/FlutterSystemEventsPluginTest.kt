@@ -6,6 +6,7 @@ import org.mockito.Mockito
 import android.content.Intent
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 internal class FlutterSystemEventsPluginTest {
     @Test
@@ -71,5 +72,14 @@ internal class FlutterSystemEventsPluginTest {
     @Test
     fun screenChangeFromAction_mapsUserPresent() {
         assertEquals("unlocked", screenChangeFromAction(Intent.ACTION_USER_PRESENT))
+    }
+
+    @Test
+    fun normalizedBrightness_convertsAndroidBrightnessRange() {
+        assertEquals(0.0, normalizedBrightness(0))
+        assertEquals(128.0 / 255.0, normalizedBrightness(128))
+        assertEquals(1.0, normalizedBrightness(255))
+        assertEquals(1.0, normalizedBrightness(300))
+        assertNull(normalizedBrightness(-1))
     }
 }

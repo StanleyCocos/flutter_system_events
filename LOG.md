@@ -71,3 +71,19 @@
 - 结果：`./gradlew :flutter_system_events:testDebugUnitTest` passed. `flutter test` passed. Broadcast delivery still needs device/manual verification.
 - 问题：无
 - 下一步：Commit Android unlock, then add Android brightness with tests first.
+
+## 2026-07-30 15:17:13 +0800 - Start Android Brightness
+- 当前任务：6. Add Android brightness event, tests, run tests, commit.
+- 操作：Starting with Kotlin unit tests for normalizing Android `SCREEN_BRIGHTNESS` raw values to Dart's `0.0..1.0` payload.
+- 原因：Brightness has edge cases and should be tested as pure logic before wiring the `ContentObserver`.
+- 结果：准备添加失败测试。
+- 问题：无
+- 下一步：Run Android unit test to confirm the brightness helper is missing.
+
+## 2026-07-30 15:18:03 +0800 - Complete Android Brightness
+- 当前任务：6. Add Android brightness event, tests, run tests, commit.
+- 操作：Confirmed Android unit test failed because `normalizedBrightness` was missing. Added brightness normalization and a `ContentObserver` for `Settings.System.SCREEN_BRIGHTNESS`.
+- 原因：Brightness changes need a separate observer from screen on/off/unlock broadcasts.
+- 结果：`./gradlew :flutter_system_events:testDebugUnitTest` passed. `flutter test` passed. Automated coverage includes normalization boundaries and Dart payload parsing; actual device brightness callback delivery remains manual/device verification.
+- 问题：无
+- 下一步：Commit Android brightness, then add supported iOS screen events.

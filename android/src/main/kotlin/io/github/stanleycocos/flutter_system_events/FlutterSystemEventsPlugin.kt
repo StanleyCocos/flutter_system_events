@@ -8,15 +8,18 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.res.Configuration
+import android.database.ContentObserver
 import android.graphics.Rect
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
+import android.net.Uri
 import android.os.BatteryManager
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.provider.Settings
 import android.util.Log
 import android.view.Surface
 import android.view.ViewTreeObserver
@@ -49,6 +52,7 @@ class FlutterSystemEventsPlugin :
     private var batteryReceiver: BroadcastReceiver? = null
     private var timeReceiver: BroadcastReceiver? = null
     private var screenReceiver: BroadcastReceiver? = null
+    private var brightnessObserver: ContentObserver? = null
     private var orientationCallbacks: ComponentCallbacks2? = null
     private var lastOrientation: String? = null
     private var config = EventConfig.legacy()
@@ -330,11 +334,31 @@ class FlutterSystemEventsPlugin :
         }
         screenReceiver = receiver
         context.registerReceiver(receiver, filter)
+
+        val observer = object : ContentObserver(mainHandler) {
+            override fun onChange(selfChange: Boolean, uri: Uri?) {
+                emitBrightness(context)
+            }
+        }
+        brightnessObserver = observer
+        context.contentResolver.registerContentObserver(
+            Settings.System.getUriFor(Settings.System.SCREEN_BRIGHTNESS),
+            false,
+            observer,
+        )
     }
 
     private fun stopScreen() {
         screenReceiver?.let { appContext?.unregisterReceiver(it) }
         screenReceiver = null
+        brightnessObserver?.let { appContext?.contentResolver?.unregisterContentObserver(it) }
+        brightnessObserver = null
+    }
+
+    private fun emitBrightness(context: Context) {
+        val raw = Settings.System.getInt(context.contentResolver, Settings.System.SCREEN_BRIGHTNESS, -1)
+        val brightness = normalizedBrightness(raw) ?: return
+        emitEvent(mapOf("type" to "screen", "change" to "brightness", "brightness" to brightness))
     }
 
     private fun startOrientation() {
@@ -422,4 +446,9 @@ internal fun screenChangeFromAction(action: String?): String = when (action) {
     Intent.ACTION_SCREEN_ON -> "on"
     Intent.ACTION_USER_PRESENT -> "unlocked"
     else -> "unknown"
+}
+
+internal fun normalizedBrightness(value: Int): Double? {
+    if (value < 0) return null
+    return value.coerceAtMost(255) / 255.0
 }
