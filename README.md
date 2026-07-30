@@ -9,16 +9,155 @@ A Flutter plugin for listening to system events through one small typed API.
 
 ## Platform support
 
-| Event | Properties | Android | iOS | macOS | Windows | Linux | Web |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| `KeyboardEvent` | `visible`, `height` | Yes | Yes | Yes | In progress | In progress | Yes |
-| `LifecycleEvent` | `state` | Yes | Yes | In progress | In progress | In progress | Yes |
-| `NetworkEvent` | `online`, `networkType` | Yes | Yes | In progress | In progress | In progress | Yes |
-| `MemoryEvent` | `state`, `level` | Yes | Yes | In progress | In progress | In progress | In progress |
-| `BatteryEvent` | `level`, `charging`, `state` | Yes | Yes | In progress | In progress | In progress | In progress |
-| `OrientationEvent` | `orientation` | Yes | Yes | In progress | In progress | In progress | In progress |
-| `TimeEvent` | `reason` | Yes | Yes | In progress | In progress | In progress | In progress |
-| `ScreenEvent` | `change`, `brightness` | Yes | Partial: unlocked, brightness | In progress | In progress | In progress | In progress |
+<table>
+  <thead>
+    <tr>
+      <th rowspan="2">Platform</th>
+      <th colspan="2">KeyboardEvent</th>
+      <th>LifecycleEvent</th>
+      <th colspan="2">NetworkEvent</th>
+      <th colspan="2">MemoryEvent</th>
+      <th colspan="3">BatteryEvent</th>
+      <th>OrientationEvent</th>
+      <th>TimeEvent</th>
+      <th colspan="2">ScreenEvent</th>
+    </tr>
+    <tr>
+      <th>visible</th>
+      <th>height</th>
+      <th>state</th>
+      <th>online</th>
+      <th>networkType</th>
+      <th>state</th>
+      <th>level</th>
+      <th>level</th>
+      <th>charging</th>
+      <th>state</th>
+      <th>orientation</th>
+      <th>reason</th>
+      <th>change</th>
+      <th>brightness</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Android</th>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>Yes</td>
+    </tr>
+    <tr>
+      <th>iOS</th>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>Partial</td>
+      <td>Yes</td>
+    </tr>
+    <tr>
+      <th>macOS</th>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>In progress</td>
+      <td>In progress</td>
+      <td>In progress</td>
+      <td>In progress</td>
+      <td>In progress</td>
+      <td>In progress</td>
+      <td>In progress</td>
+      <td>In progress</td>
+      <td>In progress</td>
+      <td>In progress</td>
+      <td>In progress</td>
+      <td>In progress</td>
+    </tr>
+    <tr>
+      <th>Windows</th>
+      <td>In progress</td>
+      <td>In progress</td>
+      <td>In progress</td>
+      <td>In progress</td>
+      <td>In progress</td>
+      <td>In progress</td>
+      <td>In progress</td>
+      <td>In progress</td>
+      <td>In progress</td>
+      <td>In progress</td>
+      <td>In progress</td>
+      <td>In progress</td>
+      <td>In progress</td>
+      <td>In progress</td>
+    </tr>
+    <tr>
+      <th>Linux</th>
+      <td>In progress</td>
+      <td>In progress</td>
+      <td>In progress</td>
+      <td>In progress</td>
+      <td>In progress</td>
+      <td>In progress</td>
+      <td>In progress</td>
+      <td>In progress</td>
+      <td>In progress</td>
+      <td>In progress</td>
+      <td>In progress</td>
+      <td>In progress</td>
+      <td>In progress</td>
+      <td>In progress</td>
+    </tr>
+    <tr>
+      <th>Web</th>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>In progress</td>
+      <td>In progress</td>
+      <td>In progress</td>
+      <td>In progress</td>
+      <td>In progress</td>
+      <td>In progress</td>
+      <td>In progress</td>
+      <td>In progress</td>
+      <td>In progress</td>
+    </tr>
+  </tbody>
+</table>
+
+Field meanings:
+
+- `visible`: whether the keyboard is visible.
+- `height`: keyboard height in logical pixels.
+- `state`: lifecycle, memory pressure, or battery state depending on the event.
+- `online`: whether a network connection is available.
+- `networkType`: current network connection type.
+- `level`: memory pressure level or battery level depending on the event.
+- `charging`: whether the device is charging or full.
+- `orientation`: current screen orientation.
+- `reason`: why a time event was emitted.
+- `change`: `off`, `on`, `unlocked`, or `brightness`.
+- `brightness`: screen brightness from `0.0` to `1.0`.
 
 Memory events are hints. The plugin reports pressure; your app decides what can
 be released safely.
