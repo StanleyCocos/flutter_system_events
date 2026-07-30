@@ -13,6 +13,7 @@ void main() {
     expect(find.text('Memory'), findsOneWidget);
     expect(find.text('Battery'), findsOneWidget);
     expect(find.text('Orientation'), findsOneWidget);
+    expect(find.text('Time'), findsOneWidget);
 
     await tester.tap(find.text('Keyboard'));
     await tester.pumpAndSettle();
@@ -122,5 +123,19 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('orientation: -'), findsOneWidget);
+  });
+
+  testWidgets('opens time event page', (tester) async {
+    await tester.pumpWidget(const MyApp());
+
+    await tester.tap(find.text('Time'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Time Event'), findsOneWidget);
+    expect(
+      find.text('Change system time, date, or timezone to trigger this event.'),
+      findsOneWidget,
+    );
+    expect(find.text('reason: -'), findsOneWidget);
   });
 }

@@ -8,7 +8,7 @@
 
 版本 `0.5.0` 新增 Android 和 iOS 屏幕方向事件。
 
-在真实 App 里，我经常只需要监听一些很小的系统状态变化：网络变化、应用生命周期、键盘高度、内存压力、电池状态、屏幕方向等等。每一类事件都可以用单独的库或插件解决，但如果只是为了监听几个事件就引入一堆依赖，会有点大材小用。
+在真实 App 里，我经常只需要监听一些很小的系统状态变化：网络变化、应用生命周期、键盘高度、内存压力、电池状态、屏幕方向、系统时间等等。每一类事件都可以用单独的库或插件解决，但如果只是为了监听几个事件就引入一堆依赖，会有点大材小用。
 
 `flutter_system_events` 就是为这种场景准备的。它只做系统事件监听，并通过一个小而明确的类型化 API 暴露出来。你也可以只启用自己需要的事件类型，不用担心未使用的监听器浪费资源。
 
@@ -18,6 +18,7 @@
 - 通过 `MemoryEvent` 清理 App 自己管理的缓存
 - 通过 `BatteryEvent` 减少后台任务
 - 通过 `OrientationEvent` 调整横竖屏布局
+- 通过 `TimeEvent` 刷新和日期、时区相关的界面
 
 当你只想要一个小 API，而不是手动接入多个平台监听器或插件时，可以使用它。
 
@@ -31,6 +32,7 @@
 | Memory | 支持 | 支持 | 努力实现中 | 努力实现中 | 努力实现中 | 努力实现中 |
 | Battery | 支持 | 支持 | 努力实现中 | 努力实现中 | 努力实现中 | 努力实现中 |
 | Orientation | 支持 | 支持 | 努力实现中 | 努力实现中 | 努力实现中 | 努力实现中 |
+| Time | 支持 | 支持 | 努力实现中 | 努力实现中 | 努力实现中 | 努力实现中 |
 
 ## 安装
 
@@ -67,6 +69,8 @@ Future<void> startSystemEvents() async {
         print('battery level=$level charging=$charging state=${state.name}');
       case OrientationEvent(:final orientation):
         print('orientation=${orientation.name}');
+      case TimeEvent(:final reason):
+        print('time reason=${reason.name}');
       case UnknownSystemEvent(:final rawType, :final reason):
         print('unknown event type=$rawType reason=$reason');
     }
@@ -81,7 +85,7 @@ Future<void> stopSystemEvents() async {
 }
 ```
 
-默认情况下，`initialize()` 会启动键盘、生命周期、网络、内存和屏幕方向事件。电池事件需要主动启用：
+默认情况下，`initialize()` 会启动键盘、生命周期、网络、内存、屏幕方向和系统时间事件。电池事件需要主动启用：
 
 ```dart
 await SystemEvents.initialize(config: const SystemEventsConfig.all());
@@ -117,5 +121,6 @@ flutter run
 - Memory
 - Battery
 - Orientation
+- Time
 
 每个页面都会在顶部显示最新事件值，并提供简单方式用于触发或手动验证事件。

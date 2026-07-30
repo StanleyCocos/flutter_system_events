@@ -10,7 +10,7 @@ Version `0.5.0` adds Android and iOS orientation events.
 
 In real apps, I often need to listen to small pieces of system state: network
 changes, app lifecycle, keyboard height, memory pressure, battery state,
-orientation changes, and so
+orientation changes, time changes, and so
 on. Each one can be solved with a separate package, but pulling in several
 plugins just to watch a few events can feel heavier than the problem needs.
 
@@ -24,6 +24,7 @@ types you need, so unused listeners do not waste resources.
 - Clear app-owned caches from `MemoryEvent`
 - Reduce background work from `BatteryEvent`
 - Adapt layouts from `OrientationEvent`
+- Refresh date-sensitive UI from `TimeEvent`
 
 Use this when you want one small API instead of wiring several
 platform-specific listeners or packages.
@@ -38,6 +39,7 @@ platform-specific listeners or packages.
 | Memory | Yes | Yes | In progress | In progress | In progress | In progress |
 | Battery | Yes | Yes | In progress | In progress | In progress | In progress |
 | Orientation | Yes | Yes | In progress | In progress | In progress | In progress |
+| Time | Yes | Yes | In progress | In progress | In progress | In progress |
 
 ## Installation
 
@@ -74,6 +76,8 @@ Future<void> startSystemEvents() async {
         print('battery level=$level charging=$charging state=${state.name}');
       case OrientationEvent(:final orientation):
         print('orientation=${orientation.name}');
+      case TimeEvent(:final reason):
+        print('time reason=${reason.name}');
       case UnknownSystemEvent(:final rawType, :final reason):
         print('unknown event type=$rawType reason=$reason');
     }
@@ -88,8 +92,8 @@ Future<void> stopSystemEvents() async {
 }
 ```
 
-By default, `initialize()` starts keyboard, lifecycle, network, memory, and
-orientation events. Battery is opt-in:
+By default, `initialize()` starts keyboard, lifecycle, network, memory,
+orientation, and time events. Battery is opt-in:
 
 ```dart
 await SystemEvents.initialize(config: const SystemEventsConfig.all());
@@ -126,5 +130,6 @@ The example includes separate pages for:
 - Memory
 - Battery
 - Orientation
+- Time
 
 Each page shows the latest event value at the top and provides a simple way to trigger or manually verify the event.

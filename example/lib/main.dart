@@ -6,6 +6,7 @@ import 'pages/lifecycle_event_page.dart';
 import 'pages/memory_event_page.dart';
 import 'pages/network_event_page.dart';
 import 'pages/orientation_event_page.dart';
+import 'pages/time_event_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -98,6 +99,16 @@ class EventListPage extends StatelessWidget {
                 MaterialPageRoute<void>(
                   builder: (_) => const OrientationEventPage(),
                 ),
+              );
+            },
+          ),
+          ListTile(
+            title: const Text('Time'),
+            subtitle: const Text('Time, date, timezone'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const TimeEventPage()),
               );
             },
           ),
