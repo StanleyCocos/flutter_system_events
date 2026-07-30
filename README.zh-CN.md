@@ -40,7 +40,7 @@
 
 ```yaml
 dependencies:
-  flutter_system_events: ^0.6.0
+  flutter_system_events: ^0.7.0
 ```
 
 ## 使用
