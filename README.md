@@ -55,7 +55,9 @@ dependencies:
 
 ## Usage
 
-Initialize once, then listen to `SystemEvents.events`.
+Initialize once, then listen to `SystemEvents.events`. Feature pages and
+business modules should cancel only their own stream subscriptions; call
+`SystemEvents.dispose()` from the same app-level lifecycle that initialized it.
 
 ```dart
 import 'dart:async';

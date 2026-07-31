@@ -31,13 +31,11 @@ class _NetworkEventPageState extends State<NetworkEventPage> {
         if (_events.length > 8) _events.removeLast();
       });
     });
-    SystemEvents.initialize();
   }
 
   @override
   void dispose() {
     _subscription?.cancel();
-    SystemEvents.dispose();
     super.dispose();
   }
 

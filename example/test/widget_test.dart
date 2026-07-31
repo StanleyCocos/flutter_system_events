@@ -9,18 +9,20 @@ import 'package:flutter_system_events_example/main.dart';
 class FakeSystemEventsPlatform extends FlutterSystemEventsPlatform {
   final controller = StreamController<SystemEvent>.broadcast(sync: true);
   SystemEventsConfig? initializedConfig;
-  var disposed = false;
+  var initializeCount = 0;
+  var disposeCount = 0;
 
   @override
   Future<void> initialize({
     SystemEventsConfig config = const SystemEventsConfig.defaults(),
   }) async {
+    initializeCount++;
     initializedConfig = config;
   }
 
   @override
   Future<void> dispose() async {
-    disposed = true;
+    disposeCount++;
   }
 
   @override
@@ -193,11 +195,15 @@ void main() {
 
     await tester.pumpWidget(const MyApp());
 
+    expect(platform.initializeCount, 1);
+    expect(platform.initializedConfig?.battery, isNotNull);
+
     await tester.tap(find.text('Screen'));
     await tester.pumpAndSettle();
 
+    expect(platform.initializeCount, 1);
     expect(platform.initializedConfig?.screen, isNotNull);
-    expect(platform.initializedConfig?.keyboard, isNull);
+    expect(platform.initializedConfig?.keyboard, isNotNull);
 
     for (final change in [
       ScreenChange.off,
@@ -223,7 +229,12 @@ void main() {
     await tester.tap(find.byType(BackButton));
     await tester.pumpAndSettle();
 
-    expect(platform.disposed, isTrue);
+    expect(platform.disposeCount, 0);
+
+    await tester.pumpWidget(const SizedBox());
+    await tester.pumpAndSettle();
+
+    expect(platform.disposeCount, 1);
     await platform.controller.close();
   });
 }
