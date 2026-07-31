@@ -40,7 +40,6 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
 
   public func onCancel(withArguments arguments: Any?) -> FlutterError? {
     events = nil
-    stopAll()
     return nil
   }
 

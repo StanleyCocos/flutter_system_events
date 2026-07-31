@@ -96,12 +96,11 @@ class FlutterSystemEventsPlugin :
 
     override fun onListen(arguments: Any?, eventSink: EventChannel.EventSink) {
         events = eventSink
+        if (initialized) startAll()
     }
 
     override fun onCancel(arguments: Any?) {
         events = null
-        initialized = false
-        stopAll()
     }
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {

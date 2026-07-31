@@ -41,7 +41,6 @@ class _MemoryEventPageState extends State<MemoryEventPage> {
         if (_events.length > 8) _events.removeLast();
       });
     });
-    SystemEvents.initialize();
   }
 
   @override
@@ -49,7 +48,6 @@ class _MemoryEventPageState extends State<MemoryEventPage> {
     _pressureTimer?.cancel();
     _memoryBlocks.clear();
     _subscription?.cancel();
-    SystemEvents.dispose();
     super.dispose();
   }
 

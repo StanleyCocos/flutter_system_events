@@ -26,15 +26,11 @@ class _TimeEventPageState extends State<TimeEventPage> {
         if (_events.length > 8) _events.removeLast();
       });
     });
-    SystemEvents.initialize(
-      config: const SystemEventsConfig(time: TimeConfig()),
-    );
   }
 
   @override
   void dispose() {
     _subscription?.cancel();
-    SystemEvents.dispose();
     super.dispose();
   }
 

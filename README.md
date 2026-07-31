@@ -9,16 +9,35 @@ A Flutter plugin for listening to system events through one small typed API.
 
 ## Platform support
 
-| Event | Properties | Android | iOS | macOS | Windows | Linux | Web |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| `KeyboardEvent` | `visible`, `height` | Yes | Yes | Yes | In progress | In progress | Yes |
-| `LifecycleEvent` | `state` | Yes | Yes | In progress | In progress | In progress | Yes |
-| `NetworkEvent` | `online`, `networkType` | Yes | Yes | In progress | In progress | In progress | Yes |
-| `MemoryEvent` | `state`, `level` | Yes | Yes | In progress | In progress | In progress | In progress |
-| `BatteryEvent` | `level`, `charging`, `state` | Yes | Yes | In progress | In progress | In progress | In progress |
-| `OrientationEvent` | `orientation` | Yes | Yes | In progress | In progress | In progress | In progress |
-| `TimeEvent` | `reason` | Yes | Yes | In progress | In progress | In progress | In progress |
-| `ScreenEvent` | `change`, `brightness` | Yes | Partial: unlocked, brightness | In progress | In progress | In progress | In progress |
+| Event | Android | iOS | macOS | Windows | Linux | Web |
+| --- | --- | --- | --- | --- | --- | --- |
+| `KeyboardEvent` | Yes | Yes | Yes | In progress | In progress | Yes |
+| `LifecycleEvent` | Yes | Yes | In progress | In progress | In progress | Yes |
+| `NetworkEvent` | Yes | Yes | In progress | In progress | In progress | Yes |
+| `MemoryEvent` | Yes | Yes | In progress | In progress | In progress | In progress |
+| `BatteryEvent` | Yes | Yes | In progress | In progress | In progress | In progress |
+| `OrientationEvent` | Yes | Yes | In progress | In progress | In progress | In progress |
+| `TimeEvent` | Yes | Yes | In progress | In progress | In progress | In progress |
+| `ScreenEvent` | Yes | Partial | In progress | In progress | In progress | In progress |
+
+## Event payloads
+
+| Event | Field | Meaning |
+| --- | --- | --- |
+| `KeyboardEvent` | `visible` | Whether the keyboard is visible. |
+| `KeyboardEvent` | `height` | Keyboard height in logical pixels. |
+| `LifecycleEvent` | `state` | Current app lifecycle state. |
+| `NetworkEvent` | `online` | Whether a network connection is available. |
+| `NetworkEvent` | `networkType` | Current network connection type. |
+| `MemoryEvent` | `state` | Current memory pressure state. |
+| `MemoryEvent` | `level` | Platform-specific memory pressure level. |
+| `BatteryEvent` | `level` | Battery level from `0` to `100`, or `-1` when unavailable. |
+| `BatteryEvent` | `charging` | Whether the device is charging or full. |
+| `BatteryEvent` | `state` | Current battery state. |
+| `OrientationEvent` | `orientation` | Current screen orientation. |
+| `TimeEvent` | `reason` | Why a time event was emitted. |
+| `ScreenEvent` | `change` | `off`, `on`, `unlocked`, or `brightness`. |
+| `ScreenEvent` | `brightness` | Screen brightness from `0.0` to `1.0` when `change` is `brightness`. |
 
 Memory events are hints. The plugin reports pressure; your app decides what can
 be released safely.
@@ -36,7 +55,9 @@ dependencies:
 
 ## Usage
 
-Initialize once, then listen to `SystemEvents.events`.
+Initialize once, then listen to `SystemEvents.events`. Feature pages and
+business modules should cancel only their own stream subscriptions; call
+`SystemEvents.dispose()` from the same app-level lifecycle that initialized it.
 
 ```dart
 import 'dart:async';

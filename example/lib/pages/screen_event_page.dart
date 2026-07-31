@@ -28,15 +28,11 @@ class _ScreenEventPageState extends State<ScreenEventPage> {
         if (_events.length > 8) _events.removeLast();
       });
     });
-    SystemEvents.initialize(
-      config: const SystemEventsConfig(screen: ScreenConfig()),
-    );
   }
 
   @override
   void dispose() {
     _subscription?.cancel();
-    SystemEvents.dispose();
     super.dispose();
   }
 
