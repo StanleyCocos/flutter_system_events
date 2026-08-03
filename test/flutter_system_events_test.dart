@@ -31,6 +31,25 @@ class MockFlutterSystemEventsPlatform
 class IncompleteFlutterSystemEventsPlatform
     extends FlutterSystemEventsPlatform {}
 
+class MixedEventFlutterSystemEventsPlatform
+    with MockPlatformInterfaceMixin
+    implements FlutterSystemEventsPlatform {
+  @override
+  Future<void> initialize({
+    SystemEventsConfig config = const SystemEventsConfig.defaults(),
+  }) async {}
+
+  @override
+  Future<void> dispose() async {}
+
+  @override
+  Stream<SystemEvent> get events => Stream<SystemEvent>.fromIterable([
+    const NetworkEvent(online: true, networkType: NetworkType.wifi),
+    const KeyboardEvent(visible: true, height: 300),
+    const LifecycleEvent(state: LifecycleState.resumed),
+  ]);
+}
+
 void main() {
   final initialPlatform = FlutterSystemEventsPlatform.instance;
 
@@ -65,6 +84,15 @@ void main() {
     FlutterSystemEventsPlatform.instance = MockFlutterSystemEventsPlatform();
 
     expect(await SystemEvents.events.single, isA<KeyboardEvent>());
+  });
+
+  test('typed event streams only emit matching events', () async {
+    FlutterSystemEventsPlatform.instance =
+        MixedEventFlutterSystemEventsPlatform();
+
+    expect(await SystemEvents.keyboard.single, isA<KeyboardEvent>());
+    expect(await SystemEvents.network.single, isA<NetworkEvent>());
+    expect(await SystemEvents.lifecycle.single, isA<LifecycleEvent>());
   });
 
   test('base platform methods throw when not implemented', () {

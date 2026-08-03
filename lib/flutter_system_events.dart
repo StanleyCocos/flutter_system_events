@@ -51,4 +51,37 @@ final class SystemEvents {
   /// Broadcast stream of decoded system events.
   static Stream<SystemEvent> get events =>
       FlutterSystemEventsPlatform.instance.events;
+
+  /// Keyboard visibility events.
+  static Stream<KeyboardEvent> get keyboard =>
+      events.where((event) => event is KeyboardEvent).cast<KeyboardEvent>();
+
+  /// App lifecycle events.
+  static Stream<LifecycleEvent> get lifecycle =>
+      events.where((event) => event is LifecycleEvent).cast<LifecycleEvent>();
+
+  /// Network connectivity events.
+  static Stream<NetworkEvent> get network =>
+      events.where((event) => event is NetworkEvent).cast<NetworkEvent>();
+
+  /// Memory pressure events.
+  static Stream<MemoryEvent> get memory =>
+      events.where((event) => event is MemoryEvent).cast<MemoryEvent>();
+
+  /// Battery state events.
+  static Stream<BatteryEvent> get battery =>
+      events.where((event) => event is BatteryEvent).cast<BatteryEvent>();
+
+  /// Screen orientation events.
+  static Stream<OrientationEvent> get orientation => events
+      .where((event) => event is OrientationEvent)
+      .cast<OrientationEvent>();
+
+  /// System time change events.
+  static Stream<TimeEvent> get time =>
+      events.where((event) => event is TimeEvent).cast<TimeEvent>();
+
+  /// Screen state and brightness events.
+  static Stream<ScreenEvent> get screen =>
+      events.where((event) => event is ScreenEvent).cast<ScreenEvent>();
 }
