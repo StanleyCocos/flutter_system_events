@@ -8,6 +8,7 @@ class MockFlutterSystemEventsPlatform
     with MockPlatformInterfaceMixin
     implements FlutterSystemEventsPlatform {
   SystemEventsConfig? initializedConfig;
+  final initializedConfigs = <SystemEventsConfig>[];
   var disposed = false;
 
   @override
@@ -15,6 +16,7 @@ class MockFlutterSystemEventsPlatform
     SystemEventsConfig config = const SystemEventsConfig.defaults(),
   }) async {
     initializedConfig = config;
+    initializedConfigs.add(config);
   }
 
   @override
@@ -74,6 +76,63 @@ void main() {
     await SystemEvents.initialize(config: config);
 
     expect(platform.initializedConfig, same(config));
+    expect(SystemEvents.config, same(config));
+  });
+
+  test(
+    'updateConfig replaces current config and delegates to platform',
+    () async {
+      final platform = MockFlutterSystemEventsPlatform();
+      FlutterSystemEventsPlatform.instance = platform;
+      const config = SystemEventsConfig(battery: BatteryConfig());
+
+      await SystemEvents.updateConfig(config);
+
+      expect(platform.initializedConfig, same(config));
+      expect(SystemEvents.config, same(config));
+    },
+  );
+
+  test('enable adds one event group to current config', () async {
+    final platform = MockFlutterSystemEventsPlatform();
+    FlutterSystemEventsPlatform.instance = platform;
+
+    await SystemEvents.updateConfig(const SystemEventsConfig());
+    await SystemEvents.enable(SystemEventType.keyboard);
+
+    expect(SystemEvents.config.keyboard, isNotNull);
+    expect(SystemEvents.config.lifecycle, isNull);
+    expect(platform.initializedConfigs.last.toMap(), {
+      'keyboard': true,
+      'lifecycle': false,
+      'network': false,
+      'memory': false,
+      'battery': false,
+      'orientation': false,
+      'time': false,
+      'screen': false,
+    });
+  });
+
+  test('disable removes one event group from current config', () async {
+    final platform = MockFlutterSystemEventsPlatform();
+    FlutterSystemEventsPlatform.instance = platform;
+
+    await SystemEvents.updateConfig(const SystemEventsConfig.all());
+    await SystemEvents.disable(SystemEventType.battery);
+
+    expect(SystemEvents.config.battery, isNull);
+    expect(SystemEvents.config.keyboard, isNotNull);
+    expect(platform.initializedConfigs.last.toMap(), {
+      'keyboard': true,
+      'lifecycle': true,
+      'network': true,
+      'memory': true,
+      'battery': false,
+      'orientation': true,
+      'time': true,
+      'screen': true,
+    });
   });
 
   test('dispose delegates to platform instance', () async {

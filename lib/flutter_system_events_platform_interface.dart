@@ -111,6 +111,33 @@ sealed class SystemEvent {
   }
 }
 
+/// Event groups that can be enabled or disabled at runtime.
+enum SystemEventType {
+  /// Keyboard visibility events.
+  keyboard,
+
+  /// App lifecycle events.
+  lifecycle,
+
+  /// Network connectivity events.
+  network,
+
+  /// Memory pressure events.
+  memory,
+
+  /// Battery state events.
+  battery,
+
+  /// Screen orientation events.
+  orientation,
+
+  /// System time change events.
+  time,
+
+  /// Screen state and brightness events.
+  screen,
+}
+
 /// Selects which native event listeners are enabled.
 final class SystemEventsConfig {
   /// Creates a custom event listener configuration.
@@ -183,6 +210,58 @@ final class SystemEventsConfig {
       'time': time != null,
       'screen': screen != null,
     };
+  }
+
+  /// Whether [type] is enabled.
+  bool isEnabled(SystemEventType type) {
+    return switch (type) {
+      SystemEventType.keyboard => keyboard != null,
+      SystemEventType.lifecycle => lifecycle != null,
+      SystemEventType.network => network != null,
+      SystemEventType.memory => memory != null,
+      SystemEventType.battery => battery != null,
+      SystemEventType.orientation => orientation != null,
+      SystemEventType.time => time != null,
+      SystemEventType.screen => screen != null,
+    };
+  }
+
+  /// Returns a copy with [type] enabled.
+  SystemEventsConfig enabled(SystemEventType type) {
+    return SystemEventsConfig(
+      keyboard: type == SystemEventType.keyboard
+          ? const KeyboardConfig()
+          : keyboard,
+      lifecycle: type == SystemEventType.lifecycle
+          ? const LifecycleConfig()
+          : lifecycle,
+      network: type == SystemEventType.network
+          ? const NetworkConfig()
+          : network,
+      memory: type == SystemEventType.memory ? const MemoryConfig() : memory,
+      battery: type == SystemEventType.battery
+          ? const BatteryConfig()
+          : battery,
+      orientation: type == SystemEventType.orientation
+          ? const OrientationConfig()
+          : orientation,
+      time: type == SystemEventType.time ? const TimeConfig() : time,
+      screen: type == SystemEventType.screen ? const ScreenConfig() : screen,
+    );
+  }
+
+  /// Returns a copy with [type] disabled.
+  SystemEventsConfig disabled(SystemEventType type) {
+    return SystemEventsConfig(
+      keyboard: type == SystemEventType.keyboard ? null : keyboard,
+      lifecycle: type == SystemEventType.lifecycle ? null : lifecycle,
+      network: type == SystemEventType.network ? null : network,
+      memory: type == SystemEventType.memory ? null : memory,
+      battery: type == SystemEventType.battery ? null : battery,
+      orientation: type == SystemEventType.orientation ? null : orientation,
+      time: type == SystemEventType.time ? null : time,
+      screen: type == SystemEventType.screen ? null : screen,
+    );
   }
 }
 

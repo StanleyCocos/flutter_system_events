@@ -26,6 +26,7 @@ export 'flutter_system_events_platform_interface.dart'
         ScreenEvent,
         ScreenOrientation,
         SystemEvent,
+        SystemEventType,
         SystemEventsConfig,
         TimeChangeReason,
         TimeConfig,
@@ -36,11 +37,32 @@ export 'flutter_system_events_platform_interface.dart'
 final class SystemEvents {
   const SystemEvents._();
 
+  static var _config = const SystemEventsConfig.defaults();
+
+  /// Current event listener configuration.
+  static SystemEventsConfig get config => _config;
+
   /// Starts native listeners for the enabled event groups in [config].
   static Future<void> initialize({
     SystemEventsConfig config = const SystemEventsConfig.defaults(),
   }) {
+    return updateConfig(config);
+  }
+
+  /// Replaces the active native listener configuration.
+  static Future<void> updateConfig(SystemEventsConfig config) {
+    _config = config;
     return FlutterSystemEventsPlatform.instance.initialize(config: config);
+  }
+
+  /// Enables one event group and applies the updated configuration.
+  static Future<void> enable(SystemEventType type) {
+    return updateConfig(_config.enabled(type));
+  }
+
+  /// Disables one event group and applies the updated configuration.
+  static Future<void> disable(SystemEventType type) {
+    return updateConfig(_config.disabled(type));
   }
 
   /// Stops native listeners and releases platform resources.
