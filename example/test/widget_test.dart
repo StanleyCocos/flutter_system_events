@@ -54,6 +54,7 @@ void main() {
     expect(find.text('Keyboard Event'), findsOneWidget);
     expect(find.text('Tap to show keyboard'), findsOneWidget);
     expect(find.text('Recent events'), findsOneWidget);
+    expect(find.text('hide height=0'), findsOneWidget);
     expect(find.byType(EditableText), findsOneWidget);
   });
 

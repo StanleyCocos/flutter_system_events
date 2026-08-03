@@ -15,7 +15,7 @@ class _KeyboardEventPageState extends State<KeyboardEventPage> {
   StreamSubscription<KeyboardEvent>? _subscription1;
   bool _visible = false;
   double _height = 0;
-  final _events = <String>[];
+  final _events = <String>['hide height=0'];
 
   @override
   void initState() {
