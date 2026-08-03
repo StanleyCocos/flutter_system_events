@@ -91,8 +91,8 @@ void main() {
         MixedEventFlutterSystemEventsPlatform();
 
     expect(await SystemEvents.keyboard.single, isA<KeyboardEvent>());
-    expect(await SystemEvents.network.single, isA<NetworkEvent>());
     expect(await SystemEvents.lifecycle.single, isA<LifecycleEvent>());
+    expect(await SystemEvents.network.single, isA<NetworkEvent>());
   });
 
   test('base platform methods throw when not implemented', () {
