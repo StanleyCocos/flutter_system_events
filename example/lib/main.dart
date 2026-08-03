@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_system_events/flutter_system_events.dart';
 
+import 'global_system_event_logger.dart';
 import 'pages/battery_event_page.dart';
 import 'pages/keyboard_event_page.dart';
 import 'pages/lifecycle_event_page.dart';
@@ -20,14 +21,18 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  final _eventLogger = GlobalSystemEventLogger();
+
   @override
   void initState() {
     super.initState();
     SystemEvents.initialize(config: const SystemEventsConfig.all());
+    _eventLogger.start();
   }
 
   @override
   void dispose() {
+    _eventLogger.dispose();
     SystemEvents.dispose();
     super.dispose();
   }
