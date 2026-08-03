@@ -47,6 +47,11 @@ class MixedEventFlutterSystemEventsPlatform
     const NetworkEvent(online: true, networkType: NetworkType.wifi),
     const KeyboardEvent(visible: true, height: 300),
     const LifecycleEvent(state: LifecycleState.resumed),
+    const MemoryEvent(state: MemoryState.warning, level: 0),
+    const BatteryEvent(level: 80, charging: true, state: BatteryState.charging),
+    const OrientationEvent(orientation: ScreenOrientation.portraitUp),
+    const TimeEvent(reason: TimeChangeReason.timeChanged),
+    const ScreenEvent(change: ScreenChange.brightness, brightness: 0.5),
   ]);
 }
 
@@ -93,6 +98,11 @@ void main() {
     expect(await SystemEvents.keyboard.single, isA<KeyboardEvent>());
     expect(await SystemEvents.lifecycle.single, isA<LifecycleEvent>());
     expect(await SystemEvents.network.single, isA<NetworkEvent>());
+    expect(await SystemEvents.memory.single, isA<MemoryEvent>());
+    expect(await SystemEvents.battery.single, isA<BatteryEvent>());
+    expect(await SystemEvents.orientation.single, isA<OrientationEvent>());
+    expect(await SystemEvents.time.single, isA<TimeEvent>());
+    expect(await SystemEvents.screen.single, isA<ScreenEvent>());
   });
 
   test('base platform methods throw when not implemented', () {
