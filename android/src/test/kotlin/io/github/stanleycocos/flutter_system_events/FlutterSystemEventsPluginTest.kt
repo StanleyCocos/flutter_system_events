@@ -94,4 +94,13 @@ internal class FlutterSystemEventsPluginTest {
         )
         assertNull(screenBrightnessEvent(-1))
     }
+
+    @Test
+    fun logicalPixelsFromPhysicalPixels_convertsAndroidPixelsToLogicalPixels() {
+        assertEquals(100.0, logicalPixelsFromPhysicalPixels(300, 3.0f))
+        assertEquals(100.0, logicalPixelsFromPhysicalPixels(250, 2.5f))
+        assertEquals(200.0, logicalPixelsFromPhysicalPixels(150, 0.75f))
+        assertEquals(0.0, logicalPixelsFromPhysicalPixels(0, 3.0f))
+        assertEquals(300.0, logicalPixelsFromPhysicalPixels(300, 0.0f))
+    }
 }

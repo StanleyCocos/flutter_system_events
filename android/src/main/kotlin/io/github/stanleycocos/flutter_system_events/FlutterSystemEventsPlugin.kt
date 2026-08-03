@@ -189,11 +189,15 @@ class FlutterSystemEventsPlugin :
             val visible = keyboardHeight > height * 0.15
             if (visible != keyboardVisible) {
                 keyboardVisible = visible
+                val logicalKeyboardHeight = logicalPixelsFromPhysicalPixels(
+                    keyboardHeight,
+                    root.resources.displayMetrics.density,
+                )
                 emitEvent(
                     mapOf(
                         "type" to "keyboard",
                         "visible" to visible,
-                        "height" to if (visible) keyboardHeight else 0,
+                        "height" to if (visible) logicalKeyboardHeight else 0,
                     ),
                 )
             }
@@ -458,3 +462,6 @@ internal fun normalizedBrightness(value: Int): Double? {
     if (value < 0) return null
     return value.coerceAtMost(255) / 255.0
 }
+
+internal fun logicalPixelsFromPhysicalPixels(pixels: Int, density: Float): Double =
+    pixels / if (density > 0f) density.toDouble() else 1.0
