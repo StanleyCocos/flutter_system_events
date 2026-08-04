@@ -5,20 +5,100 @@
 
 [中文文档](README.zh-CN.md)
 
-A Flutter plugin for listening to system events through one small typed API.
+One Flutter API for system events: listen to typed changes, or read the current
+system state on demand.
 
-## Platform support
+Use it when your app needs to react to keyboard, lifecycle, network, memory,
+battery, orientation, time, screen, or brightness changes without wiring several
+platform listeners yourself.
 
-| Event | Android | iOS | macOS | Windows | Linux | Web |
-| --- | --- | --- | --- | --- | --- | --- |
-| `KeyboardEvent` | Yes | Yes | Yes | In progress | In progress | Yes |
-| `LifecycleEvent` | Yes | Yes | In progress | In progress | In progress | Yes |
-| `NetworkEvent` | Yes | Yes | In progress | In progress | In progress | Yes |
-| `MemoryEvent` | Yes | Yes | In progress | In progress | In progress | In progress |
-| `BatteryEvent` | Yes | Yes | In progress | In progress | In progress | In progress |
-| `OrientationEvent` | Yes | Yes | In progress | In progress | In progress | In progress |
-| `TimeEvent` | Yes | Yes | In progress | In progress | In progress | In progress |
-| `ScreenEvent` | Yes | Partial | In progress | In progress | In progress | In progress |
+## Installation
+
+```yaml
+dependencies:
+  flutter_system_events: ^0.7.0
+```
+
+## API
+
+Listen to all events, or subscribe to one typed event group:
+
+```dart
+SystemEvents.events.listen((event) {});
+SystemEvents.keyboard.listen((event) {});
+SystemEvents.lifecycle.listen((event) {});
+SystemEvents.network.listen((event) {});
+SystemEvents.memory.listen((event) {});
+SystemEvents.battery.listen((event) {});
+SystemEvents.orientation.listen((event) {});
+SystemEvents.time.listen((event) {});
+SystemEvents.screen.listen((event) {});
+```
+
+Read current values without waiting for the next event:
+
+```dart
+await SystemEvents.currentNetwork();
+await SystemEvents.currentBattery();
+await SystemEvents.currentOrientation();
+await SystemEvents.currentScreenBrightness();
+```
+
+## Usage
+
+Initialize once, then listen to the stream that matches the state your UI cares
+about.
+
+```dart
+import 'dart:async';
+
+import 'package:flutter_system_events/flutter_system_events.dart';
+
+StreamSubscription<NetworkEvent>? networkSubscription;
+
+Future<void> startSystemEvents() async {
+  await SystemEvents.initialize();
+
+  networkSubscription = SystemEvents.network.listen((event) {
+    print('network online=${event.online} type=${event.networkType.name}');
+  });
+
+  final battery = await SystemEvents.currentBattery();
+  print('battery level=${battery.level} state=${battery.state.name}');
+}
+
+Future<void> stopSystemEvents() async {
+  await networkSubscription?.cancel();
+  await SystemEvents.dispose();
+}
+```
+
+You can also handle every event from one stream:
+
+```dart
+SystemEvents.events.listen((event) {
+  switch (event) {
+    case KeyboardEvent(:final visible, :final height):
+      print('keyboard visible=$visible height=$height');
+    case LifecycleEvent(:final state):
+      if (state == LifecycleState.resumed) print('refresh data');
+    case NetworkEvent(:final online, :final networkType):
+      print('network online=$online type=${networkType.name}');
+    case MemoryEvent():
+      print('memory pressure');
+    case BatteryEvent(:final level, :final charging, :final state):
+      print('battery level=$level charging=$charging state=${state.name}');
+    case OrientationEvent(:final orientation):
+      print('orientation=${orientation.name}');
+    case TimeEvent(:final reason):
+      print('time reason=${reason.name}');
+    case ScreenEvent(:final change, :final brightness):
+      print('screen change=${change.name} brightness=$brightness');
+    case UnknownSystemEvent(:final rawType, :final reason):
+      print('unknown event type=$rawType reason=$reason');
+  }
+});
+```
 
 ## Event payloads
 
@@ -46,75 +126,15 @@ Android screen events include off, on, unlocked, and brightness changes. iOS
 supports unlocked and brightness changes; iOS does not expose reliable public
 screen off/on notifications for apps.
 
-## Installation
+## Platform support
 
-```yaml
-dependencies:
-  flutter_system_events: ^0.7.0
-```
-
-## Usage
-
-Initialize once, then listen to `SystemEvents.events`. Feature pages and
-business modules should cancel only their own stream subscriptions; call
-`SystemEvents.dispose()` from the same app-level lifecycle that initialized it.
-
-```dart
-import 'dart:async';
-
-import 'package:flutter/painting.dart';
-import 'package:flutter_system_events/flutter_system_events.dart';
-
-StreamSubscription<SystemEvent>? subscription;
-
-Future<void> startSystemEvents() async {
-  subscription = SystemEvents.events.listen((event) {
-    switch (event) {
-      case KeyboardEvent(:final visible, :final height):
-        print('keyboard visible=$visible height=$height');
-      case LifecycleEvent(:final state):
-        if (state == LifecycleState.resumed) print('refresh data');
-      case NetworkEvent(:final online, :final networkType):
-        print('network online=$online type=${networkType.name}');
-      case MemoryEvent():
-        PaintingBinding.instance.imageCache.clear();
-        PaintingBinding.instance.imageCache.clearLiveImages();
-      case BatteryEvent(:final level, :final charging, :final state):
-        print('battery level=$level charging=$charging state=${state.name}');
-      case OrientationEvent(:final orientation):
-        print('orientation=${orientation.name}');
-      case TimeEvent(:final reason):
-        print('time reason=${reason.name}');
-      case ScreenEvent(:final change, :final brightness):
-        print('screen change=${change.name} brightness=$brightness');
-      case UnknownSystemEvent(:final rawType, :final reason):
-        print('unknown event type=$rawType reason=$reason');
-    }
-  });
-
-  await SystemEvents.initialize();
-}
-
-Future<void> stopSystemEvents() async {
-  await subscription?.cancel();
-  await SystemEvents.dispose();
-}
-```
-
-By default, `initialize()` starts keyboard, lifecycle, network, memory,
-orientation, time, and screen events. Battery is opt-in:
-
-```dart
-await SystemEvents.initialize(config: const SystemEventsConfig.all());
-```
-
-Pass a custom config to enable only the events you need:
-
-```dart
-await SystemEvents.initialize(
-  config: const SystemEventsConfig(
-    network: NetworkConfig(),
-    battery: BatteryConfig(),
-  ),
-);
-```
+| Event | Android | iOS | macOS | Windows | Linux | Web |
+| --- | --- | --- | --- | --- | --- | --- |
+| `KeyboardEvent` | Yes | Yes | Yes | In progress | In progress | Yes |
+| `LifecycleEvent` | Yes | Yes | In progress | In progress | In progress | Yes |
+| `NetworkEvent` | Yes | Yes | In progress | In progress | In progress | Yes |
+| `MemoryEvent` | Yes | Yes | In progress | In progress | In progress | In progress |
+| `BatteryEvent` | Yes | Yes | In progress | In progress | In progress | In progress |
+| `OrientationEvent` | Yes | Yes | In progress | In progress | In progress | In progress |
+| `TimeEvent` | Yes | Yes | In progress | In progress | In progress | In progress |
+| `ScreenEvent` | Yes | Partial | In progress | In progress | In progress | In progress |
