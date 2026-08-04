@@ -1,3 +1,10 @@
+## 0.8.0
+
+- Added typed event streams on `SystemEvents`.
+- Added current network, battery, orientation, and screen brightness queries.
+- Added runtime event configuration helpers.
+- Updated the example app and README usage docs.
+
 ## 0.7.0
 
 - Added screen events.

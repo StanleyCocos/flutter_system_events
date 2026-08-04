@@ -16,7 +16,7 @@ platform listeners yourself.
 
 ```yaml
 dependencies:
-  flutter_system_events: ^0.7.0
+  flutter_system_events: ^0.8.0
 ```
 
 ## API
