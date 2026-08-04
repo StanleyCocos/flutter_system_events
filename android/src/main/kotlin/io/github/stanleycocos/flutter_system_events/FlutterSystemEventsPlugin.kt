@@ -99,6 +99,9 @@ class FlutterSystemEventsPlugin :
                     result.success(batteryEvent(intent))
                 }
             }
+            "currentOrientation" -> {
+                result.success(orientationEvent(activity?.windowManager?.defaultDisplay?.rotation))
+            }
             else -> result.notImplemented()
         }
     }
@@ -370,7 +373,7 @@ class FlutterSystemEventsPlugin :
         val orientation = orientationNameFromRotation(rotation)
         if (orientation == lastOrientation) return
         lastOrientation = orientation
-        emitEvent(mapOf("type" to "orientation", "orientation" to orientation))
+        emitEvent(orientationEvent(rotation))
     }
 
     private fun stopOrientation() {
@@ -425,6 +428,9 @@ internal fun orientationNameFromRotation(rotation: Int?): String = when (rotatio
     Surface.ROTATION_270 -> "landscapeRight"
     else -> "unknown"
 }
+
+internal fun orientationEvent(rotation: Int?): Map<String, Any> =
+    mapOf("type" to "orientation", "orientation" to orientationNameFromRotation(rotation))
 
 internal fun timeReasonFromAction(action: String?): String = when (action) {
     Intent.ACTION_TIME_CHANGED -> "timeChanged"

@@ -118,6 +118,23 @@ void main() {
     },
   );
 
+  test(
+    'currentOrientation calls native currentOrientation and decodes event',
+    () async {
+      String? method;
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (methodCall) async {
+            method = methodCall.method;
+            return {'type': 'orientation', 'orientation': 'landscapeLeft'};
+          });
+
+      final event = await platform.currentOrientation();
+
+      expect(method, 'currentOrientation');
+      expect(event.orientation, ScreenOrientation.landscapeLeft);
+    },
+  );
+
   test('events converts native maps to system events', () async {
     final platform = MethodChannelFlutterSystemEvents();
     const eventChannel = EventChannel('flutter_system_events/events');

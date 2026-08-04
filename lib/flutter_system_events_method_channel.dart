@@ -48,5 +48,14 @@ class MethodChannelFlutterSystemEvents extends FlutterSystemEventsPlatform {
   }
 
   @override
+  Future<OrientationEvent> currentOrientation() async {
+    final event = SystemEvent.fromPayload(
+      await methodChannel.invokeMethod<Object?>('currentOrientation'),
+    );
+    if (event is OrientationEvent) return event;
+    throw StateError('Expected OrientationEvent, got ${event.runtimeType}.');
+  }
+
+  @override
   Stream<SystemEvent> get events => _events;
 }

@@ -12,6 +12,7 @@ class MockFlutterSystemEventsPlatform
   var disposed = false;
   NetworkEvent? networkEvent;
   BatteryEvent? batteryEvent;
+  OrientationEvent? orientationEvent;
 
   @override
   Future<void> initialize({
@@ -40,6 +41,12 @@ class MockFlutterSystemEventsPlatform
           charging: true,
           state: BatteryState.charging,
         );
+  }
+
+  @override
+  Future<OrientationEvent> currentOrientation() async {
+    return orientationEvent ??
+        const OrientationEvent(orientation: ScreenOrientation.portraitUp);
   }
 
   @override
@@ -74,6 +81,11 @@ class MixedEventFlutterSystemEventsPlatform
       charging: true,
       state: BatteryState.charging,
     );
+  }
+
+  @override
+  Future<OrientationEvent> currentOrientation() async {
+    return const OrientationEvent(orientation: ScreenOrientation.portraitUp);
   }
 
   @override
@@ -206,6 +218,18 @@ void main() {
     expect(event.state, BatteryState.discharging);
   });
 
+  test('currentOrientation delegates to platform instance', () async {
+    final platform = MockFlutterSystemEventsPlatform()
+      ..orientationEvent = const OrientationEvent(
+        orientation: ScreenOrientation.landscapeLeft,
+      );
+    FlutterSystemEventsPlatform.instance = platform;
+
+    final event = await SystemEvents.currentOrientation();
+
+    expect(event.orientation, ScreenOrientation.landscapeLeft);
+  });
+
   test('events exposes keyboard events', () async {
     FlutterSystemEventsPlatform.instance = MockFlutterSystemEventsPlatform();
 
@@ -233,6 +257,7 @@ void main() {
     expect(platform.dispose, throwsUnimplementedError);
     expect(platform.currentNetwork, throwsUnimplementedError);
     expect(platform.currentBattery, throwsUnimplementedError);
+    expect(platform.currentOrientation, throwsUnimplementedError);
     expect(() => platform.events, throwsUnimplementedError);
   });
 

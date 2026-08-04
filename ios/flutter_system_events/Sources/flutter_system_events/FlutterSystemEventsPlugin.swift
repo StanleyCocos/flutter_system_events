@@ -33,6 +33,8 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
       currentNetwork(result)
     case "currentBattery":
       currentBattery(result)
+    case "currentOrientation":
+      result(orientationEvent(from: UIDevice.current.orientation))
     default:
       result(FlutterMethodNotImplemented)
     }
@@ -193,7 +195,7 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
     let orientation = orientationName(from: UIDevice.current.orientation)
     if orientation == lastOrientation { return }
     lastOrientation = orientation
-    events?(["type": "orientation", "orientation": orientation])
+    events?(orientationEvent(from: UIDevice.current.orientation))
   }
 
   private func stopOrientation() {
@@ -266,6 +268,10 @@ func orientationName(from orientation: UIDeviceOrientation) -> String {
   default:
     return "unknown"
   }
+}
+
+func orientationEvent(from orientation: UIDeviceOrientation) -> [String: Any] {
+  return ["type": "orientation", "orientation": orientationName(from: orientation)]
 }
 
 func networkEvent(from path: NWPath) -> [String: Any] {

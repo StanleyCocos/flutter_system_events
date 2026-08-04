@@ -47,6 +47,11 @@ abstract class FlutterSystemEventsPlatform extends PlatformInterface {
     throw UnimplementedError('currentBattery() has not been implemented.');
   }
 
+  /// Returns the current screen orientation.
+  Future<OrientationEvent> currentOrientation() {
+    throw UnimplementedError('currentOrientation() has not been implemented.');
+  }
+
   /// Stream of decoded platform events.
   Stream<SystemEvent> get events {
     throw UnimplementedError('events has not been implemented.');

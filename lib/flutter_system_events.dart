@@ -80,6 +80,11 @@ final class SystemEvents {
     return FlutterSystemEventsPlatform.instance.currentBattery();
   }
 
+  /// Returns the current screen orientation.
+  static Future<OrientationEvent> currentOrientation() {
+    return FlutterSystemEventsPlatform.instance.currentOrientation();
+  }
+
   /// Broadcast stream of decoded system events.
   static Stream<SystemEvent> get events =>
       FlutterSystemEventsPlatform.instance.events;
