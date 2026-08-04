@@ -90,6 +90,15 @@ class FlutterSystemEventsPlugin :
                     result.success(networkEvent(manager))
                 }
             }
+            "currentBattery" -> {
+                val context = appContext
+                val intent = context?.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+                if (intent == null) {
+                    result.error("unavailable", "Battery state unavailable.", null)
+                } else {
+                    result.success(batteryEvent(intent))
+                }
+            }
             else -> result.notImplemented()
         }
     }
@@ -276,25 +285,7 @@ class FlutterSystemEventsPlugin :
     }
 
     private fun emitBattery(intent: Intent) {
-        val level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
-        val scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
-        val status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, BatteryManager.BATTERY_STATUS_UNKNOWN)
-        val percent = if (level >= 0 && scale > 0) level * 100 / scale else -1
-        val state = when (status) {
-            BatteryManager.BATTERY_STATUS_CHARGING -> "charging"
-            BatteryManager.BATTERY_STATUS_DISCHARGING,
-            BatteryManager.BATTERY_STATUS_NOT_CHARGING -> "discharging"
-            BatteryManager.BATTERY_STATUS_FULL -> "full"
-            else -> "unknown"
-        }
-        emitEvent(
-            mapOf(
-                "type" to "battery",
-                "level" to percent,
-                "charging" to (state == "charging" || state == "full"),
-                "state" to state,
-            ),
-        )
+        emitEvent(batteryEvent(intent))
     }
 
     private fun stopBattery() {
@@ -468,6 +459,26 @@ internal fun networkEvent(manager: ConnectivityManager): Map<String, Any> {
         else -> "other"
     }
     return mapOf("type" to "network", "online" to online, "networkType" to networkType)
+}
+
+internal fun batteryEvent(intent: Intent): Map<String, Any> {
+    val level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
+    val scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
+    val status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, BatteryManager.BATTERY_STATUS_UNKNOWN)
+    val percent = if (level >= 0 && scale > 0) level * 100 / scale else -1
+    val state = when (status) {
+        BatteryManager.BATTERY_STATUS_CHARGING -> "charging"
+        BatteryManager.BATTERY_STATUS_DISCHARGING,
+        BatteryManager.BATTERY_STATUS_NOT_CHARGING -> "discharging"
+        BatteryManager.BATTERY_STATUS_FULL -> "full"
+        else -> "unknown"
+    }
+    return mapOf(
+        "type" to "battery",
+        "level" to percent,
+        "charging" to (state == "charging" || state == "full"),
+        "state" to state,
+    )
 }
 
 internal fun normalizedBrightness(value: Int): Double? {

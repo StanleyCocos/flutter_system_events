@@ -42,6 +42,11 @@ abstract class FlutterSystemEventsPlatform extends PlatformInterface {
     throw UnimplementedError('currentNetwork() has not been implemented.');
   }
 
+  /// Returns the current battery state.
+  Future<BatteryEvent> currentBattery() {
+    throw UnimplementedError('currentBattery() has not been implemented.');
+  }
+
   /// Stream of decoded platform events.
   Stream<SystemEvent> get events {
     throw UnimplementedError('events has not been implemented.');

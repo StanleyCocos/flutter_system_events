@@ -94,6 +94,30 @@ void main() {
     },
   );
 
+  test(
+    'currentBattery calls native currentBattery and decodes event',
+    () async {
+      String? method;
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (methodCall) async {
+            method = methodCall.method;
+            return {
+              'type': 'battery',
+              'level': 42,
+              'charging': false,
+              'state': 'discharging',
+            };
+          });
+
+      final event = await platform.currentBattery();
+
+      expect(method, 'currentBattery');
+      expect(event.level, 42);
+      expect(event.charging, isFalse);
+      expect(event.state, BatteryState.discharging);
+    },
+  );
+
   test('events converts native maps to system events', () async {
     final platform = MethodChannelFlutterSystemEvents();
     const eventChannel = EventChannel('flutter_system_events/events');

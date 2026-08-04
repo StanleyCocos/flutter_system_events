@@ -39,5 +39,14 @@ class MethodChannelFlutterSystemEvents extends FlutterSystemEventsPlatform {
   }
 
   @override
+  Future<BatteryEvent> currentBattery() async {
+    final event = SystemEvent.fromPayload(
+      await methodChannel.invokeMethod<Object?>('currentBattery'),
+    );
+    if (event is BatteryEvent) return event;
+    throw StateError('Expected BatteryEvent, got ${event.runtimeType}.');
+  }
+
+  @override
   Stream<SystemEvent> get events => _events;
 }

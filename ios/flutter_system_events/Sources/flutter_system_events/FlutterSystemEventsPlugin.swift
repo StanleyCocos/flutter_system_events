@@ -31,6 +31,8 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
       result(nil)
     case "currentNetwork":
       currentNetwork(result)
+    case "currentBattery":
+      currentBattery(result)
     default:
       result(FlutterMethodNotImplemented)
     }
@@ -142,6 +144,17 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
   }
 
   private func emitBattery() {
+    events?(batteryEvent())
+  }
+
+  private func currentBattery(_ result: @escaping FlutterResult) {
+    let previous = UIDevice.current.isBatteryMonitoringEnabled
+    UIDevice.current.isBatteryMonitoringEnabled = true
+    result(batteryEvent())
+    UIDevice.current.isBatteryMonitoringEnabled = previous
+  }
+
+  private func batteryEvent() -> [String: Any] {
     let device = UIDevice.current
     let state: String
     switch device.batteryState {
@@ -157,7 +170,7 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
       state = "unknown"
     }
     let level = device.batteryLevel >= 0 ? Int(device.batteryLevel * 100) : -1
-    events?(["type": "battery", "level": level, "charging": state == "charging" || state == "full", "state": state])
+    return ["type": "battery", "level": level, "charging": state == "charging" || state == "full", "state": state]
   }
 
   private func stopBattery() {

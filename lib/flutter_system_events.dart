@@ -75,6 +75,11 @@ final class SystemEvents {
     return FlutterSystemEventsPlatform.instance.currentNetwork();
   }
 
+  /// Returns the current battery state.
+  static Future<BatteryEvent> currentBattery() {
+    return FlutterSystemEventsPlatform.instance.currentBattery();
+  }
+
   /// Broadcast stream of decoded system events.
   static Stream<SystemEvent> get events =>
       FlutterSystemEventsPlatform.instance.events;

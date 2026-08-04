@@ -11,6 +11,7 @@ class MockFlutterSystemEventsPlatform
   final initializedConfigs = <SystemEventsConfig>[];
   var disposed = false;
   NetworkEvent? networkEvent;
+  BatteryEvent? batteryEvent;
 
   @override
   Future<void> initialize({
@@ -29,6 +30,16 @@ class MockFlutterSystemEventsPlatform
   Future<NetworkEvent> currentNetwork() async {
     return networkEvent ??
         const NetworkEvent(online: true, networkType: NetworkType.wifi);
+  }
+
+  @override
+  Future<BatteryEvent> currentBattery() async {
+    return batteryEvent ??
+        const BatteryEvent(
+          level: 80,
+          charging: true,
+          state: BatteryState.charging,
+        );
   }
 
   @override
@@ -54,6 +65,15 @@ class MixedEventFlutterSystemEventsPlatform
   @override
   Future<NetworkEvent> currentNetwork() async {
     return const NetworkEvent(online: true, networkType: NetworkType.wifi);
+  }
+
+  @override
+  Future<BatteryEvent> currentBattery() async {
+    return const BatteryEvent(
+      level: 80,
+      charging: true,
+      state: BatteryState.charging,
+    );
   }
 
   @override
@@ -170,6 +190,22 @@ void main() {
     expect(event.networkType, NetworkType.none);
   });
 
+  test('currentBattery delegates to platform instance', () async {
+    final platform = MockFlutterSystemEventsPlatform()
+      ..batteryEvent = const BatteryEvent(
+        level: 42,
+        charging: false,
+        state: BatteryState.discharging,
+      );
+    FlutterSystemEventsPlatform.instance = platform;
+
+    final event = await SystemEvents.currentBattery();
+
+    expect(event.level, 42);
+    expect(event.charging, isFalse);
+    expect(event.state, BatteryState.discharging);
+  });
+
   test('events exposes keyboard events', () async {
     FlutterSystemEventsPlatform.instance = MockFlutterSystemEventsPlatform();
 
@@ -196,6 +232,7 @@ void main() {
     expect(platform.initialize, throwsUnimplementedError);
     expect(platform.dispose, throwsUnimplementedError);
     expect(platform.currentNetwork, throwsUnimplementedError);
+    expect(platform.currentBattery, throwsUnimplementedError);
     expect(() => platform.events, throwsUnimplementedError);
   });
 
