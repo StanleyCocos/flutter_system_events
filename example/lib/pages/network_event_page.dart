@@ -39,6 +39,23 @@ class _NetworkEventPageState extends State<NetworkEventPage> {
     super.dispose();
   }
 
+  Future<void> _loadCurrentNetwork() async {
+    final event = await SystemEvents.currentNetwork();
+    debugPrint(
+      '[NetworkEventPage] current network: online=${event.online} type=${event.networkType.name}',
+    );
+    if (!mounted) return;
+    setState(() {
+      _online = event.online;
+      _networkType = event.networkType;
+      _events.insert(
+        0,
+        'current online=${event.online} type=${event.networkType.name}',
+      );
+      if (_events.length > 8) _events.removeLast();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -49,6 +66,11 @@ class _NetworkEventPageState extends State<NetworkEventPage> {
           Text('online: ${_online ?? '-'}'),
           const SizedBox(height: 8),
           Text('type: ${_networkType?.name ?? '-'}'),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: _loadCurrentNetwork,
+            child: const Text('Get current network'),
+          ),
           const SizedBox(height: 24),
           const Text('Toggle Wi-Fi or cellular data to trigger this event.'),
           const SizedBox(height: 24),

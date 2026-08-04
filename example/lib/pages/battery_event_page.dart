@@ -41,6 +41,24 @@ class _BatteryEventPageState extends State<BatteryEventPage> {
     super.dispose();
   }
 
+  Future<void> _loadCurrentBattery() async {
+    final event = await SystemEvents.currentBattery();
+    debugPrint(
+      '[BatteryEventPage] current battery: level=${event.level} charging=${event.charging} state=${event.state.name}',
+    );
+    if (!mounted) return;
+    setState(() {
+      _level = event.level;
+      _charging = event.charging;
+      _state = event.state;
+      _events.insert(
+        0,
+        'current level=${event.level} charging=${event.charging} state=${event.state.name}',
+      );
+      if (_events.length > 8) _events.removeLast();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -53,6 +71,11 @@ class _BatteryEventPageState extends State<BatteryEventPage> {
           Text('charging: ${_charging ?? '-'}'),
           const SizedBox(height: 8),
           Text('state: ${_state?.name ?? '-'}'),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: _loadCurrentBattery,
+            child: const Text('Get current battery'),
+          ),
           const SizedBox(height: 24),
           const Text('Plug or unplug power to trigger this event.'),
           const SizedBox(height: 24),

@@ -34,6 +34,19 @@ class _OrientationEventPageState extends State<OrientationEventPage> {
     super.dispose();
   }
 
+  Future<void> _loadCurrentOrientation() async {
+    final event = await SystemEvents.currentOrientation();
+    debugPrint(
+      '[OrientationEventPage] current orientation: ${event.orientation.name}',
+    );
+    if (!mounted) return;
+    setState(() {
+      _orientation = event.orientation;
+      _events.insert(0, 'current ${event.orientation.name}');
+      if (_events.length > 8) _events.removeLast();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,6 +55,11 @@ class _OrientationEventPageState extends State<OrientationEventPage> {
         padding: const EdgeInsets.all(16),
         children: [
           Text('orientation: ${_orientation?.name ?? '-'}'),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: _loadCurrentOrientation,
+            child: const Text('Get current orientation'),
+          ),
           const SizedBox(height: 24),
           const Text('Rotate the device to trigger this event.'),
           const SizedBox(height: 24),

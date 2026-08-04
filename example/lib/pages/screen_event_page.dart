@@ -36,6 +36,20 @@ class _ScreenEventPageState extends State<ScreenEventPage> {
     super.dispose();
   }
 
+  Future<void> _loadCurrentScreenBrightness() async {
+    final event = await SystemEvents.currentScreenBrightness();
+    debugPrint(
+      '[ScreenEventPage] current screen brightness: ${_formatBrightness(event.brightness)}',
+    );
+    if (!mounted) return;
+    setState(() {
+      _change = event.change;
+      _brightness = event.brightness;
+      _events.insert(0, 'current ${_eventText(event)}');
+      if (_events.length > 8) _events.removeLast();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -46,6 +60,11 @@ class _ScreenEventPageState extends State<ScreenEventPage> {
           Text('change: ${_change?.name ?? '-'}'),
           const SizedBox(height: 8),
           Text('brightness: ${_formatBrightness(_brightness)}'),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: _loadCurrentScreenBrightness,
+            child: const Text('Get current brightness'),
+          ),
           const SizedBox(height: 24),
           const Text(
             'Lock, unlock, or change brightness to trigger this event.',
