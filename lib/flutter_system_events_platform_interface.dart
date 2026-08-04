@@ -37,6 +37,11 @@ abstract class FlutterSystemEventsPlatform extends PlatformInterface {
     throw UnimplementedError('dispose() has not been implemented.');
   }
 
+  /// Returns the current network connectivity state.
+  Future<NetworkEvent> currentNetwork() {
+    throw UnimplementedError('currentNetwork() has not been implemented.');
+  }
+
   /// Stream of decoded platform events.
   Stream<SystemEvent> get events {
     throw UnimplementedError('events has not been implemented.');

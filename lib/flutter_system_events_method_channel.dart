@@ -30,5 +30,14 @@ class MethodChannelFlutterSystemEvents extends FlutterSystemEventsPlatform {
   }
 
   @override
+  Future<NetworkEvent> currentNetwork() async {
+    final event = SystemEvent.fromPayload(
+      await methodChannel.invokeMethod<Object?>('currentNetwork'),
+    );
+    if (event is NetworkEvent) return event;
+    throw StateError('Expected NetworkEvent, got ${event.runtimeType}.');
+  }
+
+  @override
   Stream<SystemEvent> get events => _events;
 }

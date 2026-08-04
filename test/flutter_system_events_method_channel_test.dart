@@ -76,6 +76,24 @@ void main() {
     expect(method, 'dispose');
   });
 
+  test(
+    'currentNetwork calls native currentNetwork and decodes event',
+    () async {
+      String? method;
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (methodCall) async {
+            method = methodCall.method;
+            return {'type': 'network', 'online': true, 'networkType': 'wifi'};
+          });
+
+      final event = await platform.currentNetwork();
+
+      expect(method, 'currentNetwork');
+      expect(event.online, isTrue);
+      expect(event.networkType, NetworkType.wifi);
+    },
+  );
+
   test('events converts native maps to system events', () async {
     final platform = MethodChannelFlutterSystemEvents();
     const eventChannel = EventChannel('flutter_system_events/events');

@@ -82,6 +82,14 @@ class FlutterSystemEventsPlugin :
                 stopAll()
                 result.success(null)
             }
+            "currentNetwork" -> {
+                val manager = appContext?.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
+                if (manager == null) {
+                    result.error("unavailable", "Network state unavailable.", null)
+                } else {
+                    result.success(networkEvent(manager))
+                }
+            }
             else -> result.notImplemented()
         }
     }
@@ -226,16 +234,7 @@ class FlutterSystemEventsPlugin :
     }
 
     private fun emitNetwork(manager: ConnectivityManager) {
-        val capabilities = manager.getNetworkCapabilities(manager.activeNetwork)
-        val online = capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
-        val networkType = when {
-            !online -> "none"
-            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> "wifi"
-            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> "cellular"
-            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> "ethernet"
-            else -> "other"
-        }
-        emitEvent(mapOf("type" to "network", "online" to online, "networkType" to networkType))
+        emitEvent(networkEvent(manager))
     }
 
     private fun stopNetwork() {
@@ -456,6 +455,19 @@ internal fun screenEventFromAction(action: String?): Map<String, Any> =
 internal fun screenBrightnessEvent(value: Int): Map<String, Any>? {
     val brightness = normalizedBrightness(value) ?: return null
     return mapOf("type" to "screen", "change" to "brightness", "brightness" to brightness)
+}
+
+internal fun networkEvent(manager: ConnectivityManager): Map<String, Any> {
+    val capabilities = manager.getNetworkCapabilities(manager.activeNetwork)
+    val online = capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
+    val networkType = when {
+        !online -> "none"
+        capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> "wifi"
+        capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> "cellular"
+        capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> "ethernet"
+        else -> "other"
+    }
+    return mapOf("type" to "network", "online" to online, "networkType" to networkType)
 }
 
 internal fun normalizedBrightness(value: Int): Double? {

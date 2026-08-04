@@ -10,6 +10,7 @@ class MockFlutterSystemEventsPlatform
   SystemEventsConfig? initializedConfig;
   final initializedConfigs = <SystemEventsConfig>[];
   var disposed = false;
+  NetworkEvent? networkEvent;
 
   @override
   Future<void> initialize({
@@ -22,6 +23,12 @@ class MockFlutterSystemEventsPlatform
   @override
   Future<void> dispose() async {
     disposed = true;
+  }
+
+  @override
+  Future<NetworkEvent> currentNetwork() async {
+    return networkEvent ??
+        const NetworkEvent(online: true, networkType: NetworkType.wifi);
   }
 
   @override
@@ -43,6 +50,11 @@ class MixedEventFlutterSystemEventsPlatform
 
   @override
   Future<void> dispose() async {}
+
+  @override
+  Future<NetworkEvent> currentNetwork() async {
+    return const NetworkEvent(online: true, networkType: NetworkType.wifi);
+  }
 
   @override
   Stream<SystemEvent> get events => Stream<SystemEvent>.fromIterable([
@@ -144,6 +156,20 @@ void main() {
     expect(platform.disposed, isTrue);
   });
 
+  test('currentNetwork delegates to platform instance', () async {
+    final platform = MockFlutterSystemEventsPlatform()
+      ..networkEvent = const NetworkEvent(
+        online: false,
+        networkType: NetworkType.none,
+      );
+    FlutterSystemEventsPlatform.instance = platform;
+
+    final event = await SystemEvents.currentNetwork();
+
+    expect(event.online, isFalse);
+    expect(event.networkType, NetworkType.none);
+  });
+
   test('events exposes keyboard events', () async {
     FlutterSystemEventsPlatform.instance = MockFlutterSystemEventsPlatform();
 
@@ -169,6 +195,7 @@ void main() {
 
     expect(platform.initialize, throwsUnimplementedError);
     expect(platform.dispose, throwsUnimplementedError);
+    expect(platform.currentNetwork, throwsUnimplementedError);
     expect(() => platform.events, throwsUnimplementedError);
   });
 

@@ -70,6 +70,11 @@ final class SystemEvents {
     return FlutterSystemEventsPlatform.instance.dispose();
   }
 
+  /// Returns the current network connectivity state.
+  static Future<NetworkEvent> currentNetwork() {
+    return FlutterSystemEventsPlatform.instance.currentNetwork();
+  }
+
   /// Broadcast stream of decoded system events.
   static Stream<SystemEvent> get events =>
       FlutterSystemEventsPlatform.instance.events;

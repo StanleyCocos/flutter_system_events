@@ -70,6 +70,11 @@ class FlutterSystemEventsWeb extends FlutterSystemEventsPlatform {
   @override
   Stream<SystemEvent> get events => _controller.stream;
 
+  @override
+  Future<NetworkEvent> currentNetwork() async {
+    return _networkEvent();
+  }
+
   void _emitKeyboard() {
     final currentHeight = html.window.innerHeight?.toDouble();
     final baseHeight = _viewportHeight;
@@ -102,12 +107,14 @@ class FlutterSystemEventsWeb extends FlutterSystemEventsPlatform {
   }
 
   void _emitNetwork() {
+    _controller.add(_networkEvent());
+  }
+
+  NetworkEvent _networkEvent() {
     final online = html.window.navigator.onLine == true;
-    _controller.add(
-      NetworkEvent(
-        online: online,
-        networkType: online ? NetworkType.other : NetworkType.none,
-      ),
+    return NetworkEvent(
+      online: online,
+      networkType: online ? NetworkType.other : NetworkType.none,
     );
   }
 }

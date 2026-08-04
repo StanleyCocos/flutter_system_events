@@ -6,6 +6,7 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
   private var events: FlutterEventSink?
   private var observers: [NSObjectProtocol] = []
   private var pathMonitor: NWPathMonitor?
+  private var currentNetworkMonitor: NWPathMonitor?
   private var config = EventConfig.legacy
   private var previousBatteryMonitoring: Bool?
   private var previousOrientationNotifications: Bool?
@@ -28,6 +29,8 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
     case "dispose":
       stopAll()
       result(nil)
+    case "currentNetwork":
+      currentNetwork(result)
     default:
       result(FlutterMethodNotImplemented)
     }
@@ -90,6 +93,8 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
     observers.removeAll()
     pathMonitor?.cancel()
     pathMonitor = nil
+    currentNetworkMonitor?.cancel()
+    currentNetworkMonitor = nil
     stopBattery()
     stopOrientation()
   }
@@ -97,23 +102,30 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
   private func startNetwork() {
     let monitor = NWPathMonitor()
     monitor.pathUpdateHandler = { [weak self] path in
-      let networkType: String
-      if path.status != .satisfied {
-        networkType = "none"
-      } else if path.usesInterfaceType(.wifi) {
-        networkType = "wifi"
-      } else if path.usesInterfaceType(.cellular) {
-        networkType = "cellular"
-      } else if path.usesInterfaceType(.wiredEthernet) {
-        networkType = "ethernet"
-      } else {
-        networkType = "other"
-      }
       DispatchQueue.main.async {
-        self?.events?(["type": "network", "online": path.status == .satisfied, "networkType": networkType])
+        self?.events?(networkEvent(from: path))
       }
     }
     pathMonitor = monitor
+    monitor.start(queue: DispatchQueue.global(qos: .utility))
+  }
+
+  private func currentNetwork(_ result: @escaping FlutterResult) {
+    currentNetworkMonitor?.cancel()
+    let monitor = NWPathMonitor()
+    currentNetworkMonitor = monitor
+    var completed = false
+    monitor.pathUpdateHandler = { [weak self] path in
+      DispatchQueue.main.async {
+        guard !completed else { return }
+        completed = true
+        result(networkEvent(from: path))
+        monitor.cancel()
+        if self?.currentNetworkMonitor === monitor {
+          self?.currentNetworkMonitor = nil
+        }
+      }
+    }
     monitor.start(queue: DispatchQueue.global(qos: .utility))
   }
 
@@ -241,4 +253,20 @@ func orientationName(from orientation: UIDeviceOrientation) -> String {
   default:
     return "unknown"
   }
+}
+
+func networkEvent(from path: NWPath) -> [String: Any] {
+  let networkType: String
+  if path.status != .satisfied {
+    networkType = "none"
+  } else if path.usesInterfaceType(.wifi) {
+    networkType = "wifi"
+  } else if path.usesInterfaceType(.cellular) {
+    networkType = "cellular"
+  } else if path.usesInterfaceType(.wiredEthernet) {
+    networkType = "ethernet"
+  } else {
+    networkType = "other"
+  }
+  return ["type": "network", "online": path.status == .satisfied, "networkType": networkType]
 }
