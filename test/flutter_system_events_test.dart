@@ -13,6 +13,7 @@ class MockFlutterSystemEventsPlatform
   NetworkEvent? networkEvent;
   BatteryEvent? batteryEvent;
   OrientationEvent? orientationEvent;
+  ScreenEvent? screenBrightnessEvent;
 
   @override
   Future<void> initialize({
@@ -47,6 +48,12 @@ class MockFlutterSystemEventsPlatform
   Future<OrientationEvent> currentOrientation() async {
     return orientationEvent ??
         const OrientationEvent(orientation: ScreenOrientation.portraitUp);
+  }
+
+  @override
+  Future<ScreenEvent> currentScreenBrightness() async {
+    return screenBrightnessEvent ??
+        const ScreenEvent(change: ScreenChange.brightness, brightness: 0.5);
   }
 
   @override
@@ -86,6 +93,11 @@ class MixedEventFlutterSystemEventsPlatform
   @override
   Future<OrientationEvent> currentOrientation() async {
     return const OrientationEvent(orientation: ScreenOrientation.portraitUp);
+  }
+
+  @override
+  Future<ScreenEvent> currentScreenBrightness() async {
+    return const ScreenEvent(change: ScreenChange.brightness, brightness: 0.5);
   }
 
   @override
@@ -230,6 +242,20 @@ void main() {
     expect(event.orientation, ScreenOrientation.landscapeLeft);
   });
 
+  test('currentScreenBrightness delegates to platform instance', () async {
+    final platform = MockFlutterSystemEventsPlatform()
+      ..screenBrightnessEvent = const ScreenEvent(
+        change: ScreenChange.brightness,
+        brightness: 0.42,
+      );
+    FlutterSystemEventsPlatform.instance = platform;
+
+    final event = await SystemEvents.currentScreenBrightness();
+
+    expect(event.change, ScreenChange.brightness);
+    expect(event.brightness, 0.42);
+  });
+
   test('events exposes keyboard events', () async {
     FlutterSystemEventsPlatform.instance = MockFlutterSystemEventsPlatform();
 
@@ -258,6 +284,7 @@ void main() {
     expect(platform.currentNetwork, throwsUnimplementedError);
     expect(platform.currentBattery, throwsUnimplementedError);
     expect(platform.currentOrientation, throwsUnimplementedError);
+    expect(platform.currentScreenBrightness, throwsUnimplementedError);
     expect(() => platform.events, throwsUnimplementedError);
   });
 

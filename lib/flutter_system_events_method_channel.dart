@@ -57,5 +57,16 @@ class MethodChannelFlutterSystemEvents extends FlutterSystemEventsPlatform {
   }
 
   @override
+  Future<ScreenEvent> currentScreenBrightness() async {
+    final event = SystemEvent.fromPayload(
+      await methodChannel.invokeMethod<Object?>('currentScreenBrightness'),
+    );
+    if (event is ScreenEvent && event.change == ScreenChange.brightness) {
+      return event;
+    }
+    throw StateError('Expected screen brightness event, got $event.');
+  }
+
+  @override
   Stream<SystemEvent> get events => _events;
 }

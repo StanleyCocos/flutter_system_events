@@ -85,6 +85,11 @@ final class SystemEvents {
     return FlutterSystemEventsPlatform.instance.currentOrientation();
   }
 
+  /// Returns the current screen brightness.
+  static Future<ScreenEvent> currentScreenBrightness() {
+    return FlutterSystemEventsPlatform.instance.currentScreenBrightness();
+  }
+
   /// Broadcast stream of decoded system events.
   static Stream<SystemEvent> get events =>
       FlutterSystemEventsPlatform.instance.events;

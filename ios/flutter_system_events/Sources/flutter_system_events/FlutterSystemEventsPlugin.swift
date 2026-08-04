@@ -35,6 +35,8 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
       currentBattery(result)
     case "currentOrientation":
       result(orientationEvent(from: UIDevice.current.orientation))
+    case "currentScreenBrightness":
+      result(screenBrightnessEvent(UIScreen.main.brightness))
     default:
       result(FlutterMethodNotImplemented)
     }
@@ -272,6 +274,10 @@ func orientationName(from orientation: UIDeviceOrientation) -> String {
 
 func orientationEvent(from orientation: UIDeviceOrientation) -> [String: Any] {
   return ["type": "orientation", "orientation": orientationName(from: orientation)]
+}
+
+func screenBrightnessEvent(_ brightness: CGFloat) -> [String: Any] {
+  return ["type": "screen", "change": "brightness", "brightness": Double(brightness)]
 }
 
 func networkEvent(from path: NWPath) -> [String: Any] {

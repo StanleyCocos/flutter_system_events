@@ -102,6 +102,18 @@ class FlutterSystemEventsPlugin :
             "currentOrientation" -> {
                 result.success(orientationEvent(activity?.windowManager?.defaultDisplay?.rotation))
             }
+            "currentScreenBrightness" -> {
+                val context = appContext
+                val raw = context?.let {
+                    Settings.System.getInt(it.contentResolver, Settings.System.SCREEN_BRIGHTNESS, -1)
+                } ?: -1
+                val event = screenBrightnessEvent(raw)
+                if (event == null) {
+                    result.error("unavailable", "Screen brightness unavailable.", null)
+                } else {
+                    result.success(event)
+                }
+            }
             else -> result.notImplemented()
         }
     }

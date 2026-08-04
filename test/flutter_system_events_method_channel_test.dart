@@ -135,6 +135,28 @@ void main() {
     },
   );
 
+  test(
+    'currentScreenBrightness calls native currentScreenBrightness and decodes event',
+    () async {
+      String? method;
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (methodCall) async {
+            method = methodCall.method;
+            return {
+              'type': 'screen',
+              'change': 'brightness',
+              'brightness': 0.42,
+            };
+          });
+
+      final event = await platform.currentScreenBrightness();
+
+      expect(method, 'currentScreenBrightness');
+      expect(event.change, ScreenChange.brightness);
+      expect(event.brightness, 0.42);
+    },
+  );
+
   test('events converts native maps to system events', () async {
     final platform = MethodChannelFlutterSystemEvents();
     const eventChannel = EventChannel('flutter_system_events/events');
