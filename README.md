@@ -130,7 +130,7 @@ screen off/on notifications for apps.
 
 | Event | Android | iOS | macOS | Windows | Linux | Web |
 | --- | --- | --- | --- | --- | --- | --- |
-| `KeyboardEvent` | Yes | Yes | Yes | In progress | In progress | Yes |
+| `KeyboardEvent` | Yes | Yes | Yes | Yes | In progress | Yes |
 | `LifecycleEvent` | Yes | Yes | In progress | In progress | In progress | Yes |
 | `NetworkEvent` | Yes | Yes | In progress | In progress | In progress | Yes |
 | `MemoryEvent` | Yes | Yes | In progress | In progress | In progress | In progress |

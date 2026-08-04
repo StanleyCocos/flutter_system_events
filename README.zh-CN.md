@@ -123,7 +123,7 @@ Android 屏幕事件包含熄屏、亮屏、解锁和亮度变化。iOS 支持�
 
 | 事件 | Android | iOS | macOS | Windows | Linux | Web |
 | --- | --- | --- | --- | --- | --- | --- |
-| `KeyboardEvent` | 支持 | 支持 | 支持 | 努力实现中 | 努力实现中 | 支持 |
+| `KeyboardEvent` | 支持 | 支持 | 支持 | 支持 | 努力实现中 | 支持 |
 | `LifecycleEvent` | 支持 | 支持 | 努力实现中 | 努力实现中 | 努力实现中 | 支持 |
 | `NetworkEvent` | 支持 | 支持 | 努力实现中 | 努力实现中 | 努力实现中 | 支持 |
 | `MemoryEvent` | 支持 | 支持 | 努力实现中 | 努力实现中 | 努力实现中 | 努力实现中 |

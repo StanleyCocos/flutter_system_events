@@ -3,6 +3,7 @@
 - Added typed event streams on `SystemEvents`.
 - Added current network, battery, orientation, and screen brightness queries.
 - Added runtime event configuration helpers.
+- Added Windows keyboard event support.
 - Updated the example app and README usage docs.
 
 ## 0.7.0

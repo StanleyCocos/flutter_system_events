@@ -24,5 +24,23 @@ TEST(FlutterSystemEventsPlugin, Initialize) {
   EXPECT_TRUE(success);
 }
 
+TEST(FlutterSystemEventsPlugin, InitializeWithKeyboardDisabled) {
+  FlutterSystemEventsPlugin plugin;
+  bool success = false;
+  flutter::EncodableMap arguments = {
+      {flutter::EncodableValue("keyboard"), flutter::EncodableValue(false)},
+  };
+
+  plugin.HandleMethodCall(
+      flutter::MethodCall<flutter::EncodableValue>(
+          "initialize",
+          std::make_unique<flutter::EncodableValue>(arguments)),
+      std::make_unique<flutter::MethodResultFunctions<>>(
+          [&success](const flutter::EncodableValue* result) { success = true; },
+          nullptr, nullptr));
+
+  EXPECT_TRUE(success);
+}
+
 }  // namespace test
 }  // namespace flutter_system_events

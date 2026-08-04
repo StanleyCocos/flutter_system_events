@@ -1,6 +1,8 @@
 #ifndef FLUTTER_PLUGIN_FLUTTER_SYSTEM_EVENTS_PLUGIN_H_
 #define FLUTTER_PLUGIN_FLUTTER_SYSTEM_EVENTS_PLUGIN_H_
 
+#include <flutter/event_sink.h>
+#include <flutter/event_stream_handler.h>
 #include <flutter/method_channel.h>
 #include <flutter/plugin_registrar_windows.h>
 
@@ -24,6 +26,36 @@ class FlutterSystemEventsPlugin : public flutter::Plugin {
   void HandleMethodCall(
       const flutter::MethodCall<flutter::EncodableValue> &method_call,
       std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result);
+
+  void SetEventSink(
+      std::unique_ptr<flutter::EventSink<flutter::EncodableValue>> events);
+  void ClearEventSink();
+
+ private:
+  void EmitKeyboardHidden();
+  bool ShouldEnableKeyboard(const flutter::EncodableValue *arguments);
+
+  std::unique_ptr<flutter::EventSink<flutter::EncodableValue>> events_;
+};
+
+class FlutterSystemEventsStreamHandler
+    : public flutter::StreamHandler<flutter::EncodableValue> {
+ public:
+  explicit FlutterSystemEventsStreamHandler(FlutterSystemEventsPlugin *plugin);
+  virtual ~FlutterSystemEventsStreamHandler();
+
+ protected:
+  std::unique_ptr<flutter::StreamHandlerError<flutter::EncodableValue>>
+  OnListenInternal(
+      const flutter::EncodableValue *arguments,
+      std::unique_ptr<flutter::EventSink<flutter::EncodableValue>> &&events)
+      override;
+
+  std::unique_ptr<flutter::StreamHandlerError<flutter::EncodableValue>>
+  OnCancelInternal(const flutter::EncodableValue *arguments) override;
+
+ private:
+  FlutterSystemEventsPlugin *plugin_;
 };
 
 }  // namespace flutter_system_events
