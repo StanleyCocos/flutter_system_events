@@ -41,6 +41,8 @@ class _KeyboardEventPageState extends State<KeyboardEventPage> {
       if (!mounted) return;
       debugPrint('_KeyboardEventPageState.initState -->  ${event.height}');
     });
+
+    unawaited(SystemEvents.enable(SystemEventType.keyboard));
   }
 
   @override

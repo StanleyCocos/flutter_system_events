@@ -27,7 +27,7 @@ void main() {
     }
   });
 
-  testWidgets('macOS keyboard page receives hidden keyboard event', (
+  testWidgets('desktop keyboard page receives hidden keyboard event', (
     tester,
   ) async {
     await tester.pumpWidget(const MyApp());
@@ -37,7 +37,7 @@ void main() {
 
     expect(find.text('Keyboard Event'), findsOneWidget);
 
-    if (!Platform.isMacOS) return;
+    if (!Platform.isMacOS && !Platform.isWindows) return;
 
     await tester.pumpAndSettle();
 
