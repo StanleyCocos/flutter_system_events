@@ -63,6 +63,7 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
     if config.time { startTime() }
     if config.screen { startScreen() }
     if config.screenshot { startScreenshot() }
+    if config.thermal { startThermal() }
   }
 
   private func startKeyboard() {
@@ -236,6 +237,13 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
     })
   }
 
+  private func startThermal() {
+    observers.append(NotificationCenter.default.addObserver(forName: ProcessInfo.thermalStateDidChangeNotification, object: nil, queue: .main) { [weak self] _ in
+      self?.events?(thermalEvent(from: ProcessInfo.processInfo.thermalState))
+    })
+    events?(thermalEvent(from: ProcessInfo.processInfo.thermalState))
+  }
+
   private struct EventConfig {
     let keyboard: Bool
     let lifecycle: Bool
@@ -246,8 +254,9 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
     let time: Bool
     let screen: Bool
     let screenshot: Bool
+    let thermal: Bool
 
-    static let legacy = EventConfig(keyboard: true, lifecycle: true, network: true, memory: true, battery: false, orientation: true, time: true, screen: true, screenshot: false)
+    static let legacy = EventConfig(keyboard: true, lifecycle: true, network: true, memory: true, battery: false, orientation: true, time: true, screen: true, screenshot: false, thermal: false)
 
     static func from(_ arguments: Any?) -> EventConfig {
       guard let map = arguments as? [String: Any] else { return legacy }
@@ -260,7 +269,8 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
         orientation: map["orientation"] as? Bool == true,
         time: map["time"] as? Bool == true,
         screen: map["screen"] as? Bool == true,
-        screenshot: map["screenshot"] as? Bool == true
+        screenshot: map["screenshot"] as? Bool == true,
+        thermal: map["thermal"] as? Bool == true
       )
     }
   }
@@ -287,6 +297,23 @@ func orientationEvent(from orientation: UIDeviceOrientation) -> [String: Any] {
 
 func screenBrightnessEvent(_ brightness: CGFloat) -> [String: Any] {
   return ["type": "screen", "change": "brightness", "brightness": Double(brightness)]
+}
+
+func thermalEvent(from state: ProcessInfo.ThermalState) -> [String: Any] {
+  let name: String
+  switch state {
+  case .nominal:
+    name = "nominal"
+  case .fair:
+    name = "fair"
+  case .serious:
+    name = "serious"
+  case .critical:
+    name = "critical"
+  @unknown default:
+    name = "unknown"
+  }
+  return ["type": "thermal", "state": name]
 }
 
 func networkEvent(from path: NWPath) -> [String: Any] {
