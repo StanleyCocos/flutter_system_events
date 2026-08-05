@@ -4,6 +4,7 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import org.mockito.Mockito
 import android.content.Intent
+import android.os.PowerManager
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -101,6 +102,26 @@ internal class FlutterSystemEventsPluginTest {
     }
 
     @Test
+    fun thermalStatusName_mapsAndroidThermalStatuses() {
+        assertEquals("nominal", thermalStatusName(PowerManager.THERMAL_STATUS_NONE))
+        assertEquals("fair", thermalStatusName(PowerManager.THERMAL_STATUS_LIGHT))
+        assertEquals("fair", thermalStatusName(PowerManager.THERMAL_STATUS_MODERATE))
+        assertEquals("serious", thermalStatusName(PowerManager.THERMAL_STATUS_SEVERE))
+        assertEquals("critical", thermalStatusName(PowerManager.THERMAL_STATUS_CRITICAL))
+        assertEquals("emergency", thermalStatusName(PowerManager.THERMAL_STATUS_EMERGENCY))
+        assertEquals("shutdown", thermalStatusName(PowerManager.THERMAL_STATUS_SHUTDOWN))
+        assertEquals("unknown", thermalStatusName(-1))
+    }
+
+    @Test
+    fun thermalEvent_buildsThermalPayload() {
+        assertEquals(
+            mapOf("type" to "thermal", "state" to "serious"),
+            thermalEvent(PowerManager.THERMAL_STATUS_SEVERE),
+        )
+    }
+
+    @Test
     fun eventConfig_parsesScreenshotFlag() {
         assertEquals(false, FlutterSystemEventsPlugin.EventConfig.legacy().screenshot)
         assertEquals(
@@ -110,6 +131,19 @@ internal class FlutterSystemEventsPluginTest {
         assertEquals(
             false,
             FlutterSystemEventsPlugin.EventConfig.from(mapOf("screenshot" to false)).screenshot,
+        )
+    }
+
+    @Test
+    fun eventConfig_parsesThermalFlag() {
+        assertEquals(false, FlutterSystemEventsPlugin.EventConfig.legacy().thermal)
+        assertEquals(
+            true,
+            FlutterSystemEventsPlugin.EventConfig.from(mapOf("thermal" to true)).thermal,
+        )
+        assertEquals(
+            false,
+            FlutterSystemEventsPlugin.EventConfig.from(mapOf("thermal" to false)).thermal,
         )
     }
 

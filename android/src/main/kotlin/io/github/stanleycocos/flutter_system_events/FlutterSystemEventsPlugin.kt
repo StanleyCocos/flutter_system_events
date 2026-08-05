@@ -20,6 +20,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
 import android.view.Surface
@@ -56,6 +57,7 @@ class FlutterSystemEventsPlugin :
     private var screenReceiver: BroadcastReceiver? = null
     private var brightnessObserver: ContentObserver? = null
     private var screenCaptureCallback: Any? = null
+    private var thermalListener: Any? = null
     private var orientationCallbacks: ComponentCallbacks2? = null
     private var lastOrientation: String? = null
     private var config = EventConfig.legacy()
@@ -169,6 +171,7 @@ class FlutterSystemEventsPlugin :
         if (config.time) startTime()
         if (config.screen) startScreen()
         if (config.screenshot) startScreenshot()
+        if (config.thermal) startThermal()
     }
 
     private fun stopAll() {
@@ -181,6 +184,7 @@ class FlutterSystemEventsPlugin :
         stopTime()
         stopScreen()
         stopScreenshot()
+        stopThermal()
     }
 
     private fun emitEvent(event: Map<String, Any>) {
@@ -389,6 +393,28 @@ class FlutterSystemEventsPlugin :
         screenCaptureCallback = null
     }
 
+    private fun startThermal() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return
+        val manager = appContext?.getSystemService(Context.POWER_SERVICE) as? PowerManager ?: return
+        val listener = PowerManager.OnThermalStatusChangedListener { status ->
+            emitEvent(thermalEvent(status))
+        }
+        manager.addThermalStatusListener(Executor { command -> mainHandler.post(command) }, listener)
+        thermalListener = listener
+        emitEvent(thermalEvent(manager.currentThermalStatus))
+    }
+
+    private fun stopThermal() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            thermalListener = null
+            return
+        }
+        val listener = thermalListener as? PowerManager.OnThermalStatusChangedListener
+        val manager = appContext?.getSystemService(Context.POWER_SERVICE) as? PowerManager
+        listener?.let { manager?.removeThermalStatusListener(it) }
+        thermalListener = null
+    }
+
     private fun emitBrightness(context: Context) {
         val raw = Settings.System.getInt(context.contentResolver, Settings.System.SCREEN_BRIGHTNESS, -1)
         emitEvent(screenBrightnessEvent(raw) ?: return)
@@ -430,6 +456,7 @@ class FlutterSystemEventsPlugin :
         val time: Boolean,
         val screen: Boolean,
         val screenshot: Boolean,
+        val thermal: Boolean,
     ) {
         companion object {
             fun legacy() = EventConfig(
@@ -442,6 +469,7 @@ class FlutterSystemEventsPlugin :
                 time = true,
                 screen = true,
                 screenshot = false,
+                thermal = false,
             )
 
             fun from(arguments: Any?): EventConfig {
@@ -456,6 +484,7 @@ class FlutterSystemEventsPlugin :
                     time = map["time"] == true,
                     screen = map["screen"] == true,
                     screenshot = map["screenshot"] == true,
+                    thermal = map["thermal"] == true,
                 )
             }
         }
@@ -492,6 +521,20 @@ internal fun screenEventFromAction(action: String?): Map<String, Any> =
 
 internal fun screenshotEvent(): Map<String, Any> =
     mapOf("type" to "screenshot")
+
+internal fun thermalStatusName(status: Int): String = when (status) {
+    PowerManager.THERMAL_STATUS_NONE -> "nominal"
+    PowerManager.THERMAL_STATUS_LIGHT,
+    PowerManager.THERMAL_STATUS_MODERATE -> "fair"
+    PowerManager.THERMAL_STATUS_SEVERE -> "serious"
+    PowerManager.THERMAL_STATUS_CRITICAL -> "critical"
+    PowerManager.THERMAL_STATUS_EMERGENCY -> "emergency"
+    PowerManager.THERMAL_STATUS_SHUTDOWN -> "shutdown"
+    else -> "unknown"
+}
+
+internal fun thermalEvent(status: Int): Map<String, Any> =
+    mapOf("type" to "thermal", "state" to thermalStatusName(status))
 
 internal fun screenBrightnessEvent(value: Int): Map<String, Any>? {
     val brightness = normalizedBrightness(value) ?: return null
