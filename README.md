@@ -9,8 +9,8 @@ One Flutter API for system events: listen to typed changes, or read the current
 system state on demand.
 
 Use it when your app needs to react to keyboard, lifecycle, network, memory,
-battery, orientation, time, screen, or brightness changes without wiring several
-platform listeners yourself.
+battery, orientation, time, screen, screenshot, or brightness changes without
+wiring several platform listeners yourself.
 
 ## Installation
 
@@ -33,6 +33,7 @@ SystemEvents.battery.listen((event) {});
 SystemEvents.orientation.listen((event) {});
 SystemEvents.time.listen((event) {});
 SystemEvents.screen.listen((event) {});
+SystemEvents.screenshot.listen((event) {});
 ```
 
 Read current values without waiting for the next event:
@@ -94,6 +95,8 @@ SystemEvents.events.listen((event) {
       print('time reason=${reason.name}');
     case ScreenEvent(:final change, :final brightness):
       print('screen change=${change.name} brightness=$brightness');
+    case ScreenshotEvent():
+      print('screenshot taken');
     case UnknownSystemEvent(:final rawType, :final reason):
       print('unknown event type=$rawType reason=$reason');
   }
@@ -118,6 +121,7 @@ SystemEvents.events.listen((event) {
 | `TimeEvent` | `reason` | Why a time event was emitted. |
 | `ScreenEvent` | `change` | `off`, `on`, `unlocked`, or `brightness`. |
 | `ScreenEvent` | `brightness` | Screen brightness from `0.0` to `1.0` when `change` is `brightness`. |
+| `ScreenshotEvent` | - | Emitted when the user takes a screenshot. No screenshot image is included. |
 
 Memory events are hints. The plugin reports pressure; your app decides what can
 be released safely.
@@ -125,6 +129,12 @@ be released safely.
 Android screen events include off, on, unlocked, and brightness changes. iOS
 supports unlocked and brightness changes; iOS does not expose reliable public
 screen off/on notifications for apps.
+
+`ScreenshotEvent` is supported on iOS and Android 14+ (API 34+). Android 13 and
+earlier do not support this event and will not emit it. On Android, the host app
+must declare `android.permission.DETECT_SCREEN_CAPTURE`; it is an install-time
+permission, not a runtime permission, so no `requestPermissions` flow is needed.
+Android shows a system notice when screenshot detection is triggered.
 
 ## Platform support
 
@@ -138,3 +148,28 @@ screen off/on notifications for apps.
 | `OrientationEvent` | Yes | Yes | In progress | In progress | In progress | In progress |
 | `TimeEvent` | Yes | Yes | In progress | In progress | In progress | In progress |
 | `ScreenEvent` | Yes | Partial | In progress | In progress | In progress | In progress |
+| `ScreenshotEvent` | Android 14+ | Yes | In progress | In progress | In progress | In progress |
+
+## Example
+
+Run the example app and open each event page:
+
+```sh
+cd example
+flutter run
+```
+
+The example includes separate pages:
+
+- Keyboard
+- Lifecycle
+- Network
+- Memory
+- Battery
+- Orientation
+- Time
+- Screen
+- Screenshot
+
+Each page shows the latest event value at the top and provides a simple way to
+trigger or manually verify the event.
