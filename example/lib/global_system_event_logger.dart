@@ -22,6 +22,7 @@ final class GlobalSystemEventLogger {
     _listen('SystemEvents.orientation', SystemEvents.orientation);
     _listen('SystemEvents.time', SystemEvents.time);
     _listen('SystemEvents.screen', SystemEvents.screen);
+    _listen('SystemEvents.screenshot', SystemEvents.screenshot);
   }
 
   Future<void> dispose() async {

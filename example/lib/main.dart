@@ -9,6 +9,7 @@ import 'pages/memory_event_page.dart';
 import 'pages/network_event_page.dart';
 import 'pages/orientation_event_page.dart';
 import 'pages/screen_event_page.dart';
+import 'pages/screenshot_event_page.dart';
 import 'pages/time_event_page.dart';
 
 void main() => runApp(const MyApp());
@@ -103,6 +104,12 @@ class EventListPage extends StatelessWidget {
             subtitle: const Text('Off, on, unlock, brightness'),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => _push(context, const ScreenEventPage()),
+          ),
+          ListTile(
+            title: const Text('Screenshot'),
+            subtitle: const Text('User screenshot taken'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => _push(context, const ScreenshotEventPage()),
           ),
         ],
       ),
