@@ -111,6 +111,7 @@ class MixedEventFlutterSystemEventsPlatform
     const TimeEvent(reason: TimeChangeReason.timeChanged),
     const ScreenEvent(change: ScreenChange.brightness, brightness: 0.5),
     const ScreenshotEvent(),
+    const ThermalEvent(state: ThermalState.nominal),
   ]);
 }
 
@@ -169,6 +170,7 @@ void main() {
       'time': false,
       'screen': false,
       'screenshot': false,
+      'thermal': false,
     });
   });
 
@@ -191,6 +193,7 @@ void main() {
       'time': true,
       'screen': true,
       'screenshot': true,
+      'thermal': true,
     });
   });
 
@@ -278,6 +281,7 @@ void main() {
     expect(await SystemEvents.time.single, isA<TimeEvent>());
     expect(await SystemEvents.screen.single, isA<ScreenEvent>());
     expect(await SystemEvents.screenshot.single, isA<ScreenshotEvent>());
+    expect(await SystemEvents.thermal.single, isA<ThermalEvent>());
   });
 
   test('base platform methods throw when not implemented', () {
@@ -303,6 +307,7 @@ void main() {
       'time': true,
       'screen': true,
       'screenshot': false,
+      'thermal': false,
     });
   });
 
@@ -317,6 +322,7 @@ void main() {
       'time': true,
       'screen': true,
       'screenshot': true,
+      'thermal': true,
     });
   });
 
@@ -327,6 +333,7 @@ void main() {
         battery: BatteryConfig(),
         screen: ScreenConfig(),
         screenshot: ScreenshotConfig(),
+        thermal: ThermalConfig(),
       ).toMap(),
       {
         'keyboard': true,
@@ -338,8 +345,21 @@ void main() {
         'time': false,
         'screen': true,
         'screenshot': true,
+        'thermal': true,
       },
     );
+  });
+
+  test('parses thermal event maps', () {
+    for (final state in ThermalState.values) {
+      final event = SystemEvent.fromMap({
+        'type': 'thermal',
+        'state': state.name,
+      });
+
+      expect(event, isA<ThermalEvent>());
+      expect((event as ThermalEvent).state, state);
+    }
   });
 
   test('parses screenshot event maps', () {
@@ -506,6 +526,13 @@ void main() {
 
     expect(event, isA<UnknownSystemEvent>());
     expect((event as UnknownSystemEvent).rawType, 'memory');
+  });
+
+  test('returns unknown event for invalid thermal payloads', () {
+    final event = SystemEvent.fromMap({'type': 'thermal', 'state': 'invalid'});
+
+    expect(event, isA<UnknownSystemEvent>());
+    expect((event as UnknownSystemEvent).rawType, 'thermal');
   });
 
   test('returns unknown event for missing fields', () {

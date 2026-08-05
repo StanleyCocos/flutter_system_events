@@ -37,6 +37,7 @@ void main() {
       'time': true,
       'screen': true,
       'screenshot': false,
+      'thermal': false,
     });
   });
 
@@ -62,6 +63,7 @@ void main() {
       'time': false,
       'screen': false,
       'screenshot': false,
+      'thermal': false,
     });
   });
 
@@ -268,6 +270,34 @@ void main() {
         );
 
     expect(await event, isA<ScreenshotEvent>());
+  });
+
+  test('events converts thermal payloads to thermal events', () async {
+    final platform = MethodChannelFlutterSystemEvents();
+    const eventChannel = EventChannel('flutter_system_events/events');
+    await TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .handlePlatformMessage(
+          eventChannel.name,
+          const StandardMethodCodec().encodeMethodCall(
+            const MethodCall('listen', null),
+          ),
+          (_) {},
+        );
+
+    final event = platform.events.first;
+    await TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .handlePlatformMessage(
+          eventChannel.name,
+          const StandardMethodCodec().encodeSuccessEnvelope({
+            'type': 'thermal',
+            'state': 'serious',
+          }),
+          (_) {},
+        );
+
+    final thermalEvent = await event;
+    expect(thermalEvent, isA<ThermalEvent>());
+    expect((thermalEvent as ThermalEvent).state, ThermalState.serious);
   });
 
   test('events converts non-map payloads to unknown events', () async {

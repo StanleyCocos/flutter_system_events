@@ -30,6 +30,9 @@ export 'flutter_system_events_platform_interface.dart'
         SystemEvent,
         SystemEventType,
         SystemEventsConfig,
+        ThermalConfig,
+        ThermalEvent,
+        ThermalState,
         TimeChangeReason,
         TimeConfig,
         TimeEvent,
@@ -132,4 +135,8 @@ final class SystemEvents {
   /// User screenshot events.
   static Stream<ScreenshotEvent> get screenshot =>
       events.where((event) => event is ScreenshotEvent).cast<ScreenshotEvent>();
+
+  /// Device thermal state events.
+  static Stream<ThermalEvent> get thermal =>
+      events.where((event) => event is ThermalEvent).cast<ThermalEvent>();
 }

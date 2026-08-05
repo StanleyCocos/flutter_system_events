@@ -118,6 +118,9 @@ sealed class SystemEvent {
               : null,
         ),
         'screenshot' => const ScreenshotEvent(),
+        'thermal' => ThermalEvent(
+          state: ThermalState.values.byName(map['state'] as String),
+        ),
         _ => UnknownSystemEvent(
           rawPayload: map,
           rawType: map['type'],
@@ -162,6 +165,9 @@ enum SystemEventType {
 
   /// User screenshot events.
   screenshot,
+
+  /// Device thermal state events.
+  thermal,
 }
 
 /// Selects which native event listeners are enabled.
@@ -177,6 +183,7 @@ final class SystemEventsConfig {
     this.time,
     this.screen,
     this.screenshot,
+    this.thermal,
   });
 
   /// Enables keyboard, lifecycle, network, memory, orientation, and time events.
@@ -189,7 +196,8 @@ final class SystemEventsConfig {
       orientation = const OrientationConfig(),
       time = const TimeConfig(),
       screen = const ScreenConfig(),
-      screenshot = null;
+      screenshot = null,
+      thermal = null;
 
   /// Enables every supported event group, including battery events.
   const SystemEventsConfig.all()
@@ -201,7 +209,8 @@ final class SystemEventsConfig {
       orientation = const OrientationConfig(),
       time = const TimeConfig(),
       screen = const ScreenConfig(),
-      screenshot = const ScreenshotConfig();
+      screenshot = const ScreenshotConfig(),
+      thermal = const ThermalConfig();
 
   /// Enables keyboard visibility events when non-null.
   final KeyboardConfig? keyboard;
@@ -230,6 +239,9 @@ final class SystemEventsConfig {
   /// Enables user screenshot events when non-null.
   final ScreenshotConfig? screenshot;
 
+  /// Enables device thermal state events when non-null.
+  final ThermalConfig? thermal;
+
   /// Converts this configuration to the platform channel payload.
   Map<String, bool> toMap() {
     return {
@@ -242,6 +254,7 @@ final class SystemEventsConfig {
       'time': time != null,
       'screen': screen != null,
       'screenshot': screenshot != null,
+      'thermal': thermal != null,
     };
   }
 
@@ -257,6 +270,7 @@ final class SystemEventsConfig {
       SystemEventType.time => time != null,
       SystemEventType.screen => screen != null,
       SystemEventType.screenshot => screenshot != null,
+      SystemEventType.thermal => thermal != null,
     };
   }
 
@@ -284,6 +298,9 @@ final class SystemEventsConfig {
       screenshot: type == SystemEventType.screenshot
           ? const ScreenshotConfig()
           : screenshot,
+      thermal: type == SystemEventType.thermal
+          ? const ThermalConfig()
+          : thermal,
     );
   }
 
@@ -299,6 +316,7 @@ final class SystemEventsConfig {
       time: type == SystemEventType.time ? null : time,
       screen: type == SystemEventType.screen ? null : screen,
       screenshot: type == SystemEventType.screenshot ? null : screenshot,
+      thermal: type == SystemEventType.thermal ? null : thermal,
     );
   }
 }
@@ -355,6 +373,12 @@ final class ScreenConfig {
 final class ScreenshotConfig {
   /// Creates screenshot event configuration.
   const ScreenshotConfig();
+}
+
+/// Configuration for device thermal state events.
+final class ThermalConfig {
+  /// Creates thermal event configuration.
+  const ThermalConfig();
 }
 
 /// App lifecycle states reported by the platform.
@@ -482,6 +506,26 @@ final class ScreenEvent extends SystemEvent {
 final class ScreenshotEvent extends SystemEvent {
   /// Creates a screenshot event.
   const ScreenshotEvent();
+}
+
+/// Device thermal states reported by the platform.
+enum ThermalState {
+  nominal,
+  fair,
+  serious,
+  critical,
+  emergency,
+  shutdown,
+  unknown,
+}
+
+/// Event emitted when the device thermal state changes.
+final class ThermalEvent extends SystemEvent {
+  /// Creates a thermal event.
+  const ThermalEvent({required this.state});
+
+  /// Current device thermal state.
+  final ThermalState state;
 }
 
 /// Event emitted when a platform payload cannot be decoded.
