@@ -23,6 +23,7 @@ final class GlobalSystemEventLogger {
     _listen('SystemEvents.time', SystemEvents.time);
     _listen('SystemEvents.screen', SystemEvents.screen);
     _listen('SystemEvents.screenshot', SystemEvents.screenshot);
+    _listen('SystemEvents.thermal', SystemEvents.thermal);
   }
 
   Future<void> dispose() async {
