@@ -37,7 +37,7 @@ void main() {
   });
 
   testWidgets('opens keyboard event page', (tester) async {
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(const SystemEventsExample());
 
     expect(find.text('Keyboard'), findsOneWidget);
     expect(find.text('Lifecycle'), findsOneWidget);
@@ -59,7 +59,7 @@ void main() {
   });
 
   testWidgets('opens lifecycle event page', (tester) async {
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(const SystemEventsExample());
 
     await tester.tap(find.text('Lifecycle'));
     await tester.pumpAndSettle();
@@ -73,7 +73,7 @@ void main() {
   });
 
   testWidgets('opens network event page', (tester) async {
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(const SystemEventsExample());
 
     await tester.tap(find.text('Network'));
     await tester.pumpAndSettle();
@@ -88,7 +88,7 @@ void main() {
   });
 
   testWidgets('opens memory event page', (tester) async {
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(const SystemEventsExample());
 
     await tester.tap(find.text('Memory'));
     await tester.pumpAndSettle();
@@ -130,7 +130,7 @@ void main() {
   });
 
   testWidgets('opens battery event page', (tester) async {
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(const SystemEventsExample());
 
     await tester.tap(find.text('Battery'));
     await tester.pumpAndSettle();
@@ -146,7 +146,7 @@ void main() {
   });
 
   testWidgets('opens orientation event page', (tester) async {
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(const SystemEventsExample());
 
     await tester.tap(find.text('Orientation'));
     await tester.pumpAndSettle();
@@ -160,7 +160,7 @@ void main() {
   });
 
   testWidgets('opens time event page', (tester) async {
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(const SystemEventsExample());
 
     await tester.tap(find.text('Time'));
     await tester.pumpAndSettle();
@@ -174,7 +174,7 @@ void main() {
   });
 
   testWidgets('opens screen event page', (tester) async {
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(const SystemEventsExample());
 
     await tester.tap(find.text('Screen'));
     await tester.pumpAndSettle();
@@ -189,7 +189,7 @@ void main() {
   });
 
   testWidgets('opens screenshot event page', (tester) async {
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(const SystemEventsExample());
 
     await tester.scrollUntilVisible(find.text('Screenshot'), 300);
     await tester.tap(find.text('Screenshot'));
@@ -205,7 +205,7 @@ void main() {
   });
 
   testWidgets('opens thermal event page', (tester) async {
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(const SystemEventsExample());
 
     await tester.scrollUntilVisible(find.text('Thermal'), 300);
     await tester.tap(find.text('Thermal'));
@@ -223,7 +223,7 @@ void main() {
     final platform = FakeSystemEventsPlatform();
     FlutterSystemEventsPlatform.instance = platform;
 
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(const SystemEventsExample());
 
     await tester.scrollUntilVisible(find.text('Thermal'), 300);
     await tester.tap(find.text('Thermal'));
@@ -247,7 +247,7 @@ void main() {
     final platform = FakeSystemEventsPlatform();
     FlutterSystemEventsPlatform.instance = platform;
 
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(const SystemEventsExample());
 
     await tester.scrollUntilVisible(find.text('Screenshot'), 300);
     await tester.tap(find.text('Screenshot'));
@@ -270,7 +270,7 @@ void main() {
     final platform = FakeSystemEventsPlatform();
     FlutterSystemEventsPlatform.instance = platform;
 
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(const SystemEventsExample());
 
     expect(platform.initializeCount, 1);
     expect(platform.initializedConfig?.battery, isNotNull);

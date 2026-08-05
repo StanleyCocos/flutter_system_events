@@ -10,13 +10,13 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets('example starts', (tester) async {
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(const SystemEventsExample());
 
     expect(find.text('System Events'), findsOneWidget);
   });
 
   testWidgets('opens every example page', (tester) async {
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(const SystemEventsExample());
 
     for (final page in _examplePages) {
       await _openPage(tester, page);
@@ -30,7 +30,7 @@ void main() {
   testWidgets('desktop keyboard page receives hidden keyboard event', (
     tester,
   ) async {
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(const SystemEventsExample());
 
     await tester.tap(find.text('Keyboard'));
     await tester.pumpAndSettle();
@@ -47,7 +47,7 @@ void main() {
   });
 
   testWidgets('opens screen event page', (tester) async {
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(const SystemEventsExample());
 
     await tester.tap(find.text('Screen'));
     await tester.pumpAndSettle();
