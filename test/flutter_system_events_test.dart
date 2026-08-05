@@ -110,6 +110,7 @@ class MixedEventFlutterSystemEventsPlatform
     const OrientationEvent(orientation: ScreenOrientation.portraitUp),
     const TimeEvent(reason: TimeChangeReason.timeChanged),
     const ScreenEvent(change: ScreenChange.brightness, brightness: 0.5),
+    const ScreenshotEvent(),
   ]);
 }
 
@@ -167,6 +168,7 @@ void main() {
       'orientation': false,
       'time': false,
       'screen': false,
+      'screenshot': false,
     });
   });
 
@@ -188,6 +190,7 @@ void main() {
       'orientation': true,
       'time': true,
       'screen': true,
+      'screenshot': true,
     });
   });
 
@@ -274,6 +277,7 @@ void main() {
     expect(await SystemEvents.orientation.single, isA<OrientationEvent>());
     expect(await SystemEvents.time.single, isA<TimeEvent>());
     expect(await SystemEvents.screen.single, isA<ScreenEvent>());
+    expect(await SystemEvents.screenshot.single, isA<ScreenshotEvent>());
   });
 
   test('base platform methods throw when not implemented', () {
@@ -298,6 +302,7 @@ void main() {
       'orientation': true,
       'time': true,
       'screen': true,
+      'screenshot': false,
     });
   });
 
@@ -311,6 +316,7 @@ void main() {
       'orientation': true,
       'time': true,
       'screen': true,
+      'screenshot': true,
     });
   });
 
@@ -320,6 +326,7 @@ void main() {
         keyboard: KeyboardConfig(),
         battery: BatteryConfig(),
         screen: ScreenConfig(),
+        screenshot: ScreenshotConfig(),
       ).toMap(),
       {
         'keyboard': true,
@@ -330,8 +337,15 @@ void main() {
         'orientation': false,
         'time': false,
         'screen': true,
+        'screenshot': true,
       },
     );
+  });
+
+  test('parses screenshot event maps', () {
+    final event = SystemEvent.fromMap({'type': 'screenshot'});
+
+    expect(event, isA<ScreenshotEvent>());
   });
 
   test('parses screen event maps', () {

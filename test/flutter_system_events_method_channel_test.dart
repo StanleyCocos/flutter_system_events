@@ -36,6 +36,7 @@ void main() {
       'orientation': true,
       'time': true,
       'screen': true,
+      'screenshot': false,
     });
   });
 
@@ -60,6 +61,7 @@ void main() {
       'orientation': false,
       'time': false,
       'screen': false,
+      'screenshot': false,
     });
   });
 
@@ -241,6 +243,31 @@ void main() {
     expect(screenEvent, isA<ScreenEvent>());
     expect((screenEvent as ScreenEvent).change, ScreenChange.brightness);
     expect(screenEvent.brightness, 0.42);
+  });
+
+  test('events converts screenshot payloads to screenshot events', () async {
+    final platform = MethodChannelFlutterSystemEvents();
+    const eventChannel = EventChannel('flutter_system_events/events');
+    await TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .handlePlatformMessage(
+          eventChannel.name,
+          const StandardMethodCodec().encodeMethodCall(
+            const MethodCall('listen', null),
+          ),
+          (_) {},
+        );
+
+    final event = platform.events.first;
+    await TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .handlePlatformMessage(
+          eventChannel.name,
+          const StandardMethodCodec().encodeSuccessEnvelope({
+            'type': 'screenshot',
+          }),
+          (_) {},
+        );
+
+    expect(await event, isA<ScreenshotEvent>());
   });
 
   test('events converts non-map payloads to unknown events', () async {

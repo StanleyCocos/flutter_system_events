@@ -117,6 +117,7 @@ sealed class SystemEvent {
               ? (map['brightness'] as num).toDouble()
               : null,
         ),
+        'screenshot' => const ScreenshotEvent(),
         _ => UnknownSystemEvent(
           rawPayload: map,
           rawType: map['type'],
@@ -158,6 +159,9 @@ enum SystemEventType {
 
   /// Screen state and brightness events.
   screen,
+
+  /// User screenshot events.
+  screenshot,
 }
 
 /// Selects which native event listeners are enabled.
@@ -172,6 +176,7 @@ final class SystemEventsConfig {
     this.orientation,
     this.time,
     this.screen,
+    this.screenshot,
   });
 
   /// Enables keyboard, lifecycle, network, memory, orientation, and time events.
@@ -183,7 +188,8 @@ final class SystemEventsConfig {
       battery = null,
       orientation = const OrientationConfig(),
       time = const TimeConfig(),
-      screen = const ScreenConfig();
+      screen = const ScreenConfig(),
+      screenshot = null;
 
   /// Enables every supported event group, including battery events.
   const SystemEventsConfig.all()
@@ -194,7 +200,8 @@ final class SystemEventsConfig {
       battery = const BatteryConfig(),
       orientation = const OrientationConfig(),
       time = const TimeConfig(),
-      screen = const ScreenConfig();
+      screen = const ScreenConfig(),
+      screenshot = const ScreenshotConfig();
 
   /// Enables keyboard visibility events when non-null.
   final KeyboardConfig? keyboard;
@@ -220,6 +227,9 @@ final class SystemEventsConfig {
   /// Enables screen state and brightness events when non-null.
   final ScreenConfig? screen;
 
+  /// Enables user screenshot events when non-null.
+  final ScreenshotConfig? screenshot;
+
   /// Converts this configuration to the platform channel payload.
   Map<String, bool> toMap() {
     return {
@@ -231,6 +241,7 @@ final class SystemEventsConfig {
       'orientation': orientation != null,
       'time': time != null,
       'screen': screen != null,
+      'screenshot': screenshot != null,
     };
   }
 
@@ -245,6 +256,7 @@ final class SystemEventsConfig {
       SystemEventType.orientation => orientation != null,
       SystemEventType.time => time != null,
       SystemEventType.screen => screen != null,
+      SystemEventType.screenshot => screenshot != null,
     };
   }
 
@@ -269,6 +281,9 @@ final class SystemEventsConfig {
           : orientation,
       time: type == SystemEventType.time ? const TimeConfig() : time,
       screen: type == SystemEventType.screen ? const ScreenConfig() : screen,
+      screenshot: type == SystemEventType.screenshot
+          ? const ScreenshotConfig()
+          : screenshot,
     );
   }
 
@@ -283,6 +298,7 @@ final class SystemEventsConfig {
       orientation: type == SystemEventType.orientation ? null : orientation,
       time: type == SystemEventType.time ? null : time,
       screen: type == SystemEventType.screen ? null : screen,
+      screenshot: type == SystemEventType.screenshot ? null : screenshot,
     );
   }
 }
@@ -333,6 +349,12 @@ final class TimeConfig {
 final class ScreenConfig {
   /// Creates screen event configuration.
   const ScreenConfig();
+}
+
+/// Configuration for user screenshot events.
+final class ScreenshotConfig {
+  /// Creates screenshot event configuration.
+  const ScreenshotConfig();
 }
 
 /// App lifecycle states reported by the platform.
@@ -454,6 +476,12 @@ final class ScreenEvent extends SystemEvent {
 
   /// Screen brightness from 0.0 to 1.0 when [change] is brightness.
   final double? brightness;
+}
+
+/// Event emitted when the user takes a screenshot.
+final class ScreenshotEvent extends SystemEvent {
+  /// Creates a screenshot event.
+  const ScreenshotEvent();
 }
 
 /// Event emitted when a platform payload cannot be decoded.

@@ -25,6 +25,8 @@ export 'flutter_system_events_platform_interface.dart'
         ScreenConfig,
         ScreenEvent,
         ScreenOrientation,
+        ScreenshotConfig,
+        ScreenshotEvent,
         SystemEvent,
         SystemEventType,
         SystemEventsConfig,
@@ -126,4 +128,8 @@ final class SystemEvents {
   /// Screen state and brightness events.
   static Stream<ScreenEvent> get screen =>
       events.where((event) => event is ScreenEvent).cast<ScreenEvent>();
+
+  /// User screenshot events.
+  static Stream<ScreenshotEvent> get screenshot =>
+      events.where((event) => event is ScreenshotEvent).cast<ScreenshotEvent>();
 }
