@@ -62,6 +62,7 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
     if config.orientation { startOrientation() }
     if config.time { startTime() }
     if config.screen { startScreen() }
+    if config.screenshot { startScreenshot() }
   }
 
   private func startKeyboard() {
@@ -229,6 +230,12 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
     })
   }
 
+  private func startScreenshot() {
+    observers.append(NotificationCenter.default.addObserver(forName: UIApplication.userDidTakeScreenshotNotification, object: nil, queue: .main) { [weak self] _ in
+      self?.events?(["type": "screenshot"])
+    })
+  }
+
   private struct EventConfig {
     let keyboard: Bool
     let lifecycle: Bool
@@ -238,8 +245,9 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
     let orientation: Bool
     let time: Bool
     let screen: Bool
+    let screenshot: Bool
 
-    static let legacy = EventConfig(keyboard: true, lifecycle: true, network: true, memory: true, battery: false, orientation: true, time: true, screen: true)
+    static let legacy = EventConfig(keyboard: true, lifecycle: true, network: true, memory: true, battery: false, orientation: true, time: true, screen: true, screenshot: false)
 
     static func from(_ arguments: Any?) -> EventConfig {
       guard let map = arguments as? [String: Any] else { return legacy }
@@ -251,7 +259,8 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
         battery: map["battery"] as? Bool == true,
         orientation: map["orientation"] as? Bool == true,
         time: map["time"] as? Bool == true,
-        screen: map["screen"] as? Bool == true
+        screen: map["screen"] as? Bool == true,
+        screenshot: map["screenshot"] as? Bool == true
       )
     }
   }
