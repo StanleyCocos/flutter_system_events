@@ -96,6 +96,24 @@ internal class FlutterSystemEventsPluginTest {
     }
 
     @Test
+    fun screenshotEvent_buildsScreenshotPayload() {
+        assertEquals(mapOf("type" to "screenshot"), screenshotEvent())
+    }
+
+    @Test
+    fun eventConfig_parsesScreenshotFlag() {
+        assertEquals(false, FlutterSystemEventsPlugin.EventConfig.legacy().screenshot)
+        assertEquals(
+            true,
+            FlutterSystemEventsPlugin.EventConfig.from(mapOf("screenshot" to true)).screenshot,
+        )
+        assertEquals(
+            false,
+            FlutterSystemEventsPlugin.EventConfig.from(mapOf("screenshot" to false)).screenshot,
+        )
+    }
+
+    @Test
     fun logicalPixelsFromPhysicalPixels_convertsAndroidPixelsToLogicalPixels() {
         assertEquals(100.0, logicalPixelsFromPhysicalPixels(300, 3.0f))
         assertEquals(100.0, logicalPixelsFromPhysicalPixels(250, 2.5f))

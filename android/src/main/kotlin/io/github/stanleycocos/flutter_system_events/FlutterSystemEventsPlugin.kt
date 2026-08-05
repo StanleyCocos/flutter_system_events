@@ -420,7 +420,7 @@ class FlutterSystemEventsPlugin :
         lastOrientation = null
     }
 
-    private data class EventConfig(
+    internal data class EventConfig(
         val keyboard: Boolean,
         val lifecycle: Boolean,
         val network: Boolean,
