@@ -59,6 +59,7 @@ void main() {
 }
 
 Future<void> _openPage(WidgetTester tester, _ExamplePage page) async {
+  await tester.scrollUntilVisible(find.text(page.entry), 300);
   await tester.tap(find.text(page.entry));
   await tester.pumpAndSettle();
 
