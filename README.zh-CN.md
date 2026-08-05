@@ -7,7 +7,7 @@
 
 一个 Flutter 系统事件 API：既可以监听类型化事件变化，也可以按需读取当前系统状态。
 
-当 App 需要响应键盘、生命周期、网络、内存、电池、屏幕方向、系统时间、屏幕状态、截屏或亮度变化，但不想自己接入多个平台监听器时，可以使用它。
+当 App 需要响应键盘、生命周期、网络、内存、电池、屏幕方向、系统时间、屏幕状态、截屏、设备热状态或亮度变化，但不想自己接入多个平台监听器时，可以使用它。
 
 ## 安装
 
@@ -31,6 +31,7 @@ SystemEvents.orientation.listen((event) {});
 SystemEvents.time.listen((event) {});
 SystemEvents.screen.listen((event) {});
 SystemEvents.screenshot.listen((event) {});
+SystemEvents.thermal.listen((event) {});
 ```
 
 不等待下一次事件，直接读取当前状态：
@@ -93,6 +94,8 @@ SystemEvents.events.listen((event) {
       print('screen change=${change.name} brightness=$brightness');
     case ScreenshotEvent():
       print('screenshot taken');
+    case ThermalEvent(:final state):
+      print('thermal state=${state.name}');
     case UnknownSystemEvent(:final rawType, :final reason):
       print('unknown event type=$rawType reason=$reason');
   }
@@ -118,12 +121,15 @@ SystemEvents.events.listen((event) {
 | `ScreenEvent` | `change` | `off`、`on`、`unlocked` 或 `brightness`。 |
 | `ScreenEvent` | `brightness` | 当 `change` 为 `brightness` 时，表示 `0.0` 到 `1.0` 的屏幕亮度。 |
 | `ScreenshotEvent` | - | 用户截屏时触发。事件不会包含截图图片。 |
+| `ThermalEvent` | `state` | 当前设备热状态。 |
 
 内存事件只是系统提示。插件只报告压力状态，具体可以安全释放什么资源由你的 App 决定。
 
 Android 屏幕事件包含熄屏、亮屏、解锁和亮度变化。iOS 支持解锁和亮度变化；iOS 没有可靠的公开 API 可以让 App 直接监听熄屏/亮屏。
 
 `ScreenshotEvent` 支持 iOS 和 Android 14+（API 34+）。Android 13 及以下不支持这个事件，也不会触发回调。Android 宿主 App 需要声明 `android.permission.DETECT_SCREEN_CAPTURE`；这是安装时权限，不是运行时权限，因此不需要 `requestPermissions`。Android 在触发截屏检测时会显示系统提示。
+
+`ThermalEvent` 支持 Android 10+（API 29+）和 iOS。Android 9 及以下不支持这个事件，也不会触发回调。Android 和 iOS 都不需要权限。
 
 ## 平台支持
 
@@ -137,7 +143,8 @@ Android 屏幕事件包含熄屏、亮屏、解锁和亮度变化。iOS 支持�
 | `OrientationEvent` | 支持 | 支持 | 努力实现中 | 努力实现中 | 努力实现中 | 努力实现中 |
 | `TimeEvent` | 支持 | 支持 | 努力实现中 | 努力实现中 | 努力实现中 | 努力实现中 |
 | `ScreenEvent` | 支持 | 部分支持 | 努力实现中 | 努力实现中 | 努力实现中 | 努力实现中 |
-| `ScreenshotEvent` | Android 14+ | 支持 | 努力实现中 | 努力实现中 | 努力实现中 | 努力实现中 |
+| `ScreenshotEvent` | Android 14+ | 支持 | 不支持 | 不支持 | 不支持 | 不支持 |
+| `ThermalEvent` | Android 10+ | 支持 | 不支持 | 不支持 | 不支持 | 不支持 |
 
 `ScreenEvent` 在 iOS 上支持解锁和亮度变化。
 
@@ -161,5 +168,6 @@ flutter run
 - Time
 - Screen
 - Screenshot
+- Thermal
 
 每个页面都会在顶部显示最新事件值，并提供简单方式用于触发或手动验证事件。

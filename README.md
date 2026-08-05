@@ -9,8 +9,8 @@ One Flutter API for system events: listen to typed changes, or read the current
 system state on demand.
 
 Use it when your app needs to react to keyboard, lifecycle, network, memory,
-battery, orientation, time, screen, screenshot, or brightness changes without
-wiring several platform listeners yourself.
+battery, orientation, time, screen, screenshot, thermal, or brightness changes
+without wiring several platform listeners yourself.
 
 ## Installation
 
@@ -34,6 +34,7 @@ SystemEvents.orientation.listen((event) {});
 SystemEvents.time.listen((event) {});
 SystemEvents.screen.listen((event) {});
 SystemEvents.screenshot.listen((event) {});
+SystemEvents.thermal.listen((event) {});
 ```
 
 Read current values without waiting for the next event:
@@ -97,6 +98,8 @@ SystemEvents.events.listen((event) {
       print('screen change=${change.name} brightness=$brightness');
     case ScreenshotEvent():
       print('screenshot taken');
+    case ThermalEvent(:final state):
+      print('thermal state=${state.name}');
     case UnknownSystemEvent(:final rawType, :final reason):
       print('unknown event type=$rawType reason=$reason');
   }
@@ -122,6 +125,7 @@ SystemEvents.events.listen((event) {
 | `ScreenEvent` | `change` | `off`, `on`, `unlocked`, or `brightness`. |
 | `ScreenEvent` | `brightness` | Screen brightness from `0.0` to `1.0` when `change` is `brightness`. |
 | `ScreenshotEvent` | - | Emitted when the user takes a screenshot. No screenshot image is included. |
+| `ThermalEvent` | `state` | Current device thermal state. |
 
 Memory events are hints. The plugin reports pressure; your app decides what can
 be released safely.
@@ -136,6 +140,10 @@ must declare `android.permission.DETECT_SCREEN_CAPTURE`; it is an install-time
 permission, not a runtime permission, so no `requestPermissions` flow is needed.
 Android shows a system notice when screenshot detection is triggered.
 
+`ThermalEvent` is supported on Android 10+ (API 29+) and iOS. Android 9 and
+earlier do not support this event and will not emit it. No Android or iOS
+permission is required.
+
 ## Platform support
 
 | Event | Android | iOS | macOS | Windows | Linux | Web |
@@ -148,7 +156,8 @@ Android shows a system notice when screenshot detection is triggered.
 | `OrientationEvent` | Yes | Yes | In progress | In progress | In progress | In progress |
 | `TimeEvent` | Yes | Yes | In progress | In progress | In progress | In progress |
 | `ScreenEvent` | Yes | Partial | In progress | In progress | In progress | In progress |
-| `ScreenshotEvent` | Android 14+ | Yes | In progress | In progress | In progress | In progress |
+| `ScreenshotEvent` | Android 14+ | Yes | No | No | No | No |
+| `ThermalEvent` | Android 10+ | Yes | No | No | No | No |
 
 ## Example
 
@@ -170,6 +179,7 @@ The example includes separate pages:
 - Time
 - Screen
 - Screenshot
+- Thermal
 
 Each page shows the latest event value at the top and provides a simple way to
 trigger or manually verify the event.
