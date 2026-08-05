@@ -1,3 +1,10 @@
+## 1.0.0
+
+- Added screenshot events on iOS and Android 14+.
+- Added thermal events on iOS and Android 10+.
+- Added example pages, tests, and docs for screenshot and thermal events.
+- Documented platform support and permission behavior for screenshot and thermal events.
+
 ## 0.8.0
 
 - Added typed event streams on `SystemEvents`.

@@ -1,6 +1,6 @@
 name: flutter_system_events
 description: "A Flutter plugin for listening to keyboard, lifecycle, network, memory, battery, orientation, time, screen, screenshot, and thermal events."
-version: 0.8.0
+version: 1.0.0
 repository: https://github.com/StanleyCocos/flutter_system_events
 
 environment:

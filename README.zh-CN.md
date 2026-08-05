@@ -13,7 +13,7 @@
 
 ```yaml
 dependencies:
-  flutter_system_events: ^0.8.0
+  flutter_system_events: ^1.0.0
 ```
 
 ## API
