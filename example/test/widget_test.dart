@@ -204,6 +204,43 @@ void main() {
     expect(find.text('Recent events'), findsOneWidget);
   });
 
+  testWidgets('opens thermal event page', (tester) async {
+    await tester.pumpWidget(const MyApp());
+
+    await tester.scrollUntilVisible(find.text('Thermal'), 300);
+    await tester.tap(find.text('Thermal'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Thermal Event'), findsOneWidget);
+    expect(find.text('state: -'), findsOneWidget);
+    expect(find.text('count: 0'), findsOneWidget);
+    expect(find.text('Recent events'), findsOneWidget);
+  });
+
+  testWidgets('thermal event page renders incoming thermal events', (
+    tester,
+  ) async {
+    final platform = FakeSystemEventsPlatform();
+    FlutterSystemEventsPlatform.instance = platform;
+
+    await tester.pumpWidget(const MyApp());
+
+    await tester.scrollUntilVisible(find.text('Thermal'), 300);
+    await tester.tap(find.text('Thermal'));
+    await tester.pumpAndSettle();
+
+    expect(platform.initializedConfig?.thermal, isNotNull);
+
+    platform.controller.add(const ThermalEvent(state: ThermalState.serious));
+    await tester.pump();
+
+    expect(find.text('state: serious'), findsOneWidget);
+    expect(find.text('count: 1'), findsOneWidget);
+    expect(find.text('state=serious'), findsOneWidget);
+
+    await platform.controller.close();
+  });
+
   testWidgets('screenshot event page renders incoming screenshot events', (
     tester,
   ) async {

@@ -114,6 +114,11 @@ const _examplePages = [
     title: 'Screenshot Event',
     expectedTexts: ['count: 0', 'Recent events'],
   ),
+  _ExamplePage(
+    entry: 'Thermal',
+    title: 'Thermal Event',
+    expectedTexts: ['state: -', 'count: 0'],
+  ),
 ];
 
 class _ExamplePage {

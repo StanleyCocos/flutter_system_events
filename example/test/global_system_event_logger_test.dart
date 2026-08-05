@@ -36,6 +36,7 @@ void main() {
 
     platform.controller.add(const KeyboardEvent(visible: true, height: 300));
     platform.controller.add(const ScreenshotEvent());
+    platform.controller.add(const ThermalEvent(state: ThermalState.serious));
     await Future<void>.delayed(Duration.zero);
 
     expect(
@@ -45,6 +46,8 @@ void main() {
         '[SystemEvents.keyboard] KeyboardEvent',
         '[SystemEvents.events] ScreenshotEvent',
         '[SystemEvents.screenshot] ScreenshotEvent',
+        '[SystemEvents.events] ThermalEvent',
+        '[SystemEvents.thermal] ThermalEvent',
       ]),
     );
 
