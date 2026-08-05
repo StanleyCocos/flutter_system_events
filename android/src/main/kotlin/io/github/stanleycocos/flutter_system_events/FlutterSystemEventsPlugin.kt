@@ -16,6 +16,7 @@ import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.net.Uri
 import android.os.BatteryManager
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -31,6 +32,7 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
+import java.util.concurrent.Executor
 
 /** FlutterSystemEventsPlugin */
 class FlutterSystemEventsPlugin :
@@ -53,6 +55,7 @@ class FlutterSystemEventsPlugin :
     private var timeReceiver: BroadcastReceiver? = null
     private var screenReceiver: BroadcastReceiver? = null
     private var brightnessObserver: ContentObserver? = null
+    private var screenCaptureCallback: Any? = null
     private var orientationCallbacks: ComponentCallbacks2? = null
     private var lastOrientation: String? = null
     private var config = EventConfig.legacy()
@@ -165,6 +168,7 @@ class FlutterSystemEventsPlugin :
         if (config.orientation) startOrientation()
         if (config.time) startTime()
         if (config.screen) startScreen()
+        if (config.screenshot) startScreenshot()
     }
 
     private fun stopAll() {
@@ -176,6 +180,7 @@ class FlutterSystemEventsPlugin :
         stopOrientation()
         stopTime()
         stopScreen()
+        stopScreenshot()
     }
 
     private fun emitEvent(event: Map<String, Any>) {
@@ -363,6 +368,27 @@ class FlutterSystemEventsPlugin :
         brightnessObserver = null
     }
 
+    private fun startScreenshot() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) return
+        val currentActivity = activity ?: return
+        val callback = Activity.ScreenCaptureCallback {
+            emitEvent(screenshotEvent())
+        }
+        val executor = Executor { command -> mainHandler.post(command) }
+        currentActivity.registerScreenCaptureCallback(executor, callback)
+        screenCaptureCallback = callback
+    }
+
+    private fun stopScreenshot() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            screenCaptureCallback = null
+            return
+        }
+        val callback = screenCaptureCallback as? Activity.ScreenCaptureCallback
+        callback?.let { activity?.unregisterScreenCaptureCallback(it) }
+        screenCaptureCallback = null
+    }
+
     private fun emitBrightness(context: Context) {
         val raw = Settings.System.getInt(context.contentResolver, Settings.System.SCREEN_BRIGHTNESS, -1)
         emitEvent(screenBrightnessEvent(raw) ?: return)
@@ -403,6 +429,7 @@ class FlutterSystemEventsPlugin :
         val orientation: Boolean,
         val time: Boolean,
         val screen: Boolean,
+        val screenshot: Boolean,
     ) {
         companion object {
             fun legacy() = EventConfig(
@@ -414,6 +441,7 @@ class FlutterSystemEventsPlugin :
                 orientation = true,
                 time = true,
                 screen = true,
+                screenshot = false,
             )
 
             fun from(arguments: Any?): EventConfig {
@@ -427,6 +455,7 @@ class FlutterSystemEventsPlugin :
                     orientation = map["orientation"] == true,
                     time = map["time"] == true,
                     screen = map["screen"] == true,
+                    screenshot = map["screenshot"] == true,
                 )
             }
         }
@@ -460,6 +489,9 @@ internal fun screenChangeFromAction(action: String?): String = when (action) {
 
 internal fun screenEventFromAction(action: String?): Map<String, Any> =
     mapOf("type" to "screen", "change" to screenChangeFromAction(action))
+
+internal fun screenshotEvent(): Map<String, Any> =
+    mapOf("type" to "screenshot")
 
 internal fun screenBrightnessEvent(value: Int): Map<String, Any>? {
     val brightness = normalizedBrightness(value) ?: return null
