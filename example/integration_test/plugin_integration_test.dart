@@ -109,6 +109,11 @@ const _examplePages = [
     title: 'Screen Event',
     expectedTexts: ['change: -', 'brightness: -'],
   ),
+  _ExamplePage(
+    entry: 'Screenshot',
+    title: 'Screenshot Event',
+    expectedTexts: ['count: 0', 'Recent events'],
+  ),
 ];
 
 class _ExamplePage {

@@ -35,6 +35,7 @@ void main() {
     logger.start();
 
     platform.controller.add(const KeyboardEvent(visible: true, height: 300));
+    platform.controller.add(const ScreenshotEvent());
     await Future<void>.delayed(Duration.zero);
 
     expect(
@@ -42,6 +43,8 @@ void main() {
       containsAll([
         '[SystemEvents.events] KeyboardEvent',
         '[SystemEvents.keyboard] KeyboardEvent',
+        '[SystemEvents.events] ScreenshotEvent',
+        '[SystemEvents.screenshot] ScreenshotEvent',
       ]),
     );
 

@@ -188,6 +188,45 @@ void main() {
     expect(find.text('brightness: -'), findsOneWidget);
   });
 
+  testWidgets('opens screenshot event page', (tester) async {
+    await tester.pumpWidget(const MyApp());
+
+    await tester.scrollUntilVisible(find.text('Screenshot'), 300);
+    await tester.tap(find.text('Screenshot'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Screenshot Event'), findsOneWidget);
+    expect(
+      find.text('Take a screenshot to trigger this event.'),
+      findsOneWidget,
+    );
+    expect(find.text('count: 0'), findsOneWidget);
+    expect(find.text('Recent events'), findsOneWidget);
+  });
+
+  testWidgets('screenshot event page renders incoming screenshot events', (
+    tester,
+  ) async {
+    final platform = FakeSystemEventsPlatform();
+    FlutterSystemEventsPlatform.instance = platform;
+
+    await tester.pumpWidget(const MyApp());
+
+    await tester.scrollUntilVisible(find.text('Screenshot'), 300);
+    await tester.tap(find.text('Screenshot'));
+    await tester.pumpAndSettle();
+
+    expect(platform.initializedConfig?.screenshot, isNotNull);
+
+    platform.controller.add(const ScreenshotEvent());
+    await tester.pump();
+
+    expect(find.text('count: 1'), findsOneWidget);
+    expect(find.text('screenshot 1'), findsOneWidget);
+
+    await platform.controller.close();
+  });
+
   testWidgets('screen event page renders incoming screen events', (
     tester,
   ) async {
