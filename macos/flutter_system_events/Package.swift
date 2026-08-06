@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
     name: "flutter_system_events",
     platforms: [
-        .macOS("10.11")
+        .macOS("10.14")
     ],
     products: [
         .library(name: "flutter-system-events", targets: ["flutter_system_events"])

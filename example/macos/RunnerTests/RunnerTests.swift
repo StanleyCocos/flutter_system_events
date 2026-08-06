@@ -87,4 +87,20 @@ class RunnerTests: XCTestCase {
 
     XCTAssertNil(event)
   }
+
+  func testCurrentNetworkReturnsNetworkEvent() {
+    let plugin = FlutterSystemEventsPlugin()
+    let resultExpectation = expectation(description: "currentNetwork returns.")
+
+    plugin.handle(FlutterMethodCall(methodName: "currentNetwork", arguments: nil)) { result in
+      let event = result as? [String: Any]
+
+      XCTAssertEqual(event?["type"] as? String, "network")
+      XCTAssertNotNil(event?["online"] as? Bool)
+      XCTAssertNotNil(event?["networkType"] as? String)
+      resultExpectation.fulfill()
+    }
+
+    waitForExpectations(timeout: 5)
+  }
 }
