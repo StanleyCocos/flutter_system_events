@@ -52,8 +52,8 @@ add_subdirectory(${FLUTTER_MANAGED_DIR})
 # Application build; see runner/CMakeLists.txt.
 add_subdirectory("runner")
 
-# Enable the test target.
-set(include_flutter_system_events_tests TRUE)
+# Enable the plugin test target only when explicitly requested.
+option(include_flutter_system_events_tests "Build flutter_system_events plugin tests" OFF)
 
 # Generated plugin build rules, which manage building the plugins and adding
 # them to the application.

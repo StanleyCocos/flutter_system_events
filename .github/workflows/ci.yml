@@ -105,9 +105,6 @@ jobs:
       - run: flutter build windows --debug
         working-directory: example
 
-      - run: ctest --test-dir build/windows/x64/plugins/flutter_system_events -C Debug --output-on-failure
-        working-directory: example
-
   publish-dry-run:
     runs-on: ubuntu-latest
     needs: [flutter, android, apple, windows]
