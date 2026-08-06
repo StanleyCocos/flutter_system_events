@@ -50,4 +50,41 @@ class RunnerTests: XCTestCase {
 
     XCTAssertNil(event)
   }
+
+  func testLifecycleInitializeObservesActiveEvent() {
+    let plugin = FlutterSystemEventsPlugin()
+    var event: [String: Any]?
+
+    _ = plugin.onListen(withArguments: nil) { value in
+      event = value as? [String: Any]
+    }
+
+    let call = FlutterMethodCall(methodName: "initialize", arguments: ["lifecycle": true])
+    plugin.handle(call) { result in
+      XCTAssertNil(result)
+    }
+
+    NotificationCenter.default.post(name: NSApplication.didBecomeActiveNotification, object: nil)
+
+    XCTAssertEqual(event?["type"] as? String, "lifecycle")
+    XCTAssertEqual(event?["state"] as? String, "resumed")
+  }
+
+  func testLifecycleDisabledDoesNotEmitEvent() {
+    let plugin = FlutterSystemEventsPlugin()
+    var event: Any?
+
+    _ = plugin.onListen(withArguments: nil) { value in
+      event = value
+    }
+
+    let call = FlutterMethodCall(methodName: "initialize", arguments: ["lifecycle": false])
+    plugin.handle(call) { result in
+      XCTAssertNil(result)
+    }
+
+    NotificationCenter.default.post(name: NSApplication.didBecomeActiveNotification, object: nil)
+
+    XCTAssertNil(event)
+  }
 }
