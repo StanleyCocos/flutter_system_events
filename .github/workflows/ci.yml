@@ -88,9 +88,29 @@ jobs:
       - run: flutter test integration_test/plugin_integration_test.dart -d macos
         working-directory: example
 
+  windows:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+        working-directory: example
+
+      - run: flutter build windows --debug
+        working-directory: example
+
+      - run: ctest --test-dir build/windows/x64/plugins/flutter_system_events -C Debug --output-on-failure
+        working-directory: example
+
   publish-dry-run:
     runs-on: ubuntu-latest
-    needs: [flutter, android, apple]
+    needs: [flutter, android, apple, windows]
 
     steps:
       - uses: actions/checkout@v4
