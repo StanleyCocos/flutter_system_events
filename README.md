@@ -156,7 +156,7 @@ emitted when screen parameters change.
 | --- | --- | --- | --- | --- | --- | --- |
 | `KeyboardEvent` | Yes | Yes | Yes | Yes | In progress | Yes |
 | `LifecycleEvent` | Yes | Yes | Yes | Yes | In progress | Yes |
-| `NetworkEvent` | Yes | Yes | Yes | In progress | In progress | Yes |
+| `NetworkEvent` | Yes | Yes | Yes | Yes | In progress | Yes |
 | `MemoryEvent` | Yes | Yes | In progress | In progress | In progress | In progress |
 | `BatteryEvent` | Yes | Yes | Yes | In progress | In progress | In progress |
 | `OrientationEvent` | Yes | Yes | Yes | In progress | In progress | In progress |
