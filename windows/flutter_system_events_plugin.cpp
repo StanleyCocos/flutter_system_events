@@ -5,7 +5,6 @@
 #include <flutter/plugin_registrar_windows.h>
 #include <flutter/standard_method_codec.h>
 
-#include <netioapi.h>
 #include <wininet.h>
 
 #include <memory>
@@ -18,9 +17,6 @@ namespace {
 
 constexpr char kMethodChannelName[] = "flutter_system_events";
 constexpr char kEventChannelName[] = "flutter_system_events/events";
-constexpr wchar_t kNetworkChangedMessageName[] =
-    L"FlutterSystemEvents.NetworkChanged";
-
 flutter::EncodableValue KeyboardHiddenEvent() {
   return flutter::EncodableValue(flutter::EncodableMap{
       {flutter::EncodableValue("type"), flutter::EncodableValue("keyboard")},
@@ -53,16 +49,6 @@ bool BoolValue(const flutter::EncodableMap& map, const char* key) {
 
   const auto* value = std::get_if<bool>(&enabled->second);
   return value != nullptr && *value;
-}
-
-void CALLBACK NetworkChangeCallback(PVOID caller_context,
-                                    PMIB_IPINTERFACE_ROW row,
-                                    MIB_NOTIFICATION_TYPE notification_type) {
-  (void)row;
-  (void)notification_type;
-
-  auto* plugin = static_cast<FlutterSystemEventsPlugin*>(caller_context);
-  plugin->PostNetworkChanged();
 }
 
 }  // namespace
@@ -100,7 +86,6 @@ FlutterSystemEventsPlugin::FlutterSystemEventsPlugin(
     : registrar_(registrar) {}
 
 FlutterSystemEventsPlugin::~FlutterSystemEventsPlugin() {
-  StopNetwork();
   StopWindowProc();
 }
 
@@ -163,52 +148,15 @@ void FlutterSystemEventsPlugin::StartLifecycle() {
 }
 
 void FlutterSystemEventsPlugin::StartNetwork() {
-  if (network_notification_handle_ != nullptr || registrar_ == nullptr ||
-      registrar_->GetView() == nullptr) {
-    return;
-  }
-
-  network_hwnd_ = registrar_->GetView()->GetNativeWindow();
-  if (network_hwnd_ == nullptr) {
-    return;
-  }
-
-  network_message_ = RegisterWindowMessageW(kNetworkChangedMessageName);
-  if (network_message_ == 0) {
-    network_hwnd_ = nullptr;
-    return;
-  }
-
-  const auto status =
-      NotifyIpInterfaceChange(AF_UNSPEC, NetworkChangeCallback, this, FALSE,
-                              &network_notification_handle_);
-  if (status != NO_ERROR) {
-    network_notification_handle_ = nullptr;
-    network_hwnd_ = nullptr;
-    return;
-  }
-
   StartWindowProc();
   EmitNetwork();
 }
 
-void FlutterSystemEventsPlugin::StopNetwork() {
-  if (network_notification_handle_ != nullptr) {
-    CancelMibChangeNotify2(network_notification_handle_);
-    network_notification_handle_ = nullptr;
-  }
-  network_hwnd_ = nullptr;
-}
+void FlutterSystemEventsPlugin::StopNetwork() {}
 
 void FlutterSystemEventsPlugin::EmitNetwork() {
   if (events_) {
     events_->Success(CurrentNetwork());
-  }
-}
-
-void FlutterSystemEventsPlugin::PostNetworkChanged() {
-  if (network_hwnd_ != nullptr && network_message_ != 0) {
-    PostMessageW(network_hwnd_, network_message_, 0, 0);
   }
 }
 
@@ -224,7 +172,7 @@ void FlutterSystemEventsPlugin::StartWindowProc() {
 }
 
 void FlutterSystemEventsPlugin::StopWindowProcIfUnused() {
-  if (!config_.lifecycle && network_notification_handle_ == nullptr) {
+  if (!config_.lifecycle && !config_.network) {
     StopWindowProc();
   }
 }
@@ -246,28 +194,29 @@ std::optional<LRESULT> FlutterSystemEventsPlugin::HandleWindowProc(
   (void)hwnd;
   (void)lparam;
 
-  if (!config_.lifecycle) {
-    if (message == network_message_ && config_.network) {
-      EmitNetwork();
-    }
-    return std::nullopt;
-  }
-
   switch (message) {
     case WM_ACTIVATEAPP:
-      EmitLifecycle(wparam ? "resumed" : "inactive");
+      if (config_.lifecycle) {
+        EmitLifecycle(wparam ? "resumed" : "inactive");
+      }
+      if (config_.network) {
+        EmitNetwork();
+      }
       break;
     case WM_SIZE:
-      if (wparam == SIZE_MINIMIZED) {
+      if (config_.lifecycle && wparam == SIZE_MINIMIZED) {
         EmitLifecycle("paused");
       }
       break;
     case WM_CLOSE:
     case WM_DESTROY:
-      EmitLifecycle("detached");
+      if (config_.lifecycle) {
+        EmitLifecycle("detached");
+      }
       break;
-    default:
-      if (message == network_message_ && config_.network) {
+    case WM_DEVICECHANGE:
+    case WM_SETTINGCHANGE:
+      if (config_.network) {
         EmitNetwork();
       }
       break;
