@@ -35,6 +35,8 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
       currentNetwork(result)
     case "currentBattery":
       result(batteryEvent())
+    case "currentOrientation":
+      result(orientationEvent())
     default:
       result(FlutterMethodNotImplemented)
     }
@@ -58,6 +60,7 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
     if config.network { startNetwork() }
     if config.time { startTime() }
     if config.battery { startBattery() }
+    if config.orientation { startOrientation() }
   }
 
   private func stopAll() {
@@ -155,14 +158,26 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
     }
   }
 
+  private func startOrientation() {
+    emitOrientation()
+    observers.append(NotificationCenter.default.addObserver(forName: NSApplication.didChangeScreenParametersNotification, object: nil, queue: .main) { [weak self] _ in
+      self?.emitOrientation()
+    })
+  }
+
+  private func emitOrientation() {
+    events?(orientationEvent())
+  }
+
   private struct EventConfig {
     let keyboard: Bool
     let lifecycle: Bool
     let network: Bool
     let time: Bool
     let battery: Bool
+    let orientation: Bool
 
-    static let legacy = EventConfig(keyboard: true, lifecycle: true, network: true, time: true, battery: false)
+    static let legacy = EventConfig(keyboard: true, lifecycle: true, network: true, time: true, battery: false, orientation: true)
 
     static func from(_ arguments: Any?) -> EventConfig {
       guard let map = arguments as? [String: Any] else { return legacy }
@@ -171,7 +186,8 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
         lifecycle: map["lifecycle"] as? Bool == true,
         network: map["network"] as? Bool == true,
         time: map["time"] as? Bool == true,
-        battery: map["battery"] as? Bool == true
+        battery: map["battery"] as? Bool == true,
+        orientation: map["orientation"] as? Bool == true
       )
     }
   }
@@ -225,4 +241,12 @@ func batteryEvent() -> [String: Any] {
   }
 
   return ["type": "battery", "level": level, "charging": state == "charging" || state == "full", "state": state]
+}
+
+func orientationEvent() -> [String: Any] {
+  guard let frame = NSScreen.main?.frame else {
+    return ["type": "orientation", "orientation": "unknown"]
+  }
+  let orientation = frame.height > frame.width ? "portraitUp" : "landscapeLeft"
+  return ["type": "orientation", "orientation": orientation]
 }

@@ -153,4 +153,32 @@ class RunnerTests: XCTestCase {
       XCTAssertNotNil(event?["state"] as? String)
     }
   }
+
+  func testCurrentOrientationReturnsOrientationEvent() {
+    let plugin = FlutterSystemEventsPlugin()
+
+    plugin.handle(FlutterMethodCall(methodName: "currentOrientation", arguments: nil)) { result in
+      let event = result as? [String: Any]
+
+      XCTAssertEqual(event?["type"] as? String, "orientation")
+      XCTAssertNotNil(event?["orientation"] as? String)
+    }
+  }
+
+  func testOrientationInitializeEmitsCurrentEvent() {
+    let plugin = FlutterSystemEventsPlugin()
+    var event: [String: Any]?
+
+    _ = plugin.onListen(withArguments: nil) { value in
+      event = value as? [String: Any]
+    }
+
+    let call = FlutterMethodCall(methodName: "initialize", arguments: ["orientation": true])
+    plugin.handle(call) { result in
+      XCTAssertNil(result)
+    }
+
+    XCTAssertEqual(event?["type"] as? String, "orientation")
+    XCTAssertNotNil(event?["orientation"] as? String)
+  }
 }
