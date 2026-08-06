@@ -35,6 +35,7 @@ class FlutterSystemEventsPlugin : public flutter::Plugin {
   void SetEventSink(
       std::unique_ptr<flutter::EventSink<flutter::EncodableValue>> events);
   void ClearEventSink();
+  void PostNetworkChanged();
 
  private:
   struct EventConfig {
@@ -46,8 +47,13 @@ class FlutterSystemEventsPlugin : public flutter::Plugin {
   void EmitKeyboardHidden();
   void EmitLifecycle(const char *state);
   flutter::EncodableValue CurrentNetwork();
+  void EmitNetwork();
   void StartLifecycle();
-  void StopLifecycle();
+  void StartNetwork();
+  void StopNetwork();
+  void StartWindowProc();
+  void StopWindowProcIfUnused();
+  void StopWindowProc();
   std::optional<LRESULT> HandleWindowProc(HWND hwnd,
                                           UINT message,
                                           WPARAM wparam,
@@ -55,7 +61,10 @@ class FlutterSystemEventsPlugin : public flutter::Plugin {
   EventConfig ParseEventConfig(const flutter::EncodableValue *arguments);
 
   flutter::PluginRegistrarWindows *registrar_ = nullptr;
-  std::optional<int> lifecycle_proc_id_;
+  std::optional<int> window_proc_id_;
+  HWND network_hwnd_ = nullptr;
+  UINT network_message_ = 0;
+  HANDLE network_notification_handle_ = nullptr;
   EventConfig config_;
   std::unique_ptr<flutter::EventSink<flutter::EncodableValue>> events_;
 };

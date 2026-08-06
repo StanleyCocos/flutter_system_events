@@ -61,6 +61,26 @@ TEST(FlutterSystemEventsPlugin, InitializeAcceptsLifecycleConfig) {
   EXPECT_TRUE(success);
 }
 
+TEST(FlutterSystemEventsPlugin, InitializeAcceptsNetworkConfig) {
+  FlutterSystemEventsPlugin plugin;
+  bool success = false;
+  flutter::EncodableMap arguments = {
+      {flutter::EncodableValue("keyboard"), flutter::EncodableValue(false)},
+      {flutter::EncodableValue("lifecycle"), flutter::EncodableValue(false)},
+      {flutter::EncodableValue("network"), flutter::EncodableValue(true)},
+  };
+
+  plugin.HandleMethodCall(
+      flutter::MethodCall<flutter::EncodableValue>(
+          "initialize",
+          std::make_unique<flutter::EncodableValue>(arguments)),
+      std::make_unique<flutter::MethodResultFunctions<>>(
+          [&success](const flutter::EncodableValue* result) { success = true; },
+          nullptr, nullptr));
+
+  EXPECT_TRUE(success);
+}
+
 TEST(FlutterSystemEventsPlugin, CurrentNetworkReturnsNetworkEvent) {
   FlutterSystemEventsPlugin plugin;
   bool success = false;

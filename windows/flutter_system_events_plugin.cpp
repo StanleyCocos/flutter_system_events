@@ -3,6 +3,7 @@
 // This must be included before many other Windows headers.
 #include <windows.h>
 
+#include <netioapi.h>
 #include <wininet.h>
 
 #include <flutter/event_channel.h>
@@ -20,6 +21,8 @@ namespace {
 
 constexpr char kMethodChannelName[] = "flutter_system_events";
 constexpr char kEventChannelName[] = "flutter_system_events/events";
+constexpr wchar_t kNetworkChangedMessageName[] =
+    L"FlutterSystemEvents.NetworkChanged";
 
 flutter::EncodableValue KeyboardHiddenEvent() {
   return flutter::EncodableValue(flutter::EncodableMap{
@@ -53,6 +56,16 @@ bool BoolValue(const flutter::EncodableMap& map, const char* key) {
 
   const auto* value = std::get_if<bool>(&enabled->second);
   return value != nullptr && *value;
+}
+
+void CALLBACK NetworkChangeCallback(PVOID caller_context,
+                                    PMIB_IPINTERFACE_ROW row,
+                                    MIB_NOTIFICATION_TYPE notification_type) {
+  (void)row;
+  (void)notification_type;
+
+  auto* plugin = static_cast<FlutterSystemEventsPlugin*>(caller_context);
+  plugin->PostNetworkChanged();
 }
 
 }  // namespace
@@ -89,7 +102,10 @@ FlutterSystemEventsPlugin::FlutterSystemEventsPlugin(
     flutter::PluginRegistrarWindows* registrar)
     : registrar_(registrar) {}
 
-FlutterSystemEventsPlugin::~FlutterSystemEventsPlugin() { StopLifecycle(); }
+FlutterSystemEventsPlugin::~FlutterSystemEventsPlugin() {
+  StopNetwork();
+  StopWindowProc();
+}
 
 void FlutterSystemEventsPlugin::HandleMethodCall(
     const flutter::MethodCall<flutter::EncodableValue> &method_call,
@@ -101,14 +117,19 @@ void FlutterSystemEventsPlugin::HandleMethodCall(
     }
     if (config_.lifecycle) {
       StartLifecycle();
-    } else {
-      StopLifecycle();
     }
+    if (config_.network) {
+      StartNetwork();
+    } else {
+      StopNetwork();
+    }
+    StopWindowProcIfUnused();
     result->Success();
   } else if (method_call.method_name().compare("currentNetwork") == 0) {
     result->Success(CurrentNetwork());
   } else if (method_call.method_name().compare("dispose") == 0) {
-    StopLifecycle();
+    StopNetwork();
+    StopWindowProc();
     result->Success();
   } else {
     result->NotImplemented();
@@ -141,23 +162,83 @@ flutter::EncodableValue FlutterSystemEventsPlugin::CurrentNetwork() {
 }
 
 void FlutterSystemEventsPlugin::StartLifecycle() {
-  if (registrar_ == nullptr || lifecycle_proc_id_.has_value()) {
+  StartWindowProc();
+}
+
+void FlutterSystemEventsPlugin::StartNetwork() {
+  if (network_notification_handle_ != nullptr || registrar_ == nullptr ||
+      registrar_->GetView() == nullptr) {
     return;
   }
 
-  lifecycle_proc_id_ = registrar_->RegisterTopLevelWindowProcDelegate(
+  network_hwnd_ = registrar_->GetView()->GetNativeWindow();
+  if (network_hwnd_ == nullptr) {
+    return;
+  }
+
+  network_message_ = RegisterWindowMessageW(kNetworkChangedMessageName);
+  if (network_message_ == 0) {
+    network_hwnd_ = nullptr;
+    return;
+  }
+
+  const auto status =
+      NotifyIpInterfaceChange(AF_UNSPEC, NetworkChangeCallback, this, FALSE,
+                              &network_notification_handle_);
+  if (status != NO_ERROR) {
+    network_notification_handle_ = nullptr;
+    network_hwnd_ = nullptr;
+    return;
+  }
+
+  StartWindowProc();
+  EmitNetwork();
+}
+
+void FlutterSystemEventsPlugin::StopNetwork() {
+  if (network_notification_handle_ != nullptr) {
+    CancelMibChangeNotify2(network_notification_handle_);
+    network_notification_handle_ = nullptr;
+  }
+  network_hwnd_ = nullptr;
+}
+
+void FlutterSystemEventsPlugin::EmitNetwork() {
+  if (events_) {
+    events_->Success(CurrentNetwork());
+  }
+}
+
+void FlutterSystemEventsPlugin::PostNetworkChanged() {
+  if (network_hwnd_ != nullptr && network_message_ != 0) {
+    PostMessageW(network_hwnd_, network_message_, 0, 0);
+  }
+}
+
+void FlutterSystemEventsPlugin::StartWindowProc() {
+  if (registrar_ == nullptr || window_proc_id_.has_value()) {
+    return;
+  }
+
+  window_proc_id_ = registrar_->RegisterTopLevelWindowProcDelegate(
       [this](HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
         return HandleWindowProc(hwnd, message, wparam, lparam);
       });
 }
 
-void FlutterSystemEventsPlugin::StopLifecycle() {
-  if (registrar_ == nullptr || !lifecycle_proc_id_.has_value()) {
+void FlutterSystemEventsPlugin::StopWindowProcIfUnused() {
+  if (!config_.lifecycle && network_notification_handle_ == nullptr) {
+    StopWindowProc();
+  }
+}
+
+void FlutterSystemEventsPlugin::StopWindowProc() {
+  if (registrar_ == nullptr || !window_proc_id_.has_value()) {
     return;
   }
 
-  registrar_->UnregisterTopLevelWindowProcDelegate(*lifecycle_proc_id_);
-  lifecycle_proc_id_.reset();
+  registrar_->UnregisterTopLevelWindowProcDelegate(*window_proc_id_);
+  window_proc_id_.reset();
 }
 
 std::optional<LRESULT> FlutterSystemEventsPlugin::HandleWindowProc(
@@ -169,6 +250,9 @@ std::optional<LRESULT> FlutterSystemEventsPlugin::HandleWindowProc(
   (void)lparam;
 
   if (!config_.lifecycle) {
+    if (message == network_message_ && config_.network) {
+      EmitNetwork();
+    }
     return std::nullopt;
   }
 
@@ -184,6 +268,11 @@ std::optional<LRESULT> FlutterSystemEventsPlugin::HandleWindowProc(
     case WM_CLOSE:
     case WM_DESTROY:
       EmitLifecycle("detached");
+      break;
+    default:
+      if (message == network_message_ && config_.network) {
+        EmitNetwork();
+      }
       break;
   }
 
