@@ -1,3 +1,10 @@
+## 1.1.0
+
+- Added macOS lifecycle, network, battery, orientation, and time events.
+- Added macOS current network, battery, and orientation queries.
+- Documented macOS battery and orientation behavior.
+- Updated the macOS support matrix.
+
 ## 1.0.0
 
 - Added screenshot events on iOS and Android 14+.
