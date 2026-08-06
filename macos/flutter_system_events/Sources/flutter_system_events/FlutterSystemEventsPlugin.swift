@@ -1,10 +1,12 @@
 import Cocoa
 import FlutterMacOS
+import IOKit.ps
 import Network
 
 public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
   private var events: FlutterEventSink?
   private var observers: [NSObjectProtocol] = []
+  private var powerSourceRunLoopSource: CFRunLoopSource?
   private var pathMonitor: NWPathMonitor?
   private var currentNetworkMonitor: NWPathMonitor?
   private var config = EventConfig.legacy
@@ -31,6 +33,8 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
       result(nil)
     case "currentNetwork":
       currentNetwork(result)
+    case "currentBattery":
+      result(batteryEvent())
     default:
       result(FlutterMethodNotImplemented)
     }
@@ -53,11 +57,13 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
     if config.lifecycle { startLifecycle() }
     if config.network { startNetwork() }
     if config.time { startTime() }
+    if config.battery { startBattery() }
   }
 
   private func stopAll() {
     observers.forEach(NotificationCenter.default.removeObserver)
     observers.removeAll()
+    stopBattery()
     pathMonitor?.cancel()
     pathMonitor = nil
     currentNetworkMonitor?.cancel()
@@ -123,13 +129,40 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
     })
   }
 
+  private func startBattery() {
+    emitBattery()
+    let context = UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque())
+    guard let source = IOPSNotificationCreateRunLoopSource({ context in
+      guard let context else { return }
+      let plugin = Unmanaged<FlutterSystemEventsPlugin>.fromOpaque(context).takeUnretainedValue()
+      DispatchQueue.main.async {
+        plugin.emitBattery()
+      }
+    }, context)?.takeRetainedValue() else { return }
+
+    powerSourceRunLoopSource = source
+    CFRunLoopAddSource(CFRunLoopGetMain(), source, .defaultMode)
+  }
+
+  private func emitBattery() {
+    events?(batteryEvent())
+  }
+
+  private func stopBattery() {
+    if let powerSourceRunLoopSource {
+      CFRunLoopRemoveSource(CFRunLoopGetMain(), powerSourceRunLoopSource, .defaultMode)
+      self.powerSourceRunLoopSource = nil
+    }
+  }
+
   private struct EventConfig {
     let keyboard: Bool
     let lifecycle: Bool
     let network: Bool
     let time: Bool
+    let battery: Bool
 
-    static let legacy = EventConfig(keyboard: true, lifecycle: true, network: true, time: true)
+    static let legacy = EventConfig(keyboard: true, lifecycle: true, network: true, time: true, battery: false)
 
     static func from(_ arguments: Any?) -> EventConfig {
       guard let map = arguments as? [String: Any] else { return legacy }
@@ -137,7 +170,8 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
         keyboard: map["keyboard"] as? Bool == true,
         lifecycle: map["lifecycle"] as? Bool == true,
         network: map["network"] as? Bool == true,
-        time: map["time"] as? Bool == true
+        time: map["time"] as? Bool == true,
+        battery: map["battery"] as? Bool == true
       )
     }
   }
@@ -157,4 +191,38 @@ func networkEvent(from path: NWPath) -> [String: Any] {
     networkType = "other"
   }
   return ["type": "network", "online": path.status == .satisfied, "networkType": networkType]
+}
+
+func batteryEvent() -> [String: Any] {
+  guard
+    let info = IOPSCopyPowerSourcesInfo()?.takeRetainedValue(),
+    let sources = IOPSCopyPowerSourcesList(info)?.takeRetainedValue() as? [CFTypeRef],
+    let source = sources.first,
+    let description = IOPSGetPowerSourceDescription(info, source)?.takeUnretainedValue() as? [String: Any]
+  else {
+    return ["type": "battery", "level": -1, "charging": false, "state": "unknown"]
+  }
+
+  let current = description[kIOPSCurrentCapacityKey] as? Int
+  let max = description[kIOPSMaxCapacityKey] as? Int
+  let level = current.flatMap { current in
+    max.flatMap { max in max > 0 ? Int(Double(current) / Double(max) * 100) : nil }
+  } ?? -1
+  let isCharging = description[kIOPSIsChargingKey] as? Bool == true
+  let sourceState = description[kIOPSPowerSourceStateKey] as? String
+
+  let state: String
+  if isCharging {
+    state = "charging"
+  } else if level >= 100 && sourceState == kIOPSACPowerValue {
+    state = "full"
+  } else if sourceState == kIOPSBatteryPowerValue {
+    state = "discharging"
+  } else if sourceState == kIOPSACPowerValue {
+    state = "full"
+  } else {
+    state = "unknown"
+  }
+
+  return ["type": "battery", "level": level, "charging": state == "charging" || state == "full", "state": state]
 }

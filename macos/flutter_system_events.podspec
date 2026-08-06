@@ -23,6 +23,7 @@ A new Flutter project.
   s.resource_bundles = {'flutter_system_events_privacy' => ['flutter_system_events/Sources/flutter_system_events/PrivacyInfo.xcprivacy']}
 
   s.dependency 'FlutterMacOS'
+  s.frameworks = 'IOKit'
 
   s.platform = :osx, '10.14'
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }

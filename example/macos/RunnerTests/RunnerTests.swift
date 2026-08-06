@@ -140,4 +140,17 @@ class RunnerTests: XCTestCase {
 
     XCTAssertNil(event)
   }
+
+  func testCurrentBatteryReturnsBatteryEvent() {
+    let plugin = FlutterSystemEventsPlugin()
+
+    plugin.handle(FlutterMethodCall(methodName: "currentBattery", arguments: nil)) { result in
+      let event = result as? [String: Any]
+
+      XCTAssertEqual(event?["type"] as? String, "battery")
+      XCTAssertNotNil(event?["level"] as? Int)
+      XCTAssertNotNil(event?["charging"] as? Bool)
+      XCTAssertNotNil(event?["state"] as? String)
+    }
+  }
 }
