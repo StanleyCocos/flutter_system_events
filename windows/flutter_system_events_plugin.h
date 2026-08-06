@@ -9,6 +9,8 @@
 #include <optional>
 #include <string>
 
+#include <winsock2.h>
+
 #include <flutter/event_sink.h>
 #include <flutter/event_stream_handler.h>
 #include <flutter/method_channel.h>

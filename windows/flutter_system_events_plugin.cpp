@@ -5,7 +5,7 @@
 #include <flutter/plugin_registrar_windows.h>
 #include <flutter/standard_method_codec.h>
 
-#include <iphlpapi.h>
+#include <netioapi.h>
 #include <wininet.h>
 
 #include <memory>
