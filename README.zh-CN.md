@@ -131,17 +131,21 @@ Android 屏幕事件包含熄屏、亮屏、解锁和亮度变化。iOS 支持�
 
 `ThermalEvent` 支持 Android 10+（API 29+）和 iOS。Android 9 及以下不支持这个事件，也不会触发回调。Android 和 iOS 都不需要权限。
 
+macOS 上的 `BatteryEvent` 使用系统电源信息 API。台式机或没有电池的设备会返回 `level=-1` 和 `state=unknown`。
+
+macOS 上的 `OrientationEvent` 根据主屏幕尺寸推导，并在屏幕参数变化时触发。
+
 ## 平台支持
 
 | 事件 | Android | iOS | macOS | Windows | Linux | Web |
 | --- | --- | --- | --- | --- | --- | --- |
 | `KeyboardEvent` | 支持 | 支持 | 支持 | 支持 | 努力实现中 | 支持 |
-| `LifecycleEvent` | 支持 | 支持 | 努力实现中 | 努力实现中 | 努力实现中 | 支持 |
-| `NetworkEvent` | 支持 | 支持 | 努力实现中 | 努力实现中 | 努力实现中 | 支持 |
+| `LifecycleEvent` | 支持 | 支持 | 支持 | 努力实现中 | 努力实现中 | 支持 |
+| `NetworkEvent` | 支持 | 支持 | 支持 | 努力实现中 | 努力实现中 | 支持 |
 | `MemoryEvent` | 支持 | 支持 | 努力实现中 | 努力实现中 | 努力实现中 | 努力实现中 |
-| `BatteryEvent` | 支持 | 支持 | 努力实现中 | 努力实现中 | 努力实现中 | 努力实现中 |
-| `OrientationEvent` | 支持 | 支持 | 努力实现中 | 努力实现中 | 努力实现中 | 努力实现中 |
-| `TimeEvent` | 支持 | 支持 | 努力实现中 | 努力实现中 | 努力实现中 | 努力实现中 |
+| `BatteryEvent` | 支持 | 支持 | 支持 | 努力实现中 | 努力实现中 | 努力实现中 |
+| `OrientationEvent` | 支持 | 支持 | 支持 | 努力实现中 | 努力实现中 | 努力实现中 |
+| `TimeEvent` | 支持 | 支持 | 支持 | 努力实现中 | 努力实现中 | 努力实现中 |
 | `ScreenEvent` | 支持 | 部分支持 | 努力实现中 | 努力实现中 | 努力实现中 | 努力实现中 |
 | `ScreenshotEvent` | Android 14+ | 支持 | 不支持 | 不支持 | 不支持 | 不支持 |
 | `ThermalEvent` | Android 10+ | 支持 | 不支持 | 不支持 | 不支持 | 不支持 |

@@ -144,17 +144,23 @@ Android shows a system notice when screenshot detection is triggered.
 earlier do not support this event and will not emit it. No Android or iOS
 permission is required.
 
+On macOS, `BatteryEvent` uses the system power source APIs. Desktops or devices
+without a battery report `level=-1` and `state=unknown`.
+
+On macOS, `OrientationEvent` is derived from the main screen geometry and is
+emitted when screen parameters change.
+
 ## Platform support
 
 | Event | Android | iOS | macOS | Windows | Linux | Web |
 | --- | --- | --- | --- | --- | --- | --- |
 | `KeyboardEvent` | Yes | Yes | Yes | Yes | In progress | Yes |
-| `LifecycleEvent` | Yes | Yes | In progress | In progress | In progress | Yes |
-| `NetworkEvent` | Yes | Yes | In progress | In progress | In progress | Yes |
+| `LifecycleEvent` | Yes | Yes | Yes | In progress | In progress | Yes |
+| `NetworkEvent` | Yes | Yes | Yes | In progress | In progress | Yes |
 | `MemoryEvent` | Yes | Yes | In progress | In progress | In progress | In progress |
-| `BatteryEvent` | Yes | Yes | In progress | In progress | In progress | In progress |
-| `OrientationEvent` | Yes | Yes | In progress | In progress | In progress | In progress |
-| `TimeEvent` | Yes | Yes | In progress | In progress | In progress | In progress |
+| `BatteryEvent` | Yes | Yes | Yes | In progress | In progress | In progress |
+| `OrientationEvent` | Yes | Yes | Yes | In progress | In progress | In progress |
+| `TimeEvent` | Yes | Yes | Yes | In progress | In progress | In progress |
 | `ScreenEvent` | Yes | Partial | In progress | In progress | In progress | In progress |
 | `ScreenshotEvent` | Android 14+ | Yes | No | No | No | No |
 | `ThermalEvent` | Android 10+ | Yes | No | No | No | No |
