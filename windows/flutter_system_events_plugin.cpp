@@ -1,12 +1,12 @@
 #include "flutter_system_events_plugin.h"
 
-#include <netioapi.h>
-#include <wininet.h>
-
 #include <flutter/event_channel.h>
 #include <flutter/method_channel.h>
 #include <flutter/plugin_registrar_windows.h>
 #include <flutter/standard_method_codec.h>
+
+#include <iphlpapi.h>
+#include <wininet.h>
 
 #include <memory>
 #include <optional>

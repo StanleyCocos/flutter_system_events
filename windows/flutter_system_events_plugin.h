@@ -5,13 +5,14 @@
 #define WIN32_LEAN_AND_MEAN
 #endif
 
+#include <memory>
+#include <optional>
+#include <string>
+
 #include <flutter/event_sink.h>
 #include <flutter/event_stream_handler.h>
 #include <flutter/method_channel.h>
 #include <flutter/plugin_registrar_windows.h>
-
-#include <memory>
-#include <optional>
 
 namespace flutter_system_events {
 
