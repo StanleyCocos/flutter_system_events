@@ -26,6 +26,16 @@ flutter::EncodableValue KeyboardHiddenEvent() {
   });
 }
 
+bool BoolValue(const flutter::EncodableMap& map, const char* key) {
+  const auto enabled = map.find(flutter::EncodableValue(key));
+  if (enabled == map.end()) {
+    return false;
+  }
+
+  const auto* value = std::get_if<bool>(&enabled->second);
+  return value != nullptr && *value;
+}
+
 }  // namespace
 
 // static
@@ -62,7 +72,8 @@ void FlutterSystemEventsPlugin::HandleMethodCall(
     const flutter::MethodCall<flutter::EncodableValue> &method_call,
     std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
   if (method_call.method_name().compare("initialize") == 0) {
-    if (ShouldEnableKeyboard(method_call.arguments())) {
+    config_ = ParseEventConfig(method_call.arguments());
+    if (config_.keyboard) {
       EmitKeyboardHidden();
     }
     result->Success();
@@ -86,24 +97,22 @@ void FlutterSystemEventsPlugin::EmitKeyboardHidden() {
   }
 }
 
-bool FlutterSystemEventsPlugin::ShouldEnableKeyboard(
+FlutterSystemEventsPlugin::EventConfig
+FlutterSystemEventsPlugin::ParseEventConfig(
     const flutter::EncodableValue *arguments) {
   if (arguments == nullptr) {
-    return true;
+    return EventConfig();
   }
 
   const auto *map = std::get_if<flutter::EncodableMap>(arguments);
   if (map == nullptr) {
-    return true;
+    return EventConfig();
   }
 
-  const auto enabled = map->find(flutter::EncodableValue("keyboard"));
-  if (enabled == map->end()) {
-    return false;
-  }
-
-  const auto *keyboard = std::get_if<bool>(&enabled->second);
-  return keyboard != nullptr && *keyboard;
+  EventConfig config;
+  config.keyboard = BoolValue(*map, "keyboard");
+  config.lifecycle = BoolValue(*map, "lifecycle");
+  return config;
 }
 
 FlutterSystemEventsStreamHandler::FlutterSystemEventsStreamHandler(

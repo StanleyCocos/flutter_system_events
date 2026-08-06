@@ -32,9 +32,15 @@ class FlutterSystemEventsPlugin : public flutter::Plugin {
   void ClearEventSink();
 
  private:
-  void EmitKeyboardHidden();
-  bool ShouldEnableKeyboard(const flutter::EncodableValue *arguments);
+  struct EventConfig {
+    bool keyboard = true;
+    bool lifecycle = true;
+  };
 
+  void EmitKeyboardHidden();
+  EventConfig ParseEventConfig(const flutter::EncodableValue *arguments);
+
+  EventConfig config_;
   std::unique_ptr<flutter::EventSink<flutter::EncodableValue>> events_;
 };
 
