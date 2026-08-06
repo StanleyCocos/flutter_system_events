@@ -61,5 +61,29 @@ TEST(FlutterSystemEventsPlugin, InitializeAcceptsLifecycleConfig) {
   EXPECT_TRUE(success);
 }
 
+TEST(FlutterSystemEventsPlugin, CurrentNetworkReturnsNetworkEvent) {
+  FlutterSystemEventsPlugin plugin;
+  bool success = false;
+
+  plugin.HandleMethodCall(
+      flutter::MethodCall<flutter::EncodableValue>(
+          "currentNetwork", std::make_unique<flutter::EncodableValue>()),
+      std::make_unique<flutter::MethodResultFunctions<>>(
+          [&success](const flutter::EncodableValue* result) {
+            success = true;
+            const auto* event = std::get_if<flutter::EncodableMap>(result);
+            ASSERT_NE(event, nullptr);
+            EXPECT_EQ(event->at(flutter::EncodableValue("type")),
+                      flutter::EncodableValue("network"));
+            EXPECT_TRUE(event->find(flutter::EncodableValue("online")) !=
+                        event->end());
+            EXPECT_TRUE(event->find(flutter::EncodableValue("networkType")) !=
+                        event->end());
+          },
+          nullptr, nullptr));
+
+  EXPECT_TRUE(success);
+}
+
 }  // namespace test
 }  // namespace flutter_system_events

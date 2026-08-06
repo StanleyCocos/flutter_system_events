@@ -40,10 +40,12 @@ class FlutterSystemEventsPlugin : public flutter::Plugin {
   struct EventConfig {
     bool keyboard = true;
     bool lifecycle = true;
+    bool network = true;
   };
 
   void EmitKeyboardHidden();
   void EmitLifecycle(const char *state);
+  flutter::EncodableValue CurrentNetwork();
   void StartLifecycle();
   void StopLifecycle();
   std::optional<LRESULT> HandleWindowProc(HWND hwnd,

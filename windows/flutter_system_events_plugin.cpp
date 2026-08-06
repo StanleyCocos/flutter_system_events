@@ -3,6 +3,8 @@
 // This must be included before many other Windows headers.
 #include <windows.h>
 
+#include <wininet.h>
+
 #include <flutter/event_channel.h>
 #include <flutter/method_channel.h>
 #include <flutter/plugin_registrar_windows.h>
@@ -31,6 +33,15 @@ flutter::EncodableValue LifecycleEvent(const char* state) {
   return flutter::EncodableValue(flutter::EncodableMap{
       {flutter::EncodableValue("type"), flutter::EncodableValue("lifecycle")},
       {flutter::EncodableValue("state"), flutter::EncodableValue(state)},
+  });
+}
+
+flutter::EncodableValue NetworkEvent(bool online) {
+  return flutter::EncodableValue(flutter::EncodableMap{
+      {flutter::EncodableValue("type"), flutter::EncodableValue("network")},
+      {flutter::EncodableValue("online"), flutter::EncodableValue(online)},
+      {flutter::EncodableValue("networkType"),
+       flutter::EncodableValue(online ? "other" : "none")},
   });
 }
 
@@ -94,6 +105,8 @@ void FlutterSystemEventsPlugin::HandleMethodCall(
       StopLifecycle();
     }
     result->Success();
+  } else if (method_call.method_name().compare("currentNetwork") == 0) {
+    result->Success(CurrentNetwork());
   } else if (method_call.method_name().compare("dispose") == 0) {
     StopLifecycle();
     result->Success();
@@ -119,6 +132,12 @@ void FlutterSystemEventsPlugin::EmitLifecycle(const char* state) {
   if (events_) {
     events_->Success(LifecycleEvent(state));
   }
+}
+
+flutter::EncodableValue FlutterSystemEventsPlugin::CurrentNetwork() {
+  DWORD flags = 0;
+  const bool online = InternetGetConnectedState(&flags, 0) != FALSE;
+  return NetworkEvent(online);
 }
 
 void FlutterSystemEventsPlugin::StartLifecycle() {
@@ -186,6 +205,7 @@ FlutterSystemEventsPlugin::ParseEventConfig(
   EventConfig config;
   config.keyboard = BoolValue(*map, "keyboard");
   config.lifecycle = BoolValue(*map, "lifecycle");
+  config.network = BoolValue(*map, "network");
   return config;
 }
 
