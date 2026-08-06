@@ -1,3 +1,9 @@
+## 1.2.0
+
+- Added Windows lifecycle events.
+- Added Windows current network state and network events.
+- Added Windows CI build checks.
+
 ## 1.1.0
 
 - Added macOS lifecycle, network, battery, orientation, and time events.
