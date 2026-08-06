@@ -155,7 +155,7 @@ emitted when screen parameters change.
 | Event | Android | iOS | macOS | Windows | Linux | Web |
 | --- | --- | --- | --- | --- | --- | --- |
 | `KeyboardEvent` | Yes | Yes | Yes | Yes | In progress | Yes |
-| `LifecycleEvent` | Yes | Yes | Yes | In progress | In progress | Yes |
+| `LifecycleEvent` | Yes | Yes | Yes | Yes | In progress | Yes |
 | `NetworkEvent` | Yes | Yes | Yes | In progress | In progress | Yes |
 | `MemoryEvent` | Yes | Yes | In progress | In progress | In progress | In progress |
 | `BatteryEvent` | Yes | Yes | Yes | In progress | In progress | In progress |

@@ -140,7 +140,7 @@ macOS 上的 `OrientationEvent` 根据主屏幕尺寸推导，并在屏幕参数
 | 事件 | Android | iOS | macOS | Windows | Linux | Web |
 | --- | --- | --- | --- | --- | --- | --- |
 | `KeyboardEvent` | 支持 | 支持 | 支持 | 支持 | 努力实现中 | 支持 |
-| `LifecycleEvent` | 支持 | 支持 | 支持 | 努力实现中 | 努力实现中 | 支持 |
+| `LifecycleEvent` | 支持 | 支持 | 支持 | 支持 | 努力实现中 | 支持 |
 | `NetworkEvent` | 支持 | 支持 | 支持 | 努力实现中 | 努力实现中 | 支持 |
 | `MemoryEvent` | 支持 | 支持 | 努力实现中 | 努力实现中 | 努力实现中 | 努力实现中 |
 | `BatteryEvent` | 支持 | 支持 | 支持 | 努力实现中 | 努力实现中 | 努力实现中 |
