@@ -1,8 +1,9 @@
 #ifndef FLUTTER_PLUGIN_FLUTTER_SYSTEM_EVENTS_PLUGIN_H_
 #define FLUTTER_PLUGIN_FLUTTER_SYSTEM_EVENTS_PLUGIN_H_
 
-// This must be included before many other Windows headers.
-#include <windows.h>
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
 
 #include <flutter/event_sink.h>
 #include <flutter/event_stream_handler.h>

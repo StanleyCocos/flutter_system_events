@@ -1,8 +1,5 @@
 #include "flutter_system_events_plugin.h"
 
-// This must be included before many other Windows headers.
-#include <windows.h>
-
 #include <netioapi.h>
 #include <wininet.h>
 
