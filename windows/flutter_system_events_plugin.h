@@ -1,12 +1,16 @@
 #ifndef FLUTTER_PLUGIN_FLUTTER_SYSTEM_EVENTS_PLUGIN_H_
 #define FLUTTER_PLUGIN_FLUTTER_SYSTEM_EVENTS_PLUGIN_H_
 
+// This must be included before many other Windows headers.
+#include <windows.h>
+
 #include <flutter/event_sink.h>
 #include <flutter/event_stream_handler.h>
 #include <flutter/method_channel.h>
 #include <flutter/plugin_registrar_windows.h>
 
 #include <memory>
+#include <optional>
 
 namespace flutter_system_events {
 
@@ -15,6 +19,7 @@ class FlutterSystemEventsPlugin : public flutter::Plugin {
   static void RegisterWithRegistrar(flutter::PluginRegistrarWindows *registrar);
 
   FlutterSystemEventsPlugin();
+  explicit FlutterSystemEventsPlugin(flutter::PluginRegistrarWindows *registrar);
 
   virtual ~FlutterSystemEventsPlugin();
 
@@ -38,8 +43,17 @@ class FlutterSystemEventsPlugin : public flutter::Plugin {
   };
 
   void EmitKeyboardHidden();
+  void EmitLifecycle(const char *state);
+  void StartLifecycle();
+  void StopLifecycle();
+  std::optional<LRESULT> HandleWindowProc(HWND hwnd,
+                                          UINT message,
+                                          WPARAM wparam,
+                                          LPARAM lparam);
   EventConfig ParseEventConfig(const flutter::EncodableValue *arguments);
 
+  flutter::PluginRegistrarWindows *registrar_ = nullptr;
+  std::optional<int> lifecycle_proc_id_;
   EventConfig config_;
   std::unique_ptr<flutter::EventSink<flutter::EncodableValue>> events_;
 };
