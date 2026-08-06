@@ -103,4 +103,41 @@ class RunnerTests: XCTestCase {
 
     waitForExpectations(timeout: 5)
   }
+
+  func testTimeInitializeObservesTimezoneEvent() {
+    let plugin = FlutterSystemEventsPlugin()
+    var event: [String: Any]?
+
+    _ = plugin.onListen(withArguments: nil) { value in
+      event = value as? [String: Any]
+    }
+
+    let call = FlutterMethodCall(methodName: "initialize", arguments: ["time": true])
+    plugin.handle(call) { result in
+      XCTAssertNil(result)
+    }
+
+    NotificationCenter.default.post(name: NSNotification.Name.NSSystemTimeZoneDidChange, object: nil)
+
+    XCTAssertEqual(event?["type"] as? String, "time")
+    XCTAssertEqual(event?["reason"] as? String, "timezoneChanged")
+  }
+
+  func testTimeDisabledDoesNotEmitEvent() {
+    let plugin = FlutterSystemEventsPlugin()
+    var event: Any?
+
+    _ = plugin.onListen(withArguments: nil) { value in
+      event = value
+    }
+
+    let call = FlutterMethodCall(methodName: "initialize", arguments: ["time": false])
+    plugin.handle(call) { result in
+      XCTAssertNil(result)
+    }
+
+    NotificationCenter.default.post(name: NSNotification.Name.NSSystemTimeZoneDidChange, object: nil)
+
+    XCTAssertNil(event)
+  }
 }

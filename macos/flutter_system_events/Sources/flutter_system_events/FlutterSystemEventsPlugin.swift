@@ -52,6 +52,7 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
     if config.keyboard { emitKeyboardHidden() }
     if config.lifecycle { startLifecycle() }
     if config.network { startNetwork() }
+    if config.time { startTime() }
   }
 
   private func stopAll() {
@@ -110,19 +111,33 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
     monitor.start(queue: DispatchQueue.global(qos: .utility))
   }
 
+  private func startTime() {
+    observeTime(NSNotification.Name.NSSystemClockDidChange, reason: "timeChanged")
+    observeTime(NSNotification.Name.NSSystemTimeZoneDidChange, reason: "timezoneChanged")
+    observeTime(NSNotification.Name.NSCalendarDayChanged, reason: "dateChanged")
+  }
+
+  private func observeTime(_ name: Notification.Name, reason: String) {
+    observers.append(NotificationCenter.default.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
+      self?.events?(["type": "time", "reason": reason])
+    })
+  }
+
   private struct EventConfig {
     let keyboard: Bool
     let lifecycle: Bool
     let network: Bool
+    let time: Bool
 
-    static let legacy = EventConfig(keyboard: true, lifecycle: true, network: true)
+    static let legacy = EventConfig(keyboard: true, lifecycle: true, network: true, time: true)
 
     static func from(_ arguments: Any?) -> EventConfig {
       guard let map = arguments as? [String: Any] else { return legacy }
       return EventConfig(
         keyboard: map["keyboard"] as? Bool == true,
         lifecycle: map["lifecycle"] as? Bool == true,
-        network: map["network"] as? Bool == true
+        network: map["network"] as? Bool == true,
+        time: map["time"] as? Bool == true
       )
     }
   }
