@@ -127,34 +127,202 @@ SystemEvents.events.listen((event) {
 | `ScreenshotEvent` | - | Emitted when the user takes a screenshot. No screenshot image is included. |
 | `ThermalEvent` | `state` | Current device thermal state. |
 
+## How events are implemented
+
+`KeyboardEvent`
+
+Android reads the app window's visible frame during global layout changes and
+treats the keyboard as visible when the hidden area is more than 15% of the root
+view height. iOS listens to UIKit keyboard show/hide notifications. Web infers
+keyboard visibility from viewport resize events. macOS and Windows currently
+emit a best-effort hidden state only.
+
+Keyboard height is a UI approximation. Floating keyboards, split keyboards,
+hardware keyboards, fullscreen input modes, and unusual window insets can make
+the reported height different from the actual input surface.
+
+Official docs: Android
+[`ViewTreeObserver.OnGlobalLayoutListener`](https://developer.android.com/reference/android/view/ViewTreeObserver.OnGlobalLayoutListener),
+iOS
+[`UIResponder.keyboardWillShowNotification`](https://developer.apple.com/documentation/uikit/uiresponder/keyboardwillshownotification),
+Web
+[`Window.resize`](https://developer.mozilla.org/en-US/docs/Web/API/Window/resize_event).
+
+`LifecycleEvent`
+
+Android maps `Application.ActivityLifecycleCallbacks` for the attached activity.
+iOS maps `UIApplication` lifecycle notifications. macOS and Windows map app or
+window activation/minimize/close events. Web maps page visibility, focus, blur,
+and unload events.
+
+The Dart states are normalized, but the native lifecycle models are not
+identical. For example, Windows `paused` means the window was minimized, while
+iOS `paused` means the app entered background.
+
+Official docs: Android
+[`Application.ActivityLifecycleCallbacks`](https://developer.android.com/reference/android/app/Application.ActivityLifecycleCallbacks),
+iOS
+[`UIApplication.didBecomeActiveNotification`](https://developer.apple.com/documentation/uikit/uiapplication/didbecomeactivenotification),
+macOS
+[`NSApplication.didBecomeActiveNotification`](https://developer.apple.com/documentation/appkit/nsapplication/didbecomeactivenotification),
+Web
+[`Document.visibilitychange`](https://developer.mozilla.org/en-US/docs/Web/API/Document/visibilitychange_event).
+
+`NetworkEvent`
+
+Android uses `ConnectivityManager.NetworkCallback`. iOS and macOS use
+`NWPathMonitor`. Windows uses `InternetGetConnectedState`. Web uses
+`navigator.onLine` and browser online/offline events.
+
+This reports the platform's connectivity view. `online=true` means a network is
+available according to the OS or browser; it does not prove that a particular
+server is reachable.
+
+Official docs: Android
+[`ConnectivityManager.NetworkCallback`](https://developer.android.com/reference/android/net/ConnectivityManager.NetworkCallback),
+Apple
+[`NWPathMonitor`](https://developer.apple.com/documentation/network/nwpathmonitor),
+Windows
+[`InternetGetConnectedState`](https://learn.microsoft.com/windows/win32/api/wininet/nf-wininet-internetgetconnectedstate),
+Web
+[`Navigator.onLine`](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/onLine).
+
+`MemoryEvent`
+
+Android uses `ComponentCallbacks2` and reports `onLowMemory` or `onTrimMemory`
+with the native trim level. iOS listens to the system memory warning
+notification. Other platforms do not currently emit memory pressure events.
+
 Memory events are hints. The plugin reports pressure; your app decides what can
-be released safely.
+be released safely. The meaning of `level` is platform-specific and should not
+be compared across operating systems.
 
-Android screen events include off, on, unlocked, and brightness changes. iOS
-supports unlocked and brightness changes; iOS does not expose reliable public
-screen off/on notifications for apps.
+Official docs: Android
+[`ComponentCallbacks2`](https://developer.android.com/reference/android/content/ComponentCallbacks2),
+iOS
+[`UIApplication.didReceiveMemoryWarningNotification`](https://developer.apple.com/documentation/uikit/uiapplication/didreceivememorywarningnotification).
 
-`ScreenshotEvent` is supported on iOS and Android 14+ (API 34+). Android 13 and
-earlier do not support this event and will not emit it. On Android, the host app
-must declare `android.permission.DETECT_SCREEN_CAPTURE`; it is an install-time
-permission, not a runtime permission, so no `requestPermissions` flow is needed.
-Android shows a system notice when screenshot detection is triggered.
+`BatteryEvent`
 
-`ThermalEvent` is supported on Android 10+ (API 29+) and iOS. Android 9 and
-earlier do not support this event and will not emit it. No Android or iOS
-permission is required.
+Android reads the sticky `ACTION_BATTERY_CHANGED` broadcast and listens for
+future battery broadcasts. iOS temporarily enables `UIDevice` battery monitoring
+and listens for battery level/state notifications. macOS uses IOKit power source
+APIs.
 
-On macOS, `BatteryEvent` uses the system power source APIs. Desktops or devices
-without a battery report `level=-1` and `state=unknown`.
+Battery values are not precision telemetry. They are reported at the granularity
+and cadence chosen by the OS. On Apple platforms, battery level notifications
+are documented as not being posted more frequently than once per minute. Devices
+without a battery can report `level=-1` and `state=unknown`.
 
-On macOS, `OrientationEvent` is derived from the main screen geometry and is
-emitted when screen parameters change.
+Official docs: Android
+[`Intent.ACTION_BATTERY_CHANGED`](https://developer.android.com/reference/android/content/Intent#ACTION_BATTERY_CHANGED),
+iOS
+[`UIDevice.batteryLevelDidChangeNotification`](https://developer.apple.com/documentation/uikit/uidevice/batteryleveldidchangenotification),
+macOS
+[`IOPowerSources.h`](https://developer.apple.com/documentation/iokit/iopowersources_h).
+
+`OrientationEvent`
+
+Android derives orientation from display rotation and emits when configuration
+changes. iOS listens to device orientation notifications. macOS derives
+orientation from the main screen geometry and emits when screen parameters
+change.
+
+Orientation can be `unknown`, especially before the platform has a stable device
+or display orientation. On macOS this is screen geometry, not physical device
+rotation.
+
+Official docs: Android
+[`Display.getRotation`](<https://developer.android.com/reference/android/view/Display#getRotation()>),
+iOS
+[`UIDevice.orientationDidChangeNotification`](https://developer.apple.com/documentation/uikit/uidevice/orientationdidchangenotification),
+macOS
+[`NSApplication.didChangeScreenParametersNotification`](https://developer.apple.com/documentation/appkit/nsapplication/didchangescreenparametersnotification).
+
+`TimeEvent`
+
+Android listens to time, timezone, and date broadcasts. iOS and macOS listen to
+system time, timezone, and calendar-day notifications.
+
+This is not a timer. It only reports explicit system time/date/timezone changes
+that the OS exposes to apps.
+
+Official docs: Android
+[`Intent.ACTION_TIME_CHANGED`](https://developer.android.com/reference/android/content/Intent#ACTION_TIME_CHANGED),
+Android
+[`Intent.ACTION_TIMEZONE_CHANGED`](https://developer.android.com/reference/android/content/Intent#ACTION_TIMEZONE_CHANGED),
+iOS
+[`UIApplication.significantTimeChangeNotification`](https://developer.apple.com/documentation/uikit/uiapplication/significanttimechangenotification),
+Apple
+[`NSSystemTimeZoneDidChange`](https://developer.apple.com/documentation/foundation/nsnotification/name/1414252-nssystemtimezonedidchange).
+
+`ScreenEvent`
+
+Android listens for screen off, screen on, and user-present broadcasts, and
+observes `Settings.System.SCREEN_BRIGHTNESS`. iOS listens for screen brightness
+changes and protected data becoming available after unlock.
+
+iOS does not expose reliable public app-level screen off/on notifications.
+Brightness is normalized to `0.0` through `1.0`; Android system brightness is
+stored as an integer value and may not match perceived panel brightness.
+
+Official docs: Android
+[`Intent.ACTION_SCREEN_OFF`](https://developer.android.com/reference/android/content/Intent#ACTION_SCREEN_OFF),
+Android
+[`Settings.System.SCREEN_BRIGHTNESS`](https://developer.android.com/reference/android/provider/Settings.System#SCREEN_BRIGHTNESS),
+iOS
+[`UIScreen.brightnessDidChangeNotification`](https://developer.apple.com/documentation/uikit/uiscreen/brightnessdidchangenotification),
+iOS
+[`UIApplication.protectedDataDidBecomeAvailableNotification`](https://developer.apple.com/documentation/uikit/uiapplication/protecteddatadidbecomeavailablenotification).
+
+`ScreenshotEvent`
+
+iOS uses `UIApplication.userDidTakeScreenshotNotification`. Android uses
+`Activity.registerScreenCaptureCallback`, which is available on Android 14+
+(API 34+) and requires `android.permission.DETECT_SCREEN_CAPTURE` in the host
+app manifest.
+
+No screenshot image is included. Android 13 and earlier do not support this
+event. `DETECT_SCREEN_CAPTURE` is an install-time permission, not a runtime
+permission, so no `requestPermissions` flow is needed. Android shows a system
+notice when screenshot detection is triggered.
+
+Official docs: Android
+[`Activity.registerScreenCaptureCallback`](<https://developer.android.com/reference/android/app/Activity#registerScreenCaptureCallback(java.util.concurrent.Executor,%20android.app.Activity.ScreenCaptureCallback)>),
+Android
+[`Manifest.permission.DETECT_SCREEN_CAPTURE`](https://developer.android.com/reference/android/Manifest.permission#DETECT_SCREEN_CAPTURE),
+iOS
+[`UIApplication.userDidTakeScreenshotNotification`](https://developer.apple.com/documentation/uikit/uiapplication/userdidtakescreenshotnotification).
+
+`ThermalEvent`
+
+Android uses `PowerManager.OnThermalStatusChangedListener`, available on Android
+10+ (API 29+). iOS uses `ProcessInfo.thermalStateDidChangeNotification`. The
+plugin also emits the current thermal state when the listener starts.
+
+Android 9 and earlier do not support this event. No Android or iOS permission is
+required. Android has more native thermal states than iOS, so some states are
+normalized into the shared Dart enum.
+
+Official docs: Android
+[`PowerManager.OnThermalStatusChangedListener`](https://developer.android.com/reference/android/os/PowerManager.OnThermalStatusChangedListener),
+iOS
+[`ProcessInfo.thermalStateDidChangeNotification`](https://developer.apple.com/documentation/foundation/processinfo/thermalstatedidchangenotification).
+
+## Current value queries
+
+| Method | Android | iOS | macOS | Windows | Linux | Web |
+| --- | --- | --- | --- | --- | --- | --- |
+| `currentNetwork()` | Yes | Yes | Yes | Yes | No | Yes |
+| `currentBattery()` | Yes | Yes | Yes | No | No | No |
+| `currentOrientation()` | Yes | Yes | Yes | No | No | No |
+| `currentScreenBrightness()` | Yes | Yes | No | No | No | No |
 
 ## Platform support
 
 | Event | Android | iOS | macOS | Windows | Linux | Web |
 | --- | --- | --- | --- | --- | --- | --- |
-| `KeyboardEvent` | Yes | Yes | Yes | Yes | In progress | Yes |
+| `KeyboardEvent` | Yes | Yes | Partial | Partial | In progress | Yes |
 | `LifecycleEvent` | Yes | Yes | Yes | Yes | In progress | Yes |
 | `NetworkEvent` | Yes | Yes | Yes | Yes | In progress | Yes |
 | `MemoryEvent` | Yes | Yes | In progress | In progress | In progress | In progress |
@@ -164,28 +332,3 @@ emitted when screen parameters change.
 | `ScreenEvent` | Yes | Partial | In progress | In progress | In progress | In progress |
 | `ScreenshotEvent` | Android 14+ | Yes | No | No | No | No |
 | `ThermalEvent` | Android 10+ | Yes | No | No | No | No |
-
-## Example
-
-Run the example app and open each event page:
-
-```sh
-cd example
-flutter run
-```
-
-The example includes separate pages:
-
-- Keyboard
-- Lifecycle
-- Network
-- Memory
-- Battery
-- Orientation
-- Time
-- Screen
-- Screenshot
-- Thermal
-
-Each page shows the latest event value at the top and provides a simple way to
-trigger or manually verify the event.

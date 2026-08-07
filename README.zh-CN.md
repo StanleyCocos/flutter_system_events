@@ -123,23 +123,134 @@ SystemEvents.events.listen((event) {
 | `ScreenshotEvent` | - | 用户截屏时触发。事件不会包含截图图片。 |
 | `ThermalEvent` | `state` | 当前设备热状态。 |
 
-内存事件只是系统提示。插件只报告压力状态，具体可以安全释放什么资源由你的 App 决定。
+## 事件实现方式
 
-Android 屏幕事件包含熄屏、亮屏、解锁和亮度变化。iOS 支持解锁和亮度变化；iOS 没有可靠的公开 API 可以让 App 直接监听熄屏/亮屏。
+`KeyboardEvent`
 
-`ScreenshotEvent` 支持 iOS 和 Android 14+（API 34+）。Android 13 及以下不支持这个事件，也不会触发回调。Android 宿主 App 需要声明 `android.permission.DETECT_SCREEN_CAPTURE`；这是安装时权限，不是运行时权限，因此不需要 `requestPermissions`。Android 在触发截屏检测时会显示系统提示。
+Android 在全局布局变化时读取 App 窗口可见区域，当被遮挡高度超过根视图高度的 15% 时认为键盘可见。iOS 监听 UIKit 键盘显示/隐藏通知。Web 通过视口高度变化推断键盘状态。macOS 和 Windows 目前只会尽力上报键盘隐藏状态。
 
-`ThermalEvent` 支持 Android 10+（API 29+）和 iOS。Android 9 及以下不支持这个事件，也不会触发回调。Android 和 iOS 都不需要权限。
+键盘高度是 UI 层面的近似值。悬浮键盘、分裂键盘、硬件键盘、全屏输入模式和特殊窗口 inset 都可能让高度与真实输入区域不完全一致。
 
-macOS 上的 `BatteryEvent` 使用系统电源信息 API。台式机或没有电池的设备会返回 `level=-1` 和 `state=unknown`。
+官方文档：Android
+[`ViewTreeObserver.OnGlobalLayoutListener`](https://developer.android.com/reference/android/view/ViewTreeObserver.OnGlobalLayoutListener)，iOS
+[`UIResponder.keyboardWillShowNotification`](https://developer.apple.com/documentation/uikit/uiresponder/keyboardwillshownotification)，Web
+[`Window.resize`](https://developer.mozilla.org/en-US/docs/Web/API/Window/resize_event)。
 
-macOS 上的 `OrientationEvent` 根据主屏幕尺寸推导，并在屏幕参数变化时触发。
+`LifecycleEvent`
+
+Android 将当前 Activity 的 `Application.ActivityLifecycleCallbacks` 映射为 Dart 生命周期状态。iOS 使用 `UIApplication` 生命周期通知。macOS 和 Windows 使用应用或窗口激活、最小化、关闭事件。Web 使用页面可见性、焦点、失焦和卸载事件。
+
+Dart 状态是统一后的抽象，但各平台原生生命周期并不完全等价。例如 Windows 的 `paused` 表示窗口被最小化，而 iOS 的 `paused` 表示 App 进入后台。
+
+官方文档：Android
+[`Application.ActivityLifecycleCallbacks`](https://developer.android.com/reference/android/app/Application.ActivityLifecycleCallbacks)，iOS
+[`UIApplication.didBecomeActiveNotification`](https://developer.apple.com/documentation/uikit/uiapplication/didbecomeactivenotification)，macOS
+[`NSApplication.didBecomeActiveNotification`](https://developer.apple.com/documentation/appkit/nsapplication/didbecomeactivenotification)，Web
+[`Document.visibilitychange`](https://developer.mozilla.org/en-US/docs/Web/API/Document/visibilitychange_event)。
+
+`NetworkEvent`
+
+Android 使用 `ConnectivityManager.NetworkCallback`。iOS 和 macOS 使用 `NWPathMonitor`。Windows 使用 `InternetGetConnectedState`。Web 使用 `navigator.onLine` 以及浏览器 online/offline 事件。
+
+这个事件表示系统或浏览器视角下的连接状态。`online=true` 只说明平台认为当前有网络连接，不保证某个业务服务器一定可达。
+
+官方文档：Android
+[`ConnectivityManager.NetworkCallback`](https://developer.android.com/reference/android/net/ConnectivityManager.NetworkCallback)，Apple
+[`NWPathMonitor`](https://developer.apple.com/documentation/network/nwpathmonitor)，Windows
+[`InternetGetConnectedState`](https://learn.microsoft.com/windows/win32/api/wininet/nf-wininet-internetgetconnectedstate)，Web
+[`Navigator.onLine`](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/onLine)。
+
+`MemoryEvent`
+
+Android 使用 `ComponentCallbacks2`，上报 `onLowMemory` 或 `onTrimMemory` 及原生 trim level。iOS 监听系统内存警告通知。其他平台当前不会触发内存压力事件。
+
+内存事件只是系统提示。插件只报告压力状态，具体可以安全释放什么资源由你的 App 决定。`level` 是平台相关值，不应跨操作系统直接比较。
+
+官方文档：Android
+[`ComponentCallbacks2`](https://developer.android.com/reference/android/content/ComponentCallbacks2)，iOS
+[`UIApplication.didReceiveMemoryWarningNotification`](https://developer.apple.com/documentation/uikit/uiapplication/didreceivememorywarningnotification)。
+
+`BatteryEvent`
+
+Android 读取 sticky `ACTION_BATTERY_CHANGED` 广播，并监听后续电池广播。iOS 临时开启 `UIDevice` 电池监控，并监听电量/状态通知。macOS 使用 IOKit 电源信息 API。
+
+电池数据不是高精度遥测。它由系统按自己的粒度和频率上报。Apple 官方文档说明，电量变化通知最多约每分钟发送一次。没有电池的设备可能返回 `level=-1` 和 `state=unknown`。
+
+官方文档：Android
+[`Intent.ACTION_BATTERY_CHANGED`](https://developer.android.com/reference/android/content/Intent#ACTION_BATTERY_CHANGED)，iOS
+[`UIDevice.batteryLevelDidChangeNotification`](https://developer.apple.com/documentation/uikit/uidevice/batteryleveldidchangenotification)，macOS
+[`IOPowerSources.h`](https://developer.apple.com/documentation/iokit/iopowersources_h)。
+
+`OrientationEvent`
+
+Android 根据 display rotation 推导方向，并在配置变化时触发。iOS 监听设备方向变化通知。macOS 根据主屏幕尺寸推导方向，并在屏幕参数变化时触发。
+
+方向可能是 `unknown`，尤其是在平台还没有稳定设备方向或屏幕方向时。macOS 上这是屏幕几何方向，不是设备物理旋转。
+
+官方文档：Android
+[`Display.getRotation`](<https://developer.android.com/reference/android/view/Display#getRotation()>)，iOS
+[`UIDevice.orientationDidChangeNotification`](https://developer.apple.com/documentation/uikit/uidevice/orientationdidchangenotification)，macOS
+[`NSApplication.didChangeScreenParametersNotification`](https://developer.apple.com/documentation/appkit/nsapplication/didchangescreenparametersnotification)。
+
+`TimeEvent`
+
+Android 监听系统时间、时区和日期广播。iOS 和 macOS 监听系统时间、时区和日历日期变化通知。
+
+这不是定时器。它只报告系统暴露给 App 的时间、日期或时区变化，不会按分钟或固定间隔触发。
+
+官方文档：Android
+[`Intent.ACTION_TIME_CHANGED`](https://developer.android.com/reference/android/content/Intent#ACTION_TIME_CHANGED)，Android
+[`Intent.ACTION_TIMEZONE_CHANGED`](https://developer.android.com/reference/android/content/Intent#ACTION_TIMEZONE_CHANGED)，iOS
+[`UIApplication.significantTimeChangeNotification`](https://developer.apple.com/documentation/uikit/uiapplication/significanttimechangenotification)，Apple
+[`NSSystemTimeZoneDidChange`](https://developer.apple.com/documentation/foundation/nsnotification/name/1414252-nssystemtimezonedidchange)。
+
+`ScreenEvent`
+
+Android 监听熄屏、亮屏、用户解锁广播，并观察 `Settings.System.SCREEN_BRIGHTNESS`。iOS 监听屏幕亮度变化，以及解锁后 protected data 变为可用的通知。
+
+iOS 没有可靠的公开 App 级 API 可以直接监听熄屏/亮屏。亮度会归一化到 `0.0` 到 `1.0`；Android 系统亮度本身是整数值，不一定等同于人眼感知到的面板亮度。
+
+官方文档：Android
+[`Intent.ACTION_SCREEN_OFF`](https://developer.android.com/reference/android/content/Intent#ACTION_SCREEN_OFF)，Android
+[`Settings.System.SCREEN_BRIGHTNESS`](https://developer.android.com/reference/android/provider/Settings.System#SCREEN_BRIGHTNESS)，iOS
+[`UIScreen.brightnessDidChangeNotification`](https://developer.apple.com/documentation/uikit/uiscreen/brightnessdidchangenotification)，iOS
+[`UIApplication.protectedDataDidBecomeAvailableNotification`](https://developer.apple.com/documentation/uikit/uiapplication/protecteddatadidbecomeavailablenotification)。
+
+`ScreenshotEvent`
+
+iOS 使用 `UIApplication.userDidTakeScreenshotNotification`。Android 使用 `Activity.registerScreenCaptureCallback`，该 API 仅 Android 14+（API 34+）可用，并要求宿主 App 在 manifest 中声明 `android.permission.DETECT_SCREEN_CAPTURE`。
+
+事件不会包含截图图片。Android 13 及以下不支持这个事件。`DETECT_SCREEN_CAPTURE` 是安装时权限，不是运行时权限，因此不需要 `requestPermissions`。Android 在触发截屏检测时会显示系统提示。
+
+官方文档：Android
+[`Activity.registerScreenCaptureCallback`](<https://developer.android.com/reference/android/app/Activity#registerScreenCaptureCallback(java.util.concurrent.Executor,%20android.app.Activity.ScreenCaptureCallback)>)，Android
+[`Manifest.permission.DETECT_SCREEN_CAPTURE`](https://developer.android.com/reference/android/Manifest.permission#DETECT_SCREEN_CAPTURE)，iOS
+[`UIApplication.userDidTakeScreenshotNotification`](https://developer.apple.com/documentation/uikit/uiapplication/userdidtakescreenshotnotification)。
+
+`ThermalEvent`
+
+Android 使用 `PowerManager.OnThermalStatusChangedListener`，仅 Android 10+（API 29+）可用。iOS 使用 `ProcessInfo.thermalStateDidChangeNotification`。插件启动监听时也会先上报一次当前热状态。
+
+Android 9 及以下不支持这个事件。Android 和 iOS 都不需要权限。Android 原生热状态比 iOS 更多，因此部分状态会归一化到统一的 Dart enum。
+
+官方文档：Android
+[`PowerManager.OnThermalStatusChangedListener`](https://developer.android.com/reference/android/os/PowerManager.OnThermalStatusChangedListener)，iOS
+[`ProcessInfo.thermalStateDidChangeNotification`](https://developer.apple.com/documentation/foundation/processinfo/thermalstatedidchangenotification)。
+
+## 当前状态查询
+
+| 方法 | Android | iOS | macOS | Windows | Linux | Web |
+| --- | --- | --- | --- | --- | --- | --- |
+| `currentNetwork()` | 支持 | 支持 | 支持 | 支持 | 不支持 | 支持 |
+| `currentBattery()` | 支持 | 支持 | 支持 | 不支持 | 不支持 | 不支持 |
+| `currentOrientation()` | 支持 | 支持 | 支持 | 不支持 | 不支持 | 不支持 |
+| `currentScreenBrightness()` | 支持 | 支持 | 不支持 | 不支持 | 不支持 | 不支持 |
 
 ## 平台支持
 
 | 事件 | Android | iOS | macOS | Windows | Linux | Web |
 | --- | --- | --- | --- | --- | --- | --- |
-| `KeyboardEvent` | 支持 | 支持 | 支持 | 支持 | 努力实现中 | 支持 |
+| `KeyboardEvent` | 支持 | 支持 | 部分支持 | 部分支持 | 努力实现中 | 支持 |
 | `LifecycleEvent` | 支持 | 支持 | 支持 | 支持 | 努力实现中 | 支持 |
 | `NetworkEvent` | 支持 | 支持 | 支持 | 支持 | 努力实现中 | 支持 |
 | `MemoryEvent` | 支持 | 支持 | 努力实现中 | 努力实现中 | 努力实现中 | 努力实现中 |
@@ -151,27 +262,3 @@ macOS 上的 `OrientationEvent` 根据主屏幕尺寸推导，并在屏幕参数
 | `ThermalEvent` | Android 10+ | 支持 | 不支持 | 不支持 | 不支持 | 不支持 |
 
 `ScreenEvent` 在 iOS 上支持解锁和亮度变化。
-
-## 示例
-
-运行示例 App，并打开每个事件页面：
-
-```sh
-cd example
-flutter run
-```
-
-示例包含独立页面：
-
-- Keyboard
-- Lifecycle
-- Network
-- Memory
-- Battery
-- Orientation
-- Time
-- Screen
-- Screenshot
-- Thermal
-
-每个页面都会在顶部显示最新事件值，并提供简单方式用于触发或手动验证事件。
