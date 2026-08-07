@@ -42,12 +42,36 @@ void main() {
     expect(
       logs,
       containsAll([
-        '[SystemEvents.events] KeyboardEvent',
-        '[SystemEvents.keyboard] KeyboardEvent',
-        '[SystemEvents.events] ScreenshotEvent',
-        '[SystemEvents.screenshot] ScreenshotEvent',
-        '[SystemEvents.events] ThermalEvent',
-        '[SystemEvents.thermal] ThermalEvent',
+        '[SystemEvents.events]\n'
+            '{\n'
+            "  'event': 'KeyboardEvent',\n"
+            "  'visible': true,\n"
+            "  'height': 300.0,\n"
+            '}',
+        '[SystemEvents.keyboard]\n'
+            '{\n'
+            "  'event': 'KeyboardEvent',\n"
+            "  'visible': true,\n"
+            "  'height': 300.0,\n"
+            '}',
+        '[SystemEvents.events]\n'
+            '{\n'
+            "  'event': 'ScreenshotEvent',\n"
+            '}',
+        '[SystemEvents.screenshot]\n'
+            '{\n'
+            "  'event': 'ScreenshotEvent',\n"
+            '}',
+        '[SystemEvents.events]\n'
+            '{\n'
+            "  'event': 'ThermalEvent',\n"
+            "  'state': 'serious',\n"
+            '}',
+        '[SystemEvents.thermal]\n'
+            '{\n'
+            "  'event': 'ThermalEvent',\n"
+            "  'state': 'serious',\n"
+            '}',
       ]),
     );
 

@@ -36,7 +36,77 @@ final class GlobalSystemEventLogger {
 
   void _listen(String prefix, Stream<SystemEvent> stream) {
     _subscriptions.add(
-      stream.listen((event) => _log('[$prefix] ${event.runtimeType}')),
+      stream.listen(
+        (event) => _log('[$prefix]\n${_formatMap(_toLogMap(event))}'),
+      ),
     );
+  }
+
+  Map<String, Object?> _toLogMap(SystemEvent event) {
+    return switch (event) {
+      LifecycleEvent(:final state) => {
+        'event': 'LifecycleEvent',
+        'state': state.name,
+      },
+      KeyboardEvent(:final visible, :final height) => {
+        'event': 'KeyboardEvent',
+        'visible': visible,
+        'height': height,
+      },
+      NetworkEvent(:final online, :final networkType) => {
+        'event': 'NetworkEvent',
+        'online': online,
+        'networkType': networkType.name,
+      },
+      MemoryEvent(:final state, :final level) => {
+        'event': 'MemoryEvent',
+        'state': state.name,
+        'level': level,
+      },
+      BatteryEvent(:final level, :final charging, :final state) => {
+        'event': 'BatteryEvent',
+        'level': level,
+        'charging': charging,
+        'state': state.name,
+      },
+      OrientationEvent(:final orientation) => {
+        'event': 'OrientationEvent',
+        'orientation': orientation.name,
+      },
+      TimeEvent(:final reason) => {'event': 'TimeEvent', 'reason': reason.name},
+      ScreenEvent(:final change, :final brightness) => {
+        'event': 'ScreenEvent',
+        'change': change.name,
+        'brightness': brightness,
+      },
+      ScreenshotEvent() => {'event': 'ScreenshotEvent'},
+      ThermalEvent(:final state) => {
+        'event': 'ThermalEvent',
+        'state': state.name,
+      },
+      UnknownSystemEvent(:final rawType, :final reason, :final rawPayload) => {
+        'event': 'UnknownSystemEvent',
+        'rawType': rawType,
+        'reason': reason,
+        'rawPayload': rawPayload,
+      },
+    };
+  }
+
+  String _formatMap(Map<String, Object?> map) {
+    final buffer = StringBuffer('{\n');
+    for (final entry in map.entries) {
+      buffer.writeln("  '${entry.key}': ${_formatValue(entry.value)},");
+    }
+    buffer.write('}');
+    return buffer.toString();
+  }
+
+  String _formatValue(Object? value) {
+    return switch (value) {
+      null => 'null',
+      String() => "'${value.replaceAll('\\', '\\\\').replaceAll("'", r"\'")}'",
+      _ => '$value',
+    };
   }
 }
