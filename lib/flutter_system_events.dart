@@ -95,6 +95,11 @@ final class SystemEvents {
     return FlutterSystemEventsPlatform.instance.currentScreenBrightness();
   }
 
+  /// Returns the current device thermal state.
+  static Future<ThermalEvent> currentThermal() {
+    return FlutterSystemEventsPlatform.instance.currentThermal();
+  }
+
   /// Broadcast stream of decoded system events.
   static Stream<SystemEvent> get events =>
       FlutterSystemEventsPlatform.instance.events;
@@ -107,7 +112,7 @@ final class SystemEvents {
   static Stream<LifecycleEvent> get lifecycle =>
       events.where((event) => event is LifecycleEvent).cast<LifecycleEvent>();
 
-  /// Network connectivity events.
+  /// Network connectivity change events.
   static Stream<NetworkEvent> get network =>
       events.where((event) => event is NetworkEvent).cast<NetworkEvent>();
 

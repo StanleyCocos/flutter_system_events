@@ -30,12 +30,35 @@ class _ThermalEventPageState extends State<ThermalEventPage> {
     });
 
     unawaited(SystemEvents.enable(SystemEventType.thermal));
+    unawaited(_loadCurrentThermal());
   }
 
   @override
   void dispose() {
     _subscription?.cancel();
     super.dispose();
+  }
+
+  Future<void> _loadCurrentThermal() async {
+    try {
+      final event = await SystemEvents.currentThermal();
+      debugPrint(
+        '[ThermalEventPage] current thermal: state=${event.state.name}',
+      );
+      if (!mounted) return;
+      setState(() {
+        _state = event.state;
+        _events.insert(0, 'current state=${event.state.name}');
+        if (_events.length > 8) _events.removeLast();
+      });
+    } on Object catch (error) {
+      debugPrint('[ThermalEventPage] current thermal unavailable: $error');
+      if (!mounted) return;
+      setState(() {
+        _events.insert(0, 'current unavailable');
+        if (_events.length > 8) _events.removeLast();
+      });
+    }
   }
 
   @override
@@ -48,6 +71,11 @@ class _ThermalEventPageState extends State<ThermalEventPage> {
           Text('state: ${_state?.name ?? '-'}'),
           const SizedBox(height: 8),
           Text('count: $_count'),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: _loadCurrentThermal,
+            child: const Text('Get current thermal'),
+          ),
           const SizedBox(height: 24),
           const Text(
             'Thermal changes are emitted when the device heats up or cools down.',

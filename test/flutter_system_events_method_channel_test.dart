@@ -161,6 +161,44 @@ void main() {
     },
   );
 
+  test(
+    'currentThermal calls native currentThermal and decodes event',
+    () async {
+      String? method;
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (methodCall) async {
+            method = methodCall.method;
+            return {'type': 'thermal', 'state': 'serious'};
+          });
+
+      final event = await platform.currentThermal();
+
+      expect(method, 'currentThermal');
+      expect(event.state, ThermalState.serious);
+    },
+  );
+
+  test('currentThermal converts unavailable errors to UnsupportedError', () {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (methodCall) async {
+          throw PlatformException(
+            code: 'unavailable',
+            message: 'Thermal state unavailable.',
+          );
+        });
+
+    expect(platform.currentThermal(), throwsA(isA<UnsupportedError>()));
+  });
+
+  test('currentThermal converts missing plugin errors to UnsupportedError', () {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (methodCall) async {
+          throw MissingPluginException('currentThermal missing');
+        });
+
+    expect(platform.currentThermal(), throwsA(isA<UnsupportedError>()));
+  });
+
   test('events converts native maps to system events', () async {
     final platform = MethodChannelFlutterSystemEvents();
     const eventChannel = EventChannel('flutter_system_events/events');

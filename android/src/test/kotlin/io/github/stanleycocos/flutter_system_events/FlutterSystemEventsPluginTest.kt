@@ -102,6 +102,30 @@ internal class FlutterSystemEventsPluginTest {
     }
 
     @Test
+    fun networkSnapshot_comparesConnectivityStateOnly() {
+        assertEquals(
+            NetworkSnapshot(mapOf("type" to "network", "online" to true, "networkType" to "wifi")),
+            NetworkSnapshot(mapOf("type" to "network", "online" to true, "networkType" to "wifi")),
+        )
+    }
+
+    @Test
+    fun batterySnapshot_comparesBatteryStateOnly() {
+        assertEquals(
+            BatterySnapshot(mapOf("type" to "battery", "level" to 100, "charging" to true, "state" to "full")),
+            BatterySnapshot(mapOf("type" to "battery", "level" to 100, "charging" to true, "state" to "full")),
+        )
+    }
+
+    @Test
+    fun thermalSnapshot_comparesThermalStateOnly() {
+        assertEquals(
+            ThermalSnapshot(mapOf("type" to "thermal", "state" to "nominal")),
+            ThermalSnapshot(mapOf("type" to "thermal", "state" to "nominal")),
+        )
+    }
+
+    @Test
     fun thermalStatusName_mapsAndroidThermalStatuses() {
         assertEquals("nominal", thermalStatusName(PowerManager.THERMAL_STATUS_NONE))
         assertEquals("fair", thermalStatusName(PowerManager.THERMAL_STATUS_LIGHT))

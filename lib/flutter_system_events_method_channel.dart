@@ -68,5 +68,23 @@ class MethodChannelFlutterSystemEvents extends FlutterSystemEventsPlatform {
   }
 
   @override
+  Future<ThermalEvent> currentThermal() async {
+    final Object? payload;
+    try {
+      payload = await methodChannel.invokeMethod<Object?>('currentThermal');
+    } on MissingPluginException catch (error) {
+      throw UnsupportedError('currentThermal() is not supported: $error');
+    } on PlatformException catch (error) {
+      if (error.code == 'unavailable') {
+        throw UnsupportedError('currentThermal() is not supported: $error');
+      }
+      rethrow;
+    }
+    final event = SystemEvent.fromPayload(payload);
+    if (event is ThermalEvent) return event;
+    throw StateError('Expected ThermalEvent, got ${event.runtimeType}.');
+  }
+
+  @override
   Stream<SystemEvent> get events => _events;
 }

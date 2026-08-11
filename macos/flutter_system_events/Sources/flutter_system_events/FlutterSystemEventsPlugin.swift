@@ -11,6 +11,9 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
   private var currentNetworkMonitor: NWPathMonitor?
   private var config = EventConfig.legacy
   private var initialized = false
+  private var lastBatterySnapshot: BatterySnapshot?
+  private var lastNetworkSnapshot: NetworkSnapshot?
+  private var lastOrientationSnapshot: OrientationSnapshot?
 
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "flutter_system_events", binaryMessenger: registrar.messenger)
@@ -55,7 +58,7 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
 
   private func startAll() {
     stopAll()
-    if config.keyboard { emitKeyboardHidden() }
+    if config.keyboard { startKeyboard() }
     if config.lifecycle { startLifecycle() }
     if config.network { startNetwork() }
     if config.time { startTime() }
@@ -69,13 +72,13 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
     stopBattery()
     pathMonitor?.cancel()
     pathMonitor = nil
+    lastNetworkSnapshot = nil
+    lastOrientationSnapshot = nil
     currentNetworkMonitor?.cancel()
     currentNetworkMonitor = nil
   }
 
-  private func emitKeyboardHidden() {
-    events?(["type": "keyboard", "visible": false, "height": 0])
-  }
+  private func startKeyboard() {}
 
   private func startLifecycle() {
     observeLifecycle(NSApplication.didBecomeActiveNotification, state: "resumed")
@@ -92,13 +95,26 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
 
   private func startNetwork() {
     let monitor = NWPathMonitor()
+    lastNetworkSnapshot = NetworkSnapshot(event: networkEvent(from: monitor.currentPath))
     monitor.pathUpdateHandler = { [weak self] path in
       DispatchQueue.main.async {
-        self?.events?(networkEvent(from: path))
+        self?.emitNetworkIfChanged(from: path)
       }
     }
     pathMonitor = monitor
     monitor.start(queue: DispatchQueue.global(qos: .utility))
+  }
+
+  private func emitNetworkIfChanged(from path: NWPath) {
+    let event = networkEvent(from: path)
+    let snapshot = NetworkSnapshot(event: event)
+    guard let lastNetworkSnapshot else {
+      self.lastNetworkSnapshot = snapshot
+      return
+    }
+    guard snapshot != lastNetworkSnapshot else { return }
+    self.lastNetworkSnapshot = snapshot
+    events?(event)
   }
 
   private func currentNetwork(_ result: @escaping FlutterResult) {
@@ -133,7 +149,7 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
   }
 
   private func startBattery() {
-    emitBattery()
+    lastBatterySnapshot = BatterySnapshot(event: batteryEvent())
     let context = UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque())
     guard let source = IOPSNotificationCreateRunLoopSource({ context in
       guard let context else { return }
@@ -148,7 +164,15 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
   }
 
   private func emitBattery() {
-    events?(batteryEvent())
+    let event = batteryEvent()
+    let snapshot = BatterySnapshot(event: event)
+    guard let lastBatterySnapshot else {
+      self.lastBatterySnapshot = snapshot
+      return
+    }
+    guard snapshot != lastBatterySnapshot else { return }
+    self.lastBatterySnapshot = snapshot
+    events?(event)
   }
 
   private func stopBattery() {
@@ -156,17 +180,26 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
       CFRunLoopRemoveSource(CFRunLoopGetMain(), powerSourceRunLoopSource, .defaultMode)
       self.powerSourceRunLoopSource = nil
     }
+    lastBatterySnapshot = nil
   }
 
   private func startOrientation() {
-    emitOrientation()
+    lastOrientationSnapshot = OrientationSnapshot(event: orientationEvent())
     observers.append(NotificationCenter.default.addObserver(forName: NSApplication.didChangeScreenParametersNotification, object: nil, queue: .main) { [weak self] _ in
       self?.emitOrientation()
     })
   }
 
   private func emitOrientation() {
-    events?(orientationEvent())
+    let event = orientationEvent()
+    let snapshot = OrientationSnapshot(event: event)
+    guard let lastOrientationSnapshot else {
+      self.lastOrientationSnapshot = snapshot
+      return
+    }
+    guard snapshot != lastOrientationSnapshot else { return }
+    self.lastOrientationSnapshot = snapshot
+    events?(event)
   }
 
   private struct EventConfig {
@@ -207,6 +240,36 @@ func networkEvent(from path: NWPath) -> [String: Any] {
     networkType = "other"
   }
   return ["type": "network", "online": path.status == .satisfied, "networkType": networkType]
+}
+
+struct NetworkSnapshot: Equatable {
+  let online: Bool
+  let networkType: String
+
+  init(event: [String: Any]) {
+    online = event["online"] as! Bool
+    networkType = event["networkType"] as! String
+  }
+}
+
+struct BatterySnapshot: Equatable {
+  let level: Int
+  let charging: Bool
+  let state: String
+
+  init(event: [String: Any]) {
+    level = event["level"] as! Int
+    charging = event["charging"] as! Bool
+    state = event["state"] as! String
+  }
+}
+
+struct OrientationSnapshot: Equatable {
+  let orientation: String
+
+  init(event: [String: Any]) {
+    orientation = event["orientation"] as! String
+  }
 }
 
 func batteryEvent() -> [String: Any] {

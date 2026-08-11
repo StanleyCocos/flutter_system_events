@@ -53,7 +53,6 @@ class FlutterSystemEventsWeb extends FlutterSystemEventsPlatform {
       _subscriptions
         ..add(html.window.onOnline.listen((_) => _emitNetwork()))
         ..add(html.window.onOffline.listen((_) => _emitNetwork()));
-      _emitNetwork();
     }
   }
 
@@ -73,6 +72,11 @@ class FlutterSystemEventsWeb extends FlutterSystemEventsPlatform {
   @override
   Future<NetworkEvent> currentNetwork() async {
     return _networkEvent();
+  }
+
+  @override
+  Future<ThermalEvent> currentThermal() async {
+    throw UnsupportedError('currentThermal() is not supported on Web.');
   }
 
   void _emitKeyboard() {

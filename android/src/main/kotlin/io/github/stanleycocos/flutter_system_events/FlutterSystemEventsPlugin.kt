@@ -59,7 +59,10 @@ class FlutterSystemEventsPlugin :
     private var screenCaptureCallback: Any? = null
     private var thermalListener: Any? = null
     private var orientationCallbacks: ComponentCallbacks2? = null
+    private var lastBatterySnapshot: BatterySnapshot? = null
     private var lastOrientation: String? = null
+    private var lastNetworkSnapshot: NetworkSnapshot? = null
+    private var lastThermalSnapshot: ThermalSnapshot? = null
     private var config = EventConfig.legacy()
     private val mainHandler by lazy { Handler(Looper.getMainLooper()) }
 
@@ -117,6 +120,18 @@ class FlutterSystemEventsPlugin :
                     result.error("unavailable", "Screen brightness unavailable.", null)
                 } else {
                     result.success(event)
+                }
+            }
+            "currentThermal" -> {
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+                    result.error("unavailable", "Thermal state unavailable.", null)
+                } else {
+                    val manager = appContext?.getSystemService(Context.POWER_SERVICE) as? PowerManager
+                    if (manager == null) {
+                        result.error("unavailable", "Thermal state unavailable.", null)
+                    } else {
+                        result.success(thermalEvent(manager.currentThermalStatus))
+                    }
                 }
             }
             else -> result.notImplemented()
@@ -256,6 +271,7 @@ class FlutterSystemEventsPlugin :
 
     private fun startNetwork() {
         val manager = appContext?.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager ?: return
+        lastNetworkSnapshot = NetworkSnapshot(networkEvent(manager))
         val callback = object : ConnectivityManager.NetworkCallback() {
             override fun onAvailable(network: Network) = emitNetwork(manager)
             override fun onLost(network: Network) = emitNetwork(manager)
@@ -263,17 +279,26 @@ class FlutterSystemEventsPlugin :
         }
         manager.registerNetworkCallback(NetworkRequest.Builder().build(), callback)
         networkCallback = callback
-        emitNetwork(manager)
     }
 
     private fun emitNetwork(manager: ConnectivityManager) {
-        emitEvent(networkEvent(manager))
+        val event = networkEvent(manager)
+        val snapshot = NetworkSnapshot(event)
+        val lastSnapshot = lastNetworkSnapshot
+        if (lastSnapshot == null) {
+            lastNetworkSnapshot = snapshot
+            return
+        }
+        if (snapshot == lastSnapshot) return
+        lastNetworkSnapshot = snapshot
+        emitEvent(event)
     }
 
     private fun stopNetwork() {
         val manager = appContext?.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
         networkCallback?.let { manager?.unregisterNetworkCallback(it) }
         networkCallback = null
+        lastNetworkSnapshot = null
     }
 
     private fun startMemory() {
@@ -300,21 +325,33 @@ class FlutterSystemEventsPlugin :
     private fun startBattery() {
         val context = appContext ?: return
         val filter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
+        context.registerReceiver(null, filter)?.let { intent ->
+            lastBatterySnapshot = BatterySnapshot(batteryEvent(intent))
+        }
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) = emitBattery(intent)
         }
         batteryReceiver = receiver
         context.registerReceiver(receiver, filter)
-        context.registerReceiver(null, filter)?.let(::emitBattery)
     }
 
     private fun emitBattery(intent: Intent) {
-        emitEvent(batteryEvent(intent))
+        val event = batteryEvent(intent)
+        val snapshot = BatterySnapshot(event)
+        val lastSnapshot = lastBatterySnapshot
+        if (lastSnapshot == null) {
+            lastBatterySnapshot = snapshot
+            return
+        }
+        if (snapshot == lastSnapshot) return
+        lastBatterySnapshot = snapshot
+        emitEvent(event)
     }
 
     private fun stopBattery() {
         batteryReceiver?.let { appContext?.unregisterReceiver(it) }
         batteryReceiver = null
+        lastBatterySnapshot = null
     }
 
     private fun startTime() {
@@ -396,23 +433,38 @@ class FlutterSystemEventsPlugin :
     private fun startThermal() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return
         val manager = appContext?.getSystemService(Context.POWER_SERVICE) as? PowerManager ?: return
+        lastThermalSnapshot = ThermalSnapshot(thermalEvent(manager.currentThermalStatus))
         val listener = PowerManager.OnThermalStatusChangedListener { status ->
-            emitEvent(thermalEvent(status))
+            emitThermal(status)
         }
         manager.addThermalStatusListener(Executor { command -> mainHandler.post(command) }, listener)
         thermalListener = listener
-        emitEvent(thermalEvent(manager.currentThermalStatus))
+    }
+
+    private fun emitThermal(status: Int) {
+        val event = thermalEvent(status)
+        val snapshot = ThermalSnapshot(event)
+        val lastSnapshot = lastThermalSnapshot
+        if (lastSnapshot == null) {
+            lastThermalSnapshot = snapshot
+            return
+        }
+        if (snapshot == lastSnapshot) return
+        lastThermalSnapshot = snapshot
+        emitEvent(event)
     }
 
     private fun stopThermal() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
             thermalListener = null
+            lastThermalSnapshot = null
             return
         }
         val listener = thermalListener as? PowerManager.OnThermalStatusChangedListener
         val manager = appContext?.getSystemService(Context.POWER_SERVICE) as? PowerManager
         listener?.let { manager?.removeThermalStatusListener(it) }
         thermalListener = null
+        lastThermalSnapshot = null
     }
 
     private fun emitBrightness(context: Context) {
@@ -429,7 +481,7 @@ class FlutterSystemEventsPlugin :
         }
         context.registerComponentCallbacks(callbacks)
         orientationCallbacks = callbacks
-        emitOrientation()
+        lastOrientation = orientationNameFromRotation(activity?.windowManager?.defaultDisplay?.rotation)
     }
 
     private fun emitOrientation() {
@@ -489,6 +541,36 @@ class FlutterSystemEventsPlugin :
             }
         }
     }
+}
+
+internal data class NetworkSnapshot(
+    val online: Boolean,
+    val networkType: String,
+) {
+    constructor(event: Map<String, Any>) : this(
+        online = event["online"] as Boolean,
+        networkType = event["networkType"] as String,
+    )
+}
+
+internal data class BatterySnapshot(
+    val level: Int,
+    val charging: Boolean,
+    val state: String,
+) {
+    constructor(event: Map<String, Any>) : this(
+        level = event["level"] as Int,
+        charging = event["charging"] as Boolean,
+        state = event["state"] as String,
+    )
+}
+
+internal data class ThermalSnapshot(
+    val state: String,
+) {
+    constructor(event: Map<String, Any>) : this(
+        state = event["state"] as String,
+    )
 }
 
 internal fun orientationNameFromRotation(rotation: Int?): String = when (rotation) {

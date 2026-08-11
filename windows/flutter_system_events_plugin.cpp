@@ -17,14 +17,6 @@ namespace {
 
 constexpr char kMethodChannelName[] = "flutter_system_events";
 constexpr char kEventChannelName[] = "flutter_system_events/events";
-flutter::EncodableValue KeyboardHiddenEvent() {
-  return flutter::EncodableValue(flutter::EncodableMap{
-      {flutter::EncodableValue("type"), flutter::EncodableValue("keyboard")},
-      {flutter::EncodableValue("visible"), flutter::EncodableValue(false)},
-      {flutter::EncodableValue("height"), flutter::EncodableValue(0)},
-  });
-}
-
 flutter::EncodableValue LifecycleEvent(const char* state) {
   return flutter::EncodableValue(flutter::EncodableMap{
       {flutter::EncodableValue("type"), flutter::EncodableValue("lifecycle")},
@@ -94,9 +86,6 @@ void FlutterSystemEventsPlugin::HandleMethodCall(
     std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
   if (method_call.method_name().compare("initialize") == 0) {
     config_ = ParseEventConfig(method_call.arguments());
-    if (config_.keyboard) {
-      EmitKeyboardHidden();
-    }
     if (config_.lifecycle) {
       StartLifecycle();
     }
@@ -125,12 +114,6 @@ void FlutterSystemEventsPlugin::SetEventSink(
 
 void FlutterSystemEventsPlugin::ClearEventSink() { events_.reset(); }
 
-void FlutterSystemEventsPlugin::EmitKeyboardHidden() {
-  if (events_) {
-    events_->Success(KeyboardHiddenEvent());
-  }
-}
-
 void FlutterSystemEventsPlugin::EmitLifecycle(const char* state) {
   if (events_) {
     events_->Success(LifecycleEvent(state));
@@ -138,9 +121,14 @@ void FlutterSystemEventsPlugin::EmitLifecycle(const char* state) {
 }
 
 flutter::EncodableValue FlutterSystemEventsPlugin::CurrentNetwork() {
+  return NetworkEvent(CurrentNetworkSnapshot().online);
+}
+
+FlutterSystemEventsPlugin::NetworkSnapshot
+FlutterSystemEventsPlugin::CurrentNetworkSnapshot() {
   DWORD flags = 0;
   const bool online = InternetGetConnectedState(&flags, 0) != FALSE;
-  return NetworkEvent(online);
+  return NetworkSnapshot{online};
 }
 
 void FlutterSystemEventsPlugin::StartLifecycle() {
@@ -148,15 +136,26 @@ void FlutterSystemEventsPlugin::StartLifecycle() {
 }
 
 void FlutterSystemEventsPlugin::StartNetwork() {
+  last_network_snapshot_ = CurrentNetworkSnapshot();
   StartWindowProc();
-  EmitNetwork();
 }
 
-void FlutterSystemEventsPlugin::StopNetwork() {}
+void FlutterSystemEventsPlugin::StopNetwork() {
+  last_network_snapshot_.reset();
+}
 
 void FlutterSystemEventsPlugin::EmitNetwork() {
+  const auto snapshot = CurrentNetworkSnapshot();
+  if (!last_network_snapshot_.has_value()) {
+    last_network_snapshot_ = snapshot;
+    return;
+  }
+  if (snapshot == *last_network_snapshot_) {
+    return;
+  }
+  last_network_snapshot_ = snapshot;
   if (events_) {
-    events_->Success(CurrentNetwork());
+    events_->Success(NetworkEvent(snapshot.online));
   }
 }
 
@@ -223,6 +222,14 @@ std::optional<LRESULT> FlutterSystemEventsPlugin::HandleWindowProc(
   }
 
   return std::nullopt;
+}
+
+std::optional<LRESULT> FlutterSystemEventsPlugin::HandleWindowProcForTest(
+    HWND hwnd,
+    UINT message,
+    WPARAM wparam,
+    LPARAM lparam) {
+  return HandleWindowProc(hwnd, message, wparam, lparam);
 }
 
 FlutterSystemEventsPlugin::EventConfig

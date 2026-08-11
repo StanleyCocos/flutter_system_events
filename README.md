@@ -44,12 +44,22 @@ await SystemEvents.currentNetwork();
 await SystemEvents.currentBattery();
 await SystemEvents.currentOrientation();
 await SystemEvents.currentScreenBrightness();
+await SystemEvents.currentThermal();
 ```
+
+### Migration note
+
+Event streams emit changes only. If existing UI code depended on the first
+`network`, `battery`, `orientation`, or `thermal` event to initialize state,
+read the current value first with the matching `current...()` API, then listen
+for changes. Keyboard has no current-value API; initialize keyboard UI as hidden
+and listen for later visibility changes.
 
 ## Usage
 
 Initialize once, then listen to the stream that matches the state your UI cares
-about.
+about. Event streams report changes only; read current values explicitly when
+initializing UI state.
 
 ```dart
 import 'dart:async';
@@ -61,8 +71,14 @@ StreamSubscription<NetworkEvent>? networkSubscription;
 Future<void> startSystemEvents() async {
   await SystemEvents.initialize();
 
+  final currentNetwork = await SystemEvents.currentNetwork();
+  print(
+    'current network online=${currentNetwork.online} '
+    'type=${currentNetwork.networkType.name}',
+  );
+
   networkSubscription = SystemEvents.network.listen((event) {
-    print('network online=${event.online} type=${event.networkType.name}');
+    print('network changed online=${event.online} type=${event.networkType.name}');
   });
 
   final battery = await SystemEvents.currentBattery();
@@ -134,8 +150,8 @@ SystemEvents.events.listen((event) {
 Android reads the app window's visible frame during global layout changes and
 treats the keyboard as visible when the hidden area is more than 15% of the root
 view height. iOS listens to UIKit keyboard show/hide notifications. Web infers
-keyboard visibility from viewport resize events. macOS and Windows currently
-emit a best-effort hidden state only.
+keyboard visibility from viewport resize events. macOS and Windows do not emit
+an initial keyboard state.
 
 Keyboard height is a UI approximation. Floating keyboards, split keyboards,
 hardware keyboards, fullscreen input modes, and unusual window insets can make
@@ -297,8 +313,9 @@ iOS
 `ThermalEvent`
 
 Android uses `PowerManager.OnThermalStatusChangedListener`, available on Android
-10+ (API 29+). iOS uses `ProcessInfo.thermalStateDidChangeNotification`. The
-plugin also emits the current thermal state when the listener starts.
+10+ (API 29+). iOS uses `ProcessInfo.thermalStateDidChangeNotification`.
+Thermal streams emit changes only; use `currentThermal()` to read the current
+thermal state.
 
 Android 9 and earlier do not support this event. No Android or iOS permission is
 required. Android has more native thermal states than iOS, so some states are
@@ -317,6 +334,7 @@ iOS
 | `currentBattery()` | Yes | Yes | Yes | No | No | No |
 | `currentOrientation()` | Yes | Yes | Yes | No | No | No |
 | `currentScreenBrightness()` | Yes | Yes | No | No | No | No |
+| `currentThermal()` | Android 10+ | Yes | No | No | No | No |
 
 ## Platform support
 

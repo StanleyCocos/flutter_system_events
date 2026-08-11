@@ -14,6 +14,7 @@ class MockFlutterSystemEventsPlatform
   BatteryEvent? batteryEvent;
   OrientationEvent? orientationEvent;
   ScreenEvent? screenBrightnessEvent;
+  ThermalEvent? thermalEvent;
 
   @override
   Future<void> initialize({
@@ -54,6 +55,11 @@ class MockFlutterSystemEventsPlatform
   Future<ScreenEvent> currentScreenBrightness() async {
     return screenBrightnessEvent ??
         const ScreenEvent(change: ScreenChange.brightness, brightness: 0.5);
+  }
+
+  @override
+  Future<ThermalEvent> currentThermal() async {
+    return thermalEvent ?? const ThermalEvent(state: ThermalState.nominal);
   }
 
   @override
@@ -98,6 +104,11 @@ class MixedEventFlutterSystemEventsPlatform
   @override
   Future<ScreenEvent> currentScreenBrightness() async {
     return const ScreenEvent(change: ScreenChange.brightness, brightness: 0.5);
+  }
+
+  @override
+  Future<ThermalEvent> currentThermal() async {
+    return const ThermalEvent(state: ThermalState.nominal);
   }
 
   @override
@@ -262,6 +273,16 @@ void main() {
     expect(event.brightness, 0.42);
   });
 
+  test('currentThermal delegates to platform instance', () async {
+    final platform = MockFlutterSystemEventsPlatform()
+      ..thermalEvent = const ThermalEvent(state: ThermalState.serious);
+    FlutterSystemEventsPlatform.instance = platform;
+
+    final event = await SystemEvents.currentThermal();
+
+    expect(event.state, ThermalState.serious);
+  });
+
   test('events exposes keyboard events', () async {
     FlutterSystemEventsPlatform.instance = MockFlutterSystemEventsPlatform();
 
@@ -293,6 +314,7 @@ void main() {
     expect(platform.currentBattery, throwsUnimplementedError);
     expect(platform.currentOrientation, throwsUnimplementedError);
     expect(platform.currentScreenBrightness, throwsUnimplementedError);
+    expect(platform.currentThermal, throwsUnimplementedError);
     expect(() => platform.events, throwsUnimplementedError);
   });
 

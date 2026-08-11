@@ -41,11 +41,18 @@ await SystemEvents.currentNetwork();
 await SystemEvents.currentBattery();
 await SystemEvents.currentOrientation();
 await SystemEvents.currentScreenBrightness();
+await SystemEvents.currentThermal();
 ```
+
+### 迁移说明
+
+事件流只上报变化。如果旧 UI 依赖 `network`、`battery`、`orientation` 或 `thermal`
+的首个事件初始化状态，请先用对应的 `current...()` API 读取当前值，再监听后续变化。
+Keyboard 没有当前值 API；请将键盘 UI 初始为隐藏状态，再监听后续可见性变化。
 
 ## 使用
 
-初始化一次，然后监听你的 UI 关心的事件流。
+初始化一次，然后监听你的 UI 关心的事件流。事件流只上报变化；初始化 UI 状态时请显式读取当前值。
 
 ```dart
 import 'dart:async';
@@ -57,8 +64,14 @@ StreamSubscription<NetworkEvent>? networkSubscription;
 Future<void> startSystemEvents() async {
   await SystemEvents.initialize();
 
+  final currentNetwork = await SystemEvents.currentNetwork();
+  print(
+    'current network online=${currentNetwork.online} '
+    'type=${currentNetwork.networkType.name}',
+  );
+
   networkSubscription = SystemEvents.network.listen((event) {
-    print('network online=${event.online} type=${event.networkType.name}');
+    print('network changed online=${event.online} type=${event.networkType.name}');
   });
 
   final battery = await SystemEvents.currentBattery();
@@ -127,7 +140,7 @@ SystemEvents.events.listen((event) {
 
 `KeyboardEvent`
 
-Android 在全局布局变化时读取 App 窗口可见区域，当被遮挡高度超过根视图高度的 15% 时认为键盘可见。iOS 监听 UIKit 键盘显示/隐藏通知。Web 通过视口高度变化推断键盘状态。macOS 和 Windows 目前只会尽力上报键盘隐藏状态。
+Android 在全局布局变化时读取 App 窗口可见区域，当被遮挡高度超过根视图高度的 15% 时认为键盘可见。iOS 监听 UIKit 键盘显示/隐藏通知。Web 通过视口高度变化推断键盘状态。macOS 和 Windows 不会上报初始键盘状态。
 
 键盘高度是 UI 层面的近似值。悬浮键盘、分裂键盘、硬件键盘、全屏输入模式和特殊窗口 inset 都可能让高度与真实输入区域不完全一致。
 
@@ -229,7 +242,7 @@ iOS 使用 `UIApplication.userDidTakeScreenshotNotification`。Android 使用 `A
 
 `ThermalEvent`
 
-Android 使用 `PowerManager.OnThermalStatusChangedListener`，仅 Android 10+（API 29+）可用。iOS 使用 `ProcessInfo.thermalStateDidChangeNotification`。插件启动监听时也会先上报一次当前热状态。
+Android 使用 `PowerManager.OnThermalStatusChangedListener`，仅 Android 10+（API 29+）可用。iOS 使用 `ProcessInfo.thermalStateDidChangeNotification`。热状态事件流只上报变化；请使用 `currentThermal()` 读取当前热状态。
 
 Android 9 及以下不支持这个事件。Android 和 iOS 都不需要权限。Android 原生热状态比 iOS 更多，因此部分状态会归一化到统一的 Dart enum。
 
@@ -245,6 +258,7 @@ Android 9 及以下不支持这个事件。Android 和 iOS 都不需要权限。
 | `currentBattery()` | 支持 | 支持 | 支持 | 不支持 | 不支持 | 不支持 |
 | `currentOrientation()` | 支持 | 支持 | 支持 | 不支持 | 不支持 | 不支持 |
 | `currentScreenBrightness()` | 支持 | 支持 | 不支持 | 不支持 | 不支持 | 不支持 |
+| `currentThermal()` | Android 10+ | 支持 | 不支持 | 不支持 | 不支持 | 不支持 |
 
 ## 平台支持
 

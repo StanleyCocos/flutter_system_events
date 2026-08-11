@@ -17,12 +17,12 @@ class RunnerTests: XCTestCase {
     waitForExpectations(timeout: 1)
   }
 
-  func testKeyboardInitializeEmitsHiddenEvent() {
+  func testKeyboardInitializeDoesNotEmitHiddenEvent() {
     let plugin = FlutterSystemEventsPlugin()
-    var event: [String: Any]?
+    var event: Any?
 
     _ = plugin.onListen(withArguments: nil) { value in
-      event = value as? [String: Any]
+      event = value
     }
 
     let call = FlutterMethodCall(methodName: "initialize", arguments: ["keyboard": true])
@@ -30,9 +30,7 @@ class RunnerTests: XCTestCase {
       XCTAssertNil(result)
     }
 
-    XCTAssertEqual(event?["type"] as? String, "keyboard")
-    XCTAssertEqual(event?["visible"] as? Bool, false)
-    XCTAssertEqual(event?["height"] as? Int, 0)
+    XCTAssertNil(event)
   }
 
   func testKeyboardDisabledDoesNotEmitEvent() {
@@ -165,12 +163,12 @@ class RunnerTests: XCTestCase {
     }
   }
 
-  func testOrientationInitializeEmitsCurrentEvent() {
+  func testOrientationInitializeDoesNotEmitCurrentEvent() {
     let plugin = FlutterSystemEventsPlugin()
-    var event: [String: Any]?
+    var event: Any?
 
     _ = plugin.onListen(withArguments: nil) { value in
-      event = value as? [String: Any]
+      event = value
     }
 
     let call = FlutterMethodCall(methodName: "initialize", arguments: ["orientation": true])
@@ -178,7 +176,31 @@ class RunnerTests: XCTestCase {
       XCTAssertNil(result)
     }
 
-    XCTAssertEqual(event?["type"] as? String, "orientation")
-    XCTAssertNotNil(event?["orientation"] as? String)
+    XCTAssertNil(event)
+  }
+
+  func testNetworkSnapshotComparesConnectivityStateOnly() {
+    XCTAssertEqual(
+      NetworkSnapshot(event: ["type": "network", "online": true, "networkType": "wifi"]),
+      NetworkSnapshot(event: ["type": "network", "online": true, "networkType": "wifi"])
+    )
+    XCTAssertNotEqual(
+      NetworkSnapshot(event: ["type": "network", "online": true, "networkType": "wifi"]),
+      NetworkSnapshot(event: ["type": "network", "online": false, "networkType": "none"])
+    )
+  }
+
+  func testBatterySnapshotComparesBatteryStateOnly() {
+    XCTAssertEqual(
+      BatterySnapshot(event: ["type": "battery", "level": 100, "charging": true, "state": "full"]),
+      BatterySnapshot(event: ["type": "battery", "level": 100, "charging": true, "state": "full"])
+    )
+  }
+
+  func testOrientationSnapshotComparesOrientationOnly() {
+    XCTAssertEqual(
+      OrientationSnapshot(event: ["type": "orientation", "orientation": "portraitUp"]),
+      OrientationSnapshot(event: ["type": "orientation", "orientation": "portraitUp"])
+    )
   }
 }

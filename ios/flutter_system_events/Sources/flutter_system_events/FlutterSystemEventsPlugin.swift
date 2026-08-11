@@ -10,7 +10,10 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
   private var config = EventConfig.legacy
   private var previousBatteryMonitoring: Bool?
   private var previousOrientationNotifications: Bool?
+  private var lastBatterySnapshot: BatterySnapshot?
   private var lastOrientation: String?
+  private var lastNetworkSnapshot: NetworkSnapshot?
+  private var lastThermalSnapshot: ThermalSnapshot?
 
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "flutter_system_events", binaryMessenger: registrar.messenger())
@@ -37,6 +40,8 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
       result(orientationEvent(from: UIDevice.current.orientation))
     case "currentScreenBrightness":
       result(screenBrightnessEvent(UIScreen.main.brightness))
+    case "currentThermal":
+      result(thermalEvent(from: ProcessInfo.processInfo.thermalState))
     default:
       result(FlutterMethodNotImplemented)
     }
@@ -101,21 +106,36 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
     observers.removeAll()
     pathMonitor?.cancel()
     pathMonitor = nil
+    lastNetworkSnapshot = nil
     currentNetworkMonitor?.cancel()
     currentNetworkMonitor = nil
     stopBattery()
     stopOrientation()
+    lastThermalSnapshot = nil
   }
 
   private func startNetwork() {
     let monitor = NWPathMonitor()
+    lastNetworkSnapshot = NetworkSnapshot(event: networkEvent(from: monitor.currentPath))
     monitor.pathUpdateHandler = { [weak self] path in
       DispatchQueue.main.async {
-        self?.events?(networkEvent(from: path))
+        self?.emitNetworkIfChanged(from: path)
       }
     }
     pathMonitor = monitor
     monitor.start(queue: DispatchQueue.global(qos: .utility))
+  }
+
+  private func emitNetworkIfChanged(from path: NWPath) {
+    let event = networkEvent(from: path)
+    let snapshot = NetworkSnapshot(event: event)
+    guard let lastNetworkSnapshot else {
+      self.lastNetworkSnapshot = snapshot
+      return
+    }
+    guard snapshot != lastNetworkSnapshot else { return }
+    self.lastNetworkSnapshot = snapshot
+    events?(event)
   }
 
   private func currentNetwork(_ result: @escaping FlutterResult) {
@@ -140,17 +160,25 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
   private func startBattery() {
     previousBatteryMonitoring = UIDevice.current.isBatteryMonitoringEnabled
     UIDevice.current.isBatteryMonitoringEnabled = true
+    lastBatterySnapshot = BatterySnapshot(event: batteryEvent())
     observers.append(NotificationCenter.default.addObserver(forName: UIDevice.batteryLevelDidChangeNotification, object: nil, queue: .main) { [weak self] _ in
       self?.emitBattery()
     })
     observers.append(NotificationCenter.default.addObserver(forName: UIDevice.batteryStateDidChangeNotification, object: nil, queue: .main) { [weak self] _ in
       self?.emitBattery()
     })
-    emitBattery()
   }
 
   private func emitBattery() {
-    events?(batteryEvent())
+    let event = batteryEvent()
+    let snapshot = BatterySnapshot(event: event)
+    guard let lastBatterySnapshot else {
+      self.lastBatterySnapshot = snapshot
+      return
+    }
+    guard snapshot != lastBatterySnapshot else { return }
+    self.lastBatterySnapshot = snapshot
+    events?(event)
   }
 
   private func currentBattery(_ result: @escaping FlutterResult) {
@@ -184,15 +212,16 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
       UIDevice.current.isBatteryMonitoringEnabled = previousBatteryMonitoring
       self.previousBatteryMonitoring = nil
     }
+    lastBatterySnapshot = nil
   }
 
   private func startOrientation() {
     previousOrientationNotifications = UIDevice.current.isGeneratingDeviceOrientationNotifications
     UIDevice.current.beginGeneratingDeviceOrientationNotifications()
+    lastOrientation = orientationName(from: UIDevice.current.orientation)
     observers.append(NotificationCenter.default.addObserver(forName: UIDevice.orientationDidChangeNotification, object: nil, queue: .main) { [weak self] _ in
       self?.emitOrientation()
     })
-    emitOrientation()
   }
 
   private func emitOrientation() {
@@ -238,10 +267,22 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
   }
 
   private func startThermal() {
+    lastThermalSnapshot = ThermalSnapshot(event: thermalEvent(from: ProcessInfo.processInfo.thermalState))
     observers.append(NotificationCenter.default.addObserver(forName: ProcessInfo.thermalStateDidChangeNotification, object: nil, queue: .main) { [weak self] _ in
-      self?.events?(thermalEvent(from: ProcessInfo.processInfo.thermalState))
+      self?.emitThermal()
     })
-    events?(thermalEvent(from: ProcessInfo.processInfo.thermalState))
+  }
+
+  private func emitThermal() {
+    let event = thermalEvent(from: ProcessInfo.processInfo.thermalState)
+    let snapshot = ThermalSnapshot(event: event)
+    guard let lastThermalSnapshot else {
+      self.lastThermalSnapshot = snapshot
+      return
+    }
+    guard snapshot != lastThermalSnapshot else { return }
+    self.lastThermalSnapshot = snapshot
+    events?(event)
   }
 
   private struct EventConfig {
@@ -330,4 +371,34 @@ func networkEvent(from path: NWPath) -> [String: Any] {
     networkType = "other"
   }
   return ["type": "network", "online": path.status == .satisfied, "networkType": networkType]
+}
+
+struct NetworkSnapshot: Equatable {
+  let online: Bool
+  let networkType: String
+
+  init(event: [String: Any]) {
+    online = event["online"] as! Bool
+    networkType = event["networkType"] as! String
+  }
+}
+
+struct BatterySnapshot: Equatable {
+  let level: Int
+  let charging: Bool
+  let state: String
+
+  init(event: [String: Any]) {
+    level = event["level"] as! Int
+    charging = event["charging"] as! Bool
+    state = event["state"] as! String
+  }
+}
+
+struct ThermalSnapshot: Equatable {
+  let state: String
+
+  init(event: [String: Any]) {
+    state = event["state"] as! String
+  }
 }

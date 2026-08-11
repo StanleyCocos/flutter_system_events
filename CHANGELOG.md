@@ -1,3 +1,9 @@
+## Unreleased
+
+- Changed event streams to emit changes only; use current value APIs to initialize UI state.
+- Added `SystemEvents.currentThermal()` on Android 10+ and iOS.
+- Normalized unsupported `currentThermal()` calls to `UnsupportedError` in Dart.
+
 ## 1.2.0
 
 - Added Windows lifecycle events.

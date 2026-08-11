@@ -13,6 +13,16 @@ class FakeSystemEventsPlatform extends FlutterSystemEventsPlatform {
   var disposeCount = 0;
 
   @override
+  Future<NetworkEvent> currentNetwork() async {
+    return const NetworkEvent(online: true, networkType: NetworkType.wifi);
+  }
+
+  @override
+  Future<ThermalEvent> currentThermal() async {
+    return const ThermalEvent(state: ThermalState.nominal);
+  }
+
+  @override
   Future<void> initialize({
     SystemEventsConfig config = const SystemEventsConfig.defaults(),
   }) async {
@@ -73,6 +83,9 @@ void main() {
   });
 
   testWidgets('opens network event page', (tester) async {
+    final platform = FakeSystemEventsPlatform();
+    FlutterSystemEventsPlatform.instance = platform;
+
     await tester.pumpWidget(const SystemEventsExample());
 
     await tester.tap(find.text('Network'));
@@ -83,8 +96,11 @@ void main() {
       find.text('Toggle Wi-Fi or cellular data to trigger this event.'),
       findsOneWidget,
     );
-    expect(find.text('online: -'), findsOneWidget);
-    expect(find.text('type: -'), findsOneWidget);
+    expect(find.text('online: true'), findsOneWidget);
+    expect(find.text('type: wifi'), findsOneWidget);
+    expect(find.text('current online=true type=wifi'), findsOneWidget);
+
+    await platform.controller.close();
   });
 
   testWidgets('opens memory event page', (tester) async {
@@ -205,6 +221,9 @@ void main() {
   });
 
   testWidgets('opens thermal event page', (tester) async {
+    final platform = FakeSystemEventsPlatform();
+    FlutterSystemEventsPlatform.instance = platform;
+
     await tester.pumpWidget(const SystemEventsExample());
 
     await tester.scrollUntilVisible(find.text('Thermal'), 300);
@@ -212,9 +231,12 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Thermal Event'), findsOneWidget);
-    expect(find.text('state: -'), findsOneWidget);
+    expect(find.text('state: nominal'), findsOneWidget);
     expect(find.text('count: 0'), findsOneWidget);
+    expect(find.text('current state=nominal'), findsOneWidget);
     expect(find.text('Recent events'), findsOneWidget);
+
+    await platform.controller.close();
   });
 
   testWidgets('thermal event page renders incoming thermal events', (

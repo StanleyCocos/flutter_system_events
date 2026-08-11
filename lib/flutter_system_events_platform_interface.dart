@@ -59,6 +59,11 @@ abstract class FlutterSystemEventsPlatform extends PlatformInterface {
     );
   }
 
+  /// Returns the current device thermal state.
+  Future<ThermalEvent> currentThermal() {
+    throw UnimplementedError('currentThermal() has not been implemented.');
+  }
+
   /// Stream of decoded platform events.
   Stream<SystemEvent> get events {
     throw UnimplementedError('events has not been implemented.');
@@ -409,6 +414,8 @@ final class KeyboardEvent extends SystemEvent {
 enum NetworkType { wifi, cellular, ethernet, other, none }
 
 /// Event emitted when network connectivity changes.
+///
+/// Use `SystemEvents.currentNetwork()` to read the initial network state.
 final class NetworkEvent extends SystemEvent {
   /// Creates a network event.
   const NetworkEvent({required this.online, required this.networkType});

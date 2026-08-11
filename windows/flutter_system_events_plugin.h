@@ -37,6 +37,12 @@ class FlutterSystemEventsPlugin : public flutter::Plugin {
       std::unique_ptr<flutter::EventSink<flutter::EncodableValue>> events);
   void ClearEventSink();
 
+  // Test-only helper for exercising window messages without a registrar.
+  std::optional<LRESULT> HandleWindowProcForTest(HWND hwnd,
+                                                 UINT message,
+                                                 WPARAM wparam,
+                                                 LPARAM lparam);
+
  private:
   struct EventConfig {
     bool keyboard = true;
@@ -44,9 +50,21 @@ class FlutterSystemEventsPlugin : public flutter::Plugin {
     bool network = true;
   };
 
-  void EmitKeyboardHidden();
+  struct NetworkSnapshot {
+    bool online = false;
+
+    bool operator==(const NetworkSnapshot& other) const {
+      return online == other.online;
+    }
+
+    bool operator!=(const NetworkSnapshot& other) const {
+      return !(*this == other);
+    }
+  };
+
   void EmitLifecycle(const char *state);
   flutter::EncodableValue CurrentNetwork();
+  NetworkSnapshot CurrentNetworkSnapshot();
   void EmitNetwork();
   void StartLifecycle();
   void StartNetwork();
@@ -63,6 +81,7 @@ class FlutterSystemEventsPlugin : public flutter::Plugin {
   flutter::PluginRegistrarWindows *registrar_ = nullptr;
   std::optional<int> window_proc_id_;
   EventConfig config_;
+  std::optional<NetworkSnapshot> last_network_snapshot_;
   std::unique_ptr<flutter::EventSink<flutter::EncodableValue>> events_;
 };
 

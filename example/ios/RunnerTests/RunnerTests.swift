@@ -53,12 +53,12 @@ class RunnerTests: XCTestCase {
     XCTAssertNil(event)
   }
 
-  func testThermalEnabledEmitsThermalEvent() {
+  func testThermalEnabledDoesNotEmitInitialOrUnchangedEvent() {
     let plugin = FlutterSystemEventsPlugin()
-    var event: [String: Any]?
+    var event: Any?
 
     _ = plugin.onListen(withArguments: nil) { value in
-      event = value as? [String: Any]
+      event = value
     }
 
     let call = FlutterMethodCall(methodName: "initialize", arguments: ["thermal": true])
@@ -68,8 +68,7 @@ class RunnerTests: XCTestCase {
 
     NotificationCenter.default.post(name: ProcessInfo.thermalStateDidChangeNotification, object: nil)
 
-    XCTAssertEqual(event?["type"] as? String, "thermal")
-    XCTAssertNotNil(event?["state"] as? String)
+    XCTAssertNil(event)
   }
 
   func testThermalDisabledDoesNotEmitThermalEvent() {
@@ -95,5 +94,41 @@ class RunnerTests: XCTestCase {
     XCTAssertEqual(thermalEvent(from: .fair)["state"] as? String, "fair")
     XCTAssertEqual(thermalEvent(from: .serious)["state"] as? String, "serious")
     XCTAssertEqual(thermalEvent(from: .critical)["state"] as? String, "critical")
+  }
+
+  func testCurrentThermalReturnsThermalEvent() {
+    let plugin = FlutterSystemEventsPlugin()
+
+    plugin.handle(FlutterMethodCall(methodName: "currentThermal", arguments: nil)) { result in
+      let event = result as? [String: Any]
+
+      XCTAssertEqual(event?["type"] as? String, "thermal")
+      XCTAssertNotNil(event?["state"] as? String)
+    }
+  }
+
+  func testNetworkSnapshotComparesConnectivityStateOnly() {
+    XCTAssertEqual(
+      NetworkSnapshot(event: ["type": "network", "online": true, "networkType": "wifi"]),
+      NetworkSnapshot(event: ["type": "network", "online": true, "networkType": "wifi"])
+    )
+    XCTAssertNotEqual(
+      NetworkSnapshot(event: ["type": "network", "online": true, "networkType": "wifi"]),
+      NetworkSnapshot(event: ["type": "network", "online": false, "networkType": "none"])
+    )
+  }
+
+  func testBatterySnapshotComparesBatteryStateOnly() {
+    XCTAssertEqual(
+      BatterySnapshot(event: ["type": "battery", "level": 100, "charging": true, "state": "full"]),
+      BatterySnapshot(event: ["type": "battery", "level": 100, "charging": true, "state": "full"])
+    )
+  }
+
+  func testThermalSnapshotComparesThermalStateOnly() {
+    XCTAssertEqual(
+      ThermalSnapshot(event: ["type": "thermal", "state": "nominal"]),
+      ThermalSnapshot(event: ["type": "thermal", "state": "nominal"])
+    )
   }
 }
