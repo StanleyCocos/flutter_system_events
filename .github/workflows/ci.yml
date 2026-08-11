@@ -63,6 +63,9 @@ jobs:
       - run: flutter build apk --debug
         working-directory: example
 
+      - run: flutter build apk --release
+        working-directory: example
+
   apple:
     runs-on: macos-latest
 

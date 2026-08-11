@@ -4,6 +4,10 @@
 - Added `SystemEvents.currentThermal()` on Android 10+ and iOS.
 - Normalized unsupported `currentThermal()` calls to `UnsupportedError` in Dart.
 
+## 1.2.1
+
+- Fixed Android release builds by avoiding duplicate Kotlin source registration.
+
 ## 1.2.0
 
 - Added Windows lifecycle events.
