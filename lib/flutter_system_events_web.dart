@@ -14,6 +14,7 @@ class FlutterSystemEventsWeb extends FlutterSystemEventsPlatform {
   final _controller = StreamController<SystemEvent>.broadcast();
   final _subscriptions = <StreamSubscription<html.Event>>[];
   var _keyboardVisible = false;
+  _NetworkSnapshot? _lastNetworkSnapshot;
   double? _viewportHeight;
 
   static void registerWith(Registrar registrar) {
@@ -50,6 +51,7 @@ class FlutterSystemEventsWeb extends FlutterSystemEventsPlatform {
         );
     }
     if (config.network != null) {
+      _lastNetworkSnapshot = _NetworkSnapshot.fromEvent(_networkEvent());
       _subscriptions
         ..add(html.window.onOnline.listen((_) => _emitNetwork()))
         ..add(html.window.onOffline.listen((_) => _emitNetwork()));
@@ -63,6 +65,7 @@ class FlutterSystemEventsWeb extends FlutterSystemEventsPlatform {
     }
     _subscriptions.clear();
     _keyboardVisible = false;
+    _lastNetworkSnapshot = null;
     _viewportHeight = null;
   }
 
@@ -111,7 +114,16 @@ class FlutterSystemEventsWeb extends FlutterSystemEventsPlatform {
   }
 
   void _emitNetwork() {
-    _controller.add(_networkEvent());
+    final event = _networkEvent();
+    final snapshot = _NetworkSnapshot.fromEvent(event);
+    final lastSnapshot = _lastNetworkSnapshot;
+    if (lastSnapshot == null) {
+      _lastNetworkSnapshot = snapshot;
+      return;
+    }
+    if (snapshot == lastSnapshot) return;
+    _lastNetworkSnapshot = snapshot;
+    _controller.add(event);
   }
 
   NetworkEvent _networkEvent() {
@@ -121,4 +133,28 @@ class FlutterSystemEventsWeb extends FlutterSystemEventsPlatform {
       networkType: online ? NetworkType.other : NetworkType.none,
     );
   }
+}
+
+final class _NetworkSnapshot {
+  const _NetworkSnapshot({required this.online, required this.networkType});
+
+  factory _NetworkSnapshot.fromEvent(NetworkEvent event) {
+    return _NetworkSnapshot(
+      online: event.online,
+      networkType: event.networkType,
+    );
+  }
+
+  final bool online;
+  final NetworkType networkType;
+
+  @override
+  bool operator ==(Object other) {
+    return other is _NetworkSnapshot &&
+        other.online == online &&
+        other.networkType == networkType;
+  }
+
+  @override
+  int get hashCode => Object.hash(online, networkType);
 }

@@ -116,7 +116,7 @@ public class FlutterSystemEventsPlugin: NSObject, FlutterPlugin, FlutterStreamHa
 
   private func startNetwork() {
     let monitor = NWPathMonitor()
-    lastNetworkSnapshot = NetworkSnapshot(event: networkEvent(from: monitor.currentPath))
+    lastNetworkSnapshot = nil
     monitor.pathUpdateHandler = { [weak self] path in
       DispatchQueue.main.async {
         self?.emitNetworkIfChanged(from: path)

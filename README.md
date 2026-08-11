@@ -340,7 +340,7 @@ iOS
 
 | Event | Android | iOS | macOS | Windows | Linux | Web |
 | --- | --- | --- | --- | --- | --- | --- |
-| `KeyboardEvent` | Yes | Yes | Partial | Partial | In progress | Yes |
+| `KeyboardEvent` | Yes | Yes | No | No | In progress | Yes |
 | `LifecycleEvent` | Yes | Yes | Yes | Yes | In progress | Yes |
 | `NetworkEvent` | Yes | Yes | Yes | Yes | In progress | Yes |
 | `MemoryEvent` | Yes | Yes | In progress | In progress | In progress | In progress |

@@ -264,7 +264,7 @@ Android 9 及以下不支持这个事件。Android 和 iOS 都不需要权限。
 
 | 事件 | Android | iOS | macOS | Windows | Linux | Web |
 | --- | --- | --- | --- | --- | --- | --- |
-| `KeyboardEvent` | 支持 | 支持 | 部分支持 | 部分支持 | 努力实现中 | 支持 |
+| `KeyboardEvent` | 支持 | 支持 | 不支持 | 不支持 | 努力实现中 | 支持 |
 | `LifecycleEvent` | 支持 | 支持 | 支持 | 支持 | 努力实现中 | 支持 |
 | `NetworkEvent` | 支持 | 支持 | 支持 | 支持 | 努力实现中 | 支持 |
 | `MemoryEvent` | 支持 | 支持 | 努力实现中 | 努力实现中 | 努力实现中 | 努力实现中 |
