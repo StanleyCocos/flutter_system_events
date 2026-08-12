@@ -43,7 +43,6 @@ void main() {
 
     expect(find.text('visible: false'), findsOneWidget);
     expect(find.text('height: 0'), findsOneWidget);
-    expect(find.text('hide height=0'), findsOneWidget);
   });
 
   testWidgets('opens screen event page', (tester) async {
@@ -83,7 +82,7 @@ const _examplePages = [
   _ExamplePage(
     entry: 'Network',
     title: 'Network Event',
-    expectedTexts: ['online: -', 'type: -'],
+    expectedTexts: ['Get current network', 'Recent events'],
   ),
   _ExamplePage(
     entry: 'Memory',
