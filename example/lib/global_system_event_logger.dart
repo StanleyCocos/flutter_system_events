@@ -3,12 +3,18 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_system_events/flutter_system_events.dart';
 
+import 'event_time_format.dart';
+
 typedef SystemEventLog = void Function(String message);
+typedef SystemEventClock = DateTime Function();
 
 final class GlobalSystemEventLogger {
-  GlobalSystemEventLogger({SystemEventLog? log}) : _log = log ?? debugPrint;
+  GlobalSystemEventLogger({SystemEventLog? log, SystemEventClock? now})
+    : _log = log ?? debugPrint,
+      _now = now ?? DateTime.now;
 
   final SystemEventLog _log;
+  final SystemEventClock _now;
   final _subscriptions = <StreamSubscription<SystemEvent>>[];
 
   void start() {
@@ -37,7 +43,9 @@ final class GlobalSystemEventLogger {
   void _listen(String prefix, Stream<SystemEvent> stream) {
     _subscriptions.add(
       stream.listen(
-        (event) => _log('[$prefix]\n${_formatMap(_toLogMap(event))}'),
+        (event) => _log(
+          '[$prefix] ${formatEventDateTime(_now())}\n${_formatMap(_toLogMap(event))}',
+        ),
       ),
     );
   }

@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_system_events/flutter_system_events.dart';
 
+import '../event_time_format.dart';
+
 class MemoryEventPage extends StatefulWidget {
   const MemoryEventPage({super.key});
 
@@ -30,14 +32,20 @@ class _MemoryEventPageState extends State<MemoryEventPage> {
   void initState() {
     super.initState();
     _subscription = SystemEvents.events.listen((event) {
-      if (event is! MemoryEvent || !mounted) return;
+      if (event is! MemoryEvent) return;
       debugPrint(
-        '[MemoryEventPage] memory callback: state=${event.state.name} level=${event.level}',
+        formatTimedLog(
+          '[MemoryEventPage] memory callback: state=${event.state.name} level=${event.level}',
+        ),
       );
+      if (!mounted) return;
       setState(() {
         _state = event.state;
         _level = event.level;
-        _events.insert(0, 'state=${event.state.name} level=${event.level}');
+        _events.insert(
+          0,
+          formatTimedEvent('state=${event.state.name} level=${event.level}'),
+        );
         if (_events.length > 8) _events.removeLast();
       });
     });
@@ -57,7 +65,9 @@ class _MemoryEventPageState extends State<MemoryEventPage> {
       if (_allocatedMb >= _maxAllocatedMb) {
         _pausePressure();
         debugPrint(
-          '[MemoryEventPage] memory pressure reached $_maxAllocatedMb MB and is being held',
+          formatTimedLog(
+            '[MemoryEventPage] memory pressure reached $_maxAllocatedMb MB and is being held',
+          ),
         );
         return;
       }
@@ -68,30 +78,40 @@ class _MemoryEventPageState extends State<MemoryEventPage> {
         }
         setState(() {
           _memoryBlocks.add(block);
-          debugPrint('[MemoryEventPage] allocated $_allocatedMb MB');
+          debugPrint(
+            formatTimedLog('[MemoryEventPage] allocated $_allocatedMb MB'),
+          );
         });
       } catch (error) {
         _pausePressure();
         debugPrint(
-          '[MemoryEventPage] Dart heap exhausted at $_allocatedMb MB: $error',
+          formatTimedLog(
+            '[MemoryEventPage] Dart heap exhausted at $_allocatedMb MB: $error',
+          ),
         );
       }
     });
-    debugPrint('[MemoryEventPage] memory pressure started');
+    debugPrint(formatTimedLog('[MemoryEventPage] memory pressure started'));
     setState(() {});
   }
 
   void _pausePressure() {
     _pressureTimer?.cancel();
     _pressureTimer = null;
-    debugPrint('[MemoryEventPage] memory pressure stopped at $_allocatedMb MB');
+    debugPrint(
+      formatTimedLog(
+        '[MemoryEventPage] memory pressure stopped at $_allocatedMb MB',
+      ),
+    );
     setState(() {});
   }
 
   void _releasePressure() {
     _pausePressure();
     debugPrint(
-      '[MemoryEventPage] memory pressure released at $_allocatedMb MB',
+      formatTimedLog(
+        '[MemoryEventPage] memory pressure released at $_allocatedMb MB',
+      ),
     );
     setState(_memoryBlocks.clear);
   }

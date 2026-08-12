@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_system_events/flutter_system_events.dart';
 
+import '../event_time_format.dart';
+
 class ScreenshotEventPage extends StatefulWidget {
   const ScreenshotEventPage({super.key});
 
@@ -22,7 +24,7 @@ class _ScreenshotEventPageState extends State<ScreenshotEventPage> {
       if (!mounted) return;
       setState(() {
         _count++;
-        _events.insert(0, 'screenshot $_count');
+        _events.insert(0, formatTimedEvent('screenshot $_count'));
         if (_events.length > 8) _events.removeLast();
       });
     });

@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_system_events/flutter_system_events.dart';
 
+import '../event_time_format.dart';
+
 class OrientationEventPage extends StatefulWidget {
   const OrientationEventPage({super.key});
 
@@ -22,7 +24,7 @@ class _OrientationEventPageState extends State<OrientationEventPage> {
       if (event is! OrientationEvent || !mounted) return;
       setState(() {
         _orientation = event.orientation;
-        _events.insert(0, event.orientation.name);
+        _events.insert(0, formatTimedEvent(event.orientation.name));
         if (_events.length > 8) _events.removeLast();
       });
     });
@@ -37,12 +39,14 @@ class _OrientationEventPageState extends State<OrientationEventPage> {
   Future<void> _loadCurrentOrientation() async {
     final event = await SystemEvents.currentOrientation();
     debugPrint(
-      '[OrientationEventPage] current orientation: ${event.orientation.name}',
+      formatTimedLog(
+        '[OrientationEventPage] current orientation: ${event.orientation.name}',
+      ),
     );
     if (!mounted) return;
     setState(() {
       _orientation = event.orientation;
-      _events.insert(0, 'current ${event.orientation.name}');
+      _events.insert(0, formatTimedEvent('current ${event.orientation.name}'));
       if (_events.length > 8) _events.removeLast();
     });
   }

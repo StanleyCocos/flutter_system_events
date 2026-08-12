@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_system_events/flutter_system_events.dart';
 
+import '../event_time_format.dart';
+
 class TimeEventPage extends StatefulWidget {
   const TimeEventPage({super.key});
 
@@ -22,7 +24,7 @@ class _TimeEventPageState extends State<TimeEventPage> {
       if (event is! TimeEvent || !mounted) return;
       setState(() {
         _reason = event.reason;
-        _events.insert(0, event.reason.name);
+        _events.insert(0, formatTimedEvent(event.reason.name));
         if (_events.length > 8) _events.removeLast();
       });
     });

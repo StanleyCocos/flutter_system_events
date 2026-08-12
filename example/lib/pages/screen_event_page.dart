@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_system_events/flutter_system_events.dart';
 
+import '../event_time_format.dart';
+
 class ScreenEventPage extends StatefulWidget {
   const ScreenEventPage({super.key});
 
@@ -24,7 +26,7 @@ class _ScreenEventPageState extends State<ScreenEventPage> {
       setState(() {
         _change = event.change;
         _brightness = event.brightness;
-        _events.insert(0, _eventText(event));
+        _events.insert(0, formatTimedEvent(_eventText(event)));
         if (_events.length > 8) _events.removeLast();
       });
     });
@@ -39,13 +41,15 @@ class _ScreenEventPageState extends State<ScreenEventPage> {
   Future<void> _loadCurrentScreenBrightness() async {
     final event = await SystemEvents.currentScreenBrightness();
     debugPrint(
-      '[ScreenEventPage] current screen brightness: ${_formatBrightness(event.brightness)}',
+      formatTimedLog(
+        '[ScreenEventPage] current screen brightness: ${_formatBrightness(event.brightness)}',
+      ),
     );
     if (!mounted) return;
     setState(() {
       _change = event.change;
       _brightness = event.brightness;
-      _events.insert(0, 'current ${_eventText(event)}');
+      _events.insert(0, formatTimedEvent('current ${_eventText(event)}'));
       if (_events.length > 8) _events.removeLast();
     });
   }

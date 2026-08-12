@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_system_events/flutter_system_events.dart';
 
+import '../event_time_format.dart';
+
 class ThermalEventPage extends StatefulWidget {
   const ThermalEventPage({super.key});
 
@@ -24,7 +26,7 @@ class _ThermalEventPageState extends State<ThermalEventPage> {
       setState(() {
         _state = event.state;
         _count++;
-        _events.insert(0, 'state=${event.state.name}');
+        _events.insert(0, formatTimedEvent('state=${event.state.name}'));
         if (_events.length > 8) _events.removeLast();
       });
     });
@@ -43,19 +45,28 @@ class _ThermalEventPageState extends State<ThermalEventPage> {
     try {
       final event = await SystemEvents.currentThermal();
       debugPrint(
-        '[ThermalEventPage] current thermal: state=${event.state.name}',
+        formatTimedLog(
+          '[ThermalEventPage] current thermal: state=${event.state.name}',
+        ),
       );
       if (!mounted) return;
       setState(() {
         _state = event.state;
-        _events.insert(0, 'current state=${event.state.name}');
+        _events.insert(
+          0,
+          formatTimedEvent('current state=${event.state.name}'),
+        );
         if (_events.length > 8) _events.removeLast();
       });
     } on Object catch (error) {
-      debugPrint('[ThermalEventPage] current thermal unavailable: $error');
+      debugPrint(
+        formatTimedLog(
+          '[ThermalEventPage] current thermal unavailable: $error',
+        ),
+      );
       if (!mounted) return;
       setState(() {
-        _events.insert(0, 'current unavailable');
+        _events.insert(0, formatTimedEvent('current unavailable'));
         if (_events.length > 8) _events.removeLast();
       });
     }

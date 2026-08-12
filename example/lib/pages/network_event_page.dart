@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_system_events/flutter_system_events.dart';
 
+import '../event_time_format.dart';
+
 class NetworkEventPage extends StatefulWidget {
   const NetworkEventPage({super.key});
 
@@ -26,7 +28,9 @@ class _NetworkEventPageState extends State<NetworkEventPage> {
         _networkType = event.networkType;
         _events.insert(
           0,
-          'online=${event.online} type=${event.networkType.name}',
+          formatTimedEvent(
+            'online=${event.online} type=${event.networkType.name}',
+          ),
         );
         if (_events.length > 8) _events.removeLast();
       });
@@ -43,7 +47,9 @@ class _NetworkEventPageState extends State<NetworkEventPage> {
   Future<void> _loadCurrentNetwork() async {
     final event = await SystemEvents.currentNetwork();
     debugPrint(
-      '[NetworkEventPage] current network: online=${event.online} type=${event.networkType.name}',
+      formatTimedLog(
+        '[NetworkEventPage] current network: online=${event.online} type=${event.networkType.name}',
+      ),
     );
     if (!mounted) return;
     setState(() {
@@ -51,7 +57,9 @@ class _NetworkEventPageState extends State<NetworkEventPage> {
       _networkType = event.networkType;
       _events.insert(
         0,
-        'current online=${event.online} type=${event.networkType.name}',
+        formatTimedEvent(
+          'current online=${event.online} type=${event.networkType.name}',
+        ),
       );
       if (_events.length > 8) _events.removeLast();
     });

@@ -98,7 +98,10 @@ void main() {
     );
     expect(find.text('online: true'), findsOneWidget);
     expect(find.text('type: wifi'), findsOneWidget);
-    expect(find.text('current online=true type=wifi'), findsOneWidget);
+    expect(
+      find.textContaining('current online=true type=wifi'),
+      findsOneWidget,
+    );
 
     await platform.controller.close();
   });
@@ -233,7 +236,7 @@ void main() {
     expect(find.text('Thermal Event'), findsOneWidget);
     expect(find.text('state: nominal'), findsOneWidget);
     expect(find.text('count: 0'), findsOneWidget);
-    expect(find.text('current state=nominal'), findsOneWidget);
+    expect(find.textContaining('current state=nominal'), findsOneWidget);
     expect(find.text('Recent events'), findsOneWidget);
 
     await platform.controller.close();
@@ -258,7 +261,7 @@ void main() {
 
     expect(find.text('state: serious'), findsOneWidget);
     expect(find.text('count: 1'), findsOneWidget);
-    expect(find.text('state=serious'), findsOneWidget);
+    expect(find.textContaining('state=serious'), findsOneWidget);
 
     await platform.controller.close();
   });
@@ -281,7 +284,7 @@ void main() {
     await tester.pump();
 
     expect(find.text('count: 1'), findsOneWidget);
-    expect(find.text('screenshot 1'), findsOneWidget);
+    expect(find.textContaining('screenshot 1'), findsOneWidget);
 
     await platform.controller.close();
   });
@@ -313,7 +316,7 @@ void main() {
       await tester.pump();
 
       expect(find.text('change: ${change.name}'), findsOneWidget);
-      expect(find.text(change.name), findsWidgets);
+      expect(find.textContaining(change.name), findsWidgets);
     }
 
     platform.controller.add(
@@ -323,7 +326,7 @@ void main() {
 
     expect(find.text('change: brightness'), findsOneWidget);
     expect(find.text('brightness: 0.42'), findsOneWidget);
-    expect(find.text('brightness brightness=0.42'), findsOneWidget);
+    expect(find.textContaining('brightness brightness=0.42'), findsOneWidget);
 
     await tester.tap(find.byType(BackButton));
     await tester.pumpAndSettle();

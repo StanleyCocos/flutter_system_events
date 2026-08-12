@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_system_events/flutter_system_events.dart';
 
+import '../event_time_format.dart';
+
 class LifecycleEventPage extends StatefulWidget {
   const LifecycleEventPage({super.key});
 
@@ -22,7 +24,7 @@ class _LifecycleEventPageState extends State<LifecycleEventPage> {
       if (event is! LifecycleEvent || !mounted) return;
       setState(() {
         _state = event.state;
-        _events.insert(0, event.state.name);
+        _events.insert(0, formatTimedEvent(event.state.name));
         if (_events.length > 8) _events.removeLast();
       });
     });

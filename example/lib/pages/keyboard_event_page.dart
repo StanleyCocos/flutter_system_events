@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_system_events/flutter_system_events.dart';
 
+import '../event_time_format.dart';
+
 class KeyboardEventPage extends StatefulWidget {
   const KeyboardEventPage({super.key});
 
@@ -21,25 +23,33 @@ class _KeyboardEventPageState extends State<KeyboardEventPage> {
   void initState() {
     super.initState();
     _subscription = SystemEvents.keyboard.listen((event) {
-      if (!mounted) return;
       debugPrint(
-        '[KeyboardEventPage] event visible=${event.visible} '
-        'height=${event.height.toStringAsFixed(1)}',
+        formatTimedLog(
+          '[KeyboardEventPage] event visible=${event.visible} '
+          'height=${event.height.toStringAsFixed(1)}',
+        ),
       );
+      if (!mounted) return;
       setState(() {
         _visible = event.visible;
         _height = event.height;
         _events.insert(
           0,
-          '${event.visible ? 'show' : 'hide'} height=${event.height.toStringAsFixed(0)}',
+          formatTimedEvent(
+            '${event.visible ? 'show' : 'hide'} height=${event.height.toStringAsFixed(0)}',
+          ),
         );
         if (_events.length > 8) _events.removeLast();
       });
     });
 
     _subscription1 = SystemEvents.keyboard.listen((event) {
+      debugPrint(
+        formatTimedLog(
+          '_KeyboardEventPageState.initState -->  ${event.height}',
+        ),
+      );
       if (!mounted) return;
-      debugPrint('_KeyboardEventPageState.initState -->  ${event.height}');
     });
 
     unawaited(SystemEvents.enable(SystemEventType.keyboard));
@@ -57,9 +67,11 @@ class _KeyboardEventPageState extends State<KeyboardEventPage> {
     final viewInsetsBottom = MediaQuery.of(context).viewInsets.bottom;
     final delta = (_height - viewInsetsBottom).abs();
     debugPrint(
-      '[KeyboardEventPage] pluginHeight=${_height.toStringAsFixed(1)} '
-      'viewInsets=${viewInsetsBottom.toStringAsFixed(1)} '
-      'delta=${delta.toStringAsFixed(1)}',
+      formatTimedLog(
+        '[KeyboardEventPage] pluginHeight=${_height.toStringAsFixed(1)} '
+        'viewInsets=${viewInsetsBottom.toStringAsFixed(1)} '
+        'delta=${delta.toStringAsFixed(1)}',
+      ),
     );
 
     return Scaffold(

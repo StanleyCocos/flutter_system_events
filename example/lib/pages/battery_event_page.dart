@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_system_events/flutter_system_events.dart';
 
+import '../event_time_format.dart';
+
 class BatteryEventPage extends StatefulWidget {
   const BatteryEventPage({super.key});
 
@@ -20,15 +22,22 @@ class _BatteryEventPageState extends State<BatteryEventPage> {
   @override
   void initState() {
     super.initState();
-    _subscription = SystemEvents.events.listen((event) {
-      if (event is! BatteryEvent || !mounted) return;
+    _subscription = SystemEvents.battery.listen((event) {
+      debugPrint(
+        formatTimedLog(
+          '[BatteryEventPage] current battery: level=${event.level} charging=${event.charging} state=${event.state.name}',
+        ),
+      );
+      if (!mounted) return;
       setState(() {
         _level = event.level;
         _charging = event.charging;
         _state = event.state;
         _events.insert(
           0,
-          'level=${event.level} charging=${event.charging} state=${event.state.name}',
+          formatTimedEvent(
+            'level=${event.level} charging=${event.charging} state=${event.state.name}',
+          ),
         );
         if (_events.length > 8) _events.removeLast();
       });
@@ -44,7 +53,9 @@ class _BatteryEventPageState extends State<BatteryEventPage> {
   Future<void> _loadCurrentBattery() async {
     final event = await SystemEvents.currentBattery();
     debugPrint(
-      '[BatteryEventPage] current battery: level=${event.level} charging=${event.charging} state=${event.state.name}',
+      formatTimedLog(
+        '[BatteryEventPage] current battery: level=${event.level} charging=${event.charging} state=${event.state.name}',
+      ),
     );
     if (!mounted) return;
     setState(() {
@@ -53,7 +64,9 @@ class _BatteryEventPageState extends State<BatteryEventPage> {
       _state = event.state;
       _events.insert(
         0,
-        'current level=${event.level} charging=${event.charging} state=${event.state.name}',
+        formatTimedEvent(
+          'current level=${event.level} charging=${event.charging} state=${event.state.name}',
+        ),
       );
       if (_events.length > 8) _events.removeLast();
     });

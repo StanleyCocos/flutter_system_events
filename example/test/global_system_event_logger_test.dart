@@ -31,7 +31,10 @@ void main() {
     final logs = <String>[];
     FlutterSystemEventsPlatform.instance = platform;
 
-    final logger = GlobalSystemEventLogger(log: logs.add);
+    final logger = GlobalSystemEventLogger(
+      log: logs.add,
+      now: () => DateTime(2026, 8, 12, 13, 4, 5, 6),
+    );
     logger.start();
 
     platform.controller.add(const KeyboardEvent(visible: true, height: 300));
@@ -42,32 +45,32 @@ void main() {
     expect(
       logs,
       containsAll([
-        '[SystemEvents.events]\n'
+        '[SystemEvents.events] 2026-08-12 13-04-05-006\n'
             '{\n'
             "  'event': 'KeyboardEvent',\n"
             "  'visible': true,\n"
             "  'height': 300.0,\n"
             '}',
-        '[SystemEvents.keyboard]\n'
+        '[SystemEvents.keyboard] 2026-08-12 13-04-05-006\n'
             '{\n'
             "  'event': 'KeyboardEvent',\n"
             "  'visible': true,\n"
             "  'height': 300.0,\n"
             '}',
-        '[SystemEvents.events]\n'
+        '[SystemEvents.events] 2026-08-12 13-04-05-006\n'
             '{\n'
             "  'event': 'ScreenshotEvent',\n"
             '}',
-        '[SystemEvents.screenshot]\n'
+        '[SystemEvents.screenshot] 2026-08-12 13-04-05-006\n'
             '{\n'
             "  'event': 'ScreenshotEvent',\n"
             '}',
-        '[SystemEvents.events]\n'
+        '[SystemEvents.events] 2026-08-12 13-04-05-006\n'
             '{\n'
             "  'event': 'ThermalEvent',\n"
             "  'state': 'serious',\n"
             '}',
-        '[SystemEvents.thermal]\n'
+        '[SystemEvents.thermal] 2026-08-12 13-04-05-006\n'
             '{\n'
             "  'event': 'ThermalEvent',\n"
             "  'state': 'serious',\n"
